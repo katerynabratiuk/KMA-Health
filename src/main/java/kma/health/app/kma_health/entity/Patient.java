@@ -21,6 +21,7 @@ public class Patient {
     private String passportNumber;
 
     private String email;
+    private String password;
     private String phoneNumber;
 
     @Column(name = "full_name")

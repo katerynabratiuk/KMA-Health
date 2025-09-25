@@ -27,6 +27,7 @@ public class Doctor {
 
     @Email(message = "Invalid email")
     private String email;
+    private String password;
     private String phoneNumber;
 
     @Column(name = "full_name")
