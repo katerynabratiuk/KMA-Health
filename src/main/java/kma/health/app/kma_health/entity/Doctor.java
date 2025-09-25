@@ -1,10 +1,14 @@
 package kma.health.app.kma_health.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.PastOrPresent;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import jakarta.validation.constraints.Pattern;
 
 import java.time.LocalDate;
 import java.util.Set;
@@ -18,17 +22,21 @@ import java.util.Set;
 public class Doctor {
     @Id
     @Column(name = "passport_number")
+    @Size(min=9, max=9)
     private String passportNumber;
 
+    @Email(message = "Invalid email")
     private String email;
     private String phoneNumber;
 
     @Column(name = "full_name")
     private String fullName;
 
+    @PastOrPresent
     private LocalDate birthDate;
 
-    private String type; // adult/child
+    @Pattern(regexp = "adult|child", message = "Type must be either 'adult' or 'child'")
+    private String type;
 
     @ManyToOne
     @JoinColumn(name = "doctor_type_id")

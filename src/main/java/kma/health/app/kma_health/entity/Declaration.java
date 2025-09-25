@@ -1,6 +1,7 @@
 package kma.health.app.kma_health.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.PastOrPresent;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,6 +20,7 @@ public class Declaration {
     @Id
     private UUID id;
 
+    @PastOrPresent
     @Column(name = "date_signed")
     private LocalDate dateSigned;
 
