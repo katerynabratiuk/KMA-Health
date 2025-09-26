@@ -18,7 +18,7 @@ import java.util.UUID;
 @Table(name = "hospital")
 public class Hospital {
     @Id
-    private UUID id;
+    private Long id;
 
     private String name;
     private String address;

@@ -1,7 +1,10 @@
 package kma.health.app.kma_health.controller;
 
 import kma.health.app.kma_health.dto.LoginRequest;
+import kma.health.app.kma_health.dto.RegisterRequest;
 import kma.health.app.kma_health.service.AuthService;
+import kma.health.app.kma_health.service.RegistrationService;
+import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -9,14 +12,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
+@AllArgsConstructor
 @RequestMapping("/auth")
 public class AuthorizationController {
 
     private final AuthService authService;
-
-    public AuthorizationController(AuthService authService) {
-        this.authService = authService;
-    }
+    private final RegistrationService registrationService;
 
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody LoginRequest request) {
@@ -28,6 +29,12 @@ public class AuthorizationController {
             default -> throw new IllegalArgumentException("Unknown login method");
         }
         return ResponseEntity.ok(token);
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<String> register(@RequestBody RegisterRequest request) {
+        String result = registrationService.register(request);
+        return ResponseEntity.ok(result);
     }
 
     @PatchMapping("/profile")

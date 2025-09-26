@@ -17,7 +17,7 @@ import java.util.Set;
 @Table(name = "examination")
 public class Examination {
     @Id
-    private UUID id;
+    private Long id;
 
     @Column(name = "exam_name")
     private String examName;

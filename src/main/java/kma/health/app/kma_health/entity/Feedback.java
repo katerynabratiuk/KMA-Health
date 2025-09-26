@@ -17,7 +17,7 @@ import java.util.UUID;
 @Table(name = "feedback")
 public class Feedback {
     @Id
-    private UUID id;
+    private Long id;
 
     private LocalDate date;
 

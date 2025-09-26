@@ -16,16 +16,13 @@ import java.util.Set;
 @Entity
 @Table(name = "doctor_type")
 public class DoctorType {
-
     @Id
     @Column(nullable = false)
-    private UUID id;
+    private Long id;
 
     @Column(nullable = false)
     private String typeName;
 
     @OneToMany(mappedBy = "doctorType")
     private Set<Doctor> doctors;
-
-    // Конструкторы, геттеры/сеттеры
 }

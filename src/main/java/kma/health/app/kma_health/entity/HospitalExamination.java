@@ -17,7 +17,7 @@ import java.util.UUID;
 public class HospitalExamination {
     @Id
     @GeneratedValue
-    private UUID id;
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "hospital_id")
