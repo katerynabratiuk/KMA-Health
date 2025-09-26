@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Size;
+import kma.health.app.kma_health.enums.UserRole;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,7 +20,7 @@ import java.util.Set;
 @Setter
 @Entity
 @Table(name = "doctor")
-public class Doctor {
+public class Doctor implements AuthUser {
     @Id
     @Column(name = "passport_number")
     @Size(min=9, max=9)
@@ -58,4 +59,9 @@ public class Doctor {
 
     @OneToMany(mappedBy = "doctor")
     private Set<Feedback> feedbacks;
+
+    @Override
+    public UserRole getRole() {
+        return UserRole.DOCTOR;
+    }
 }

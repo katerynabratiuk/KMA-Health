@@ -1,9 +1,9 @@
 package kma.health.app.kma_health.controller;
 
 import kma.health.app.kma_health.dto.LoginRequest;
-import kma.health.app.kma_health.dto.AuthResponse;
 import kma.health.app.kma_health.service.AuthService;
-import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -19,31 +19,49 @@ public class AuthorizationController {
     }
 
     @PostMapping("/login")
-    public AuthResponse login(@RequestBody @Valid LoginRequest request) {
-        String token = authService.login(request.login(), request.password(), request.role());
-        return new AuthResponse(token);
+    public ResponseEntity<String> login(@RequestBody LoginRequest request) {
+        String token;
+        switch (request.getMethod()) {
+            case EMAIL -> token = authService.loginByEmail(request.getIdentifier(), request.getPassword(), request.getRole());
+            case PHONE -> token = authService.loginByPhone(request.getIdentifier(), request.getPassword(), request.getRole());
+            case PASSPORT -> token = authService.loginByPassport(request.getIdentifier(), request.getPassword(), request.getRole());
+            default -> throw new IllegalArgumentException("Unknown login method");
+        }
+        return ResponseEntity.ok(token);
     }
 
     @PatchMapping("/profile")
-    public String updateProfile(@RequestHeader("Authorization") String authHeader,
-                                @RequestBody Map<String, String> updates) {
+    public ResponseEntity<String> updateProfile(@RequestHeader("Authorization") String authHeader,
+                                                @RequestBody Map<String, String> updates) {
 
-        if (authHeader == null || !authHeader.startsWith("Bearer "))
-            throw new RuntimeException("Missing or invalid Authorization header");
+        ResponseEntity<String> validationResponse = validateAuthorizationHeader(authHeader);
+        if (validationResponse != null) return validationResponse;
 
-        String token = authHeader.substring(7);
+        String token = extractToken(authHeader);
         authService.updateProfile(token, updates);
-        return "Profile updated successfully";
+        return ResponseEntity.ok("Profile updated successfully");
     }
 
     @DeleteMapping("/profile")
-    public String deleteProfile(@RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<String> deleteProfile(@RequestHeader("Authorization") String authHeader) {
 
-        if (authHeader == null || !authHeader.startsWith("Bearer "))
-            throw new RuntimeException("Missing or invalid Authorization header");
+        ResponseEntity<String> validationResponse = validateAuthorizationHeader(authHeader);
+        if (validationResponse != null) return validationResponse;
 
-        String token = authHeader.substring(7);
+        String token = extractToken(authHeader);
         authService.deleteProfile(token);
-        return "Profile deleted successfully";
+        return ResponseEntity.ok("Profile deleted successfully");
+    }
+
+    private ResponseEntity<String> validateAuthorizationHeader(String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Missing or invalid Authorization header");
+        }
+        return null;
+    }
+
+    private String extractToken(String authHeader) {
+        return authHeader.substring(7);
     }
 }

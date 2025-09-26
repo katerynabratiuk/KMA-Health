@@ -1,6 +1,7 @@
 package kma.health.app.kma_health.entity;
 
 import jakarta.persistence.*;
+import kma.health.app.kma_health.enums.UserRole;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,7 +16,7 @@ import java.util.Set;
 @Setter
 @Entity
 @Table(name = "patient")
-public class Patient {
+public class Patient implements AuthUser {
     @Id
     @Column(name = "passport_number")
     private String passportNumber;
@@ -40,4 +41,9 @@ public class Patient {
 
     @OneToMany(mappedBy = "patient")
     private Set<MedicalFile> medicalFiles;
+
+    @Override
+    public UserRole getRole() {
+        return UserRole.PATIENT;
+    }
 }

@@ -1,9 +1,23 @@
 package kma.health.app.kma_health.dto;
 
-import jakarta.validation.constraints.NotBlank;
+import kma.health.app.kma_health.enums.UserRole;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-public record LoginRequest(
-        @NotBlank String login,       // email / phone / passport
-        @NotBlank String password,
-        @NotBlank String role         // "patient" or "doctor"
-) {}
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class LoginRequest {
+
+    public enum LoginMethod {
+        EMAIL,
+        PHONE,
+        PASSPORT
+    }
+
+    private UserRole role;
+    private LoginMethod method;
+    private String identifier;
+    private String password;
+}
