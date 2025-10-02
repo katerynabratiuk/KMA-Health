@@ -24,7 +24,7 @@ public class Hospital {
     private String address;
     private BigDecimal latitude;
     private BigDecimal longitude;
-    private BigDecimal rating;
+    private String city;
 
     @OneToMany(mappedBy = "hospital")
     private Set<HospitalExamination> hospitalExaminations;

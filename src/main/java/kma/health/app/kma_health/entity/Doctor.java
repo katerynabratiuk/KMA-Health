@@ -57,9 +57,6 @@ public class Doctor implements AuthUser {
     @OneToMany(mappedBy = "doctor")
     private Set<Appointment> appointments;
 
-    @OneToMany(mappedBy = "doctor")
-    private Set<Feedback> feedbacks;
-
     @Override
     public UserRole getRole() {
         return UserRole.DOCTOR;
