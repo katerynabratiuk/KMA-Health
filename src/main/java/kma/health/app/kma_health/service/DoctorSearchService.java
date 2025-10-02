@@ -22,6 +22,11 @@ public class DoctorSearchService {
     @Autowired
     private RatingService ratingService;
 
+    @Autowired
+    public void setRatingService(RatingService ratingService) {
+        this.ratingService = ratingService;
+    }
+
     public List<Doctor> searchDoctors(DoctorSearchDto dto, double userLat, double userLon) {
         var cb = em.getCriteriaBuilder();
         var cq = cb.createQuery(Doctor.class);
