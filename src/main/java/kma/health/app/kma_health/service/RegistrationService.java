@@ -6,6 +6,7 @@ import kma.health.app.kma_health.enums.UserRole;
 import kma.health.app.kma_health.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -17,6 +18,7 @@ public class RegistrationService {
     private final LabAssistantRepository labAssistantRepository;
     private final DoctorTypeRepository doctorTypeRepository;
     private final HospitalRepository hospitalRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Value("${REGISTER_KEY}")
     private String registerKey;
@@ -27,7 +29,7 @@ public class RegistrationService {
                 Patient patient = new Patient();
                 patient.setPassportNumber(request.getPassportNumber());
                 patient.setEmail(request.getEmail());
-                patient.setPassword(request.getPassword());
+                patient.setPassword(passwordEncoder.encode(request.getPassword()));
                 patient.setPhoneNumber(request.getPhoneNumber());
                 patient.setFullName(request.getFullName());
                 patient.setBirthDate(request.getBirthDate());
@@ -41,7 +43,7 @@ public class RegistrationService {
                     Doctor doctor = new Doctor();
                     doctor.setPassportNumber(request.getPassportNumber());
                     doctor.setEmail(request.getEmail());
-                    doctor.setPassword(request.getPassword());
+                    doctor.setPassword(passwordEncoder.encode(request.getPassword()));
                     doctor.setPhoneNumber(request.getPhoneNumber());
                     doctor.setFullName(request.getFullName());
                     doctor.setBirthDate(request.getBirthDate());
@@ -60,7 +62,7 @@ public class RegistrationService {
                     LabAssistant labAssistant = new LabAssistant();
                     labAssistant.setPassportNumber(request.getPassportNumber());
                     labAssistant.setEmail(request.getEmail());
-                    labAssistant.setPassword(request.getPassword());
+                    labAssistant.setPassword(passwordEncoder.encode(request.getPassword()));
                     labAssistant.setPhoneNumber(request.getPhoneNumber());
                     labAssistant.setFullName(request.getFullName());
                     labAssistant.setHospital(
