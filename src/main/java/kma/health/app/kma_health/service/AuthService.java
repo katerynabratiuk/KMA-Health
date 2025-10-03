@@ -4,6 +4,8 @@ import kma.health.app.kma_health.entity.AuthUser;
 import kma.health.app.kma_health.enums.UserRole;
 import kma.health.app.kma_health.repository.AuthUserRepository;
 import kma.health.app.kma_health.security.JwtUtils;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -96,6 +98,18 @@ public class AuthService {
                 .orElseThrow(() -> new RuntimeException(role + " not found"));
 
         repo.delete(user);
+    }
+
+    public ResponseEntity<String> validateAuthorizationHeader(String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Missing or invalid Authorization header");
+        }
+        return null;
+    }
+
+    public String extractToken(String authHeader) {
+        return authHeader.substring(7);
     }
 }
 

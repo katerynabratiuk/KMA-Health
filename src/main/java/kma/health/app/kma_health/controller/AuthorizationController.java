@@ -5,7 +5,6 @@ import kma.health.app.kma_health.dto.RegisterRequest;
 import kma.health.app.kma_health.service.AuthService;
 import kma.health.app.kma_health.service.RegistrationService;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,10 +40,10 @@ public class AuthorizationController {
     public ResponseEntity<String> updateProfile(@RequestHeader("Authorization") String authHeader,
                                                 @RequestBody Map<String, String> updates) {
 
-        ResponseEntity<String> validationResponse = validateAuthorizationHeader(authHeader);
+        ResponseEntity<String> validationResponse = authService.validateAuthorizationHeader(authHeader);
         if (validationResponse != null) return validationResponse;
 
-        String token = extractToken(authHeader);
+        String token = authService.extractToken(authHeader);
         authService.updateProfile(token, updates);
         return ResponseEntity.ok("Profile updated successfully");
     }
@@ -52,23 +51,11 @@ public class AuthorizationController {
     @DeleteMapping("/profile")
     public ResponseEntity<String> deleteProfile(@RequestHeader("Authorization") String authHeader) {
 
-        ResponseEntity<String> validationResponse = validateAuthorizationHeader(authHeader);
+        ResponseEntity<String> validationResponse = authService.validateAuthorizationHeader(authHeader);
         if (validationResponse != null) return validationResponse;
 
-        String token = extractToken(authHeader);
+        String token = authService.extractToken(authHeader);
         authService.deleteProfile(token);
         return ResponseEntity.ok("Profile deleted successfully");
-    }
-
-    private ResponseEntity<String> validateAuthorizationHeader(String authHeader) {
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("Missing or invalid Authorization header");
-        }
-        return null;
-    }
-
-    private String extractToken(String authHeader) {
-        return authHeader.substring(7);
     }
 }

@@ -86,9 +86,9 @@ public class DoctorSearchService {
             Hospital h2 = d2.getHospital();
 
             double dDist1 = distanceInKm(userLat, userLon,
-                    h1.getLatitude().doubleValue(), h1.getLongitude().doubleValue());
+                    h1.getLatitude(), h1.getLongitude());
             double dDist2 = distanceInKm(userLat, userLon,
-                    h2.getLatitude().doubleValue(), h2.getLongitude().doubleValue());
+                    h2.getLatitude(), h2.getLongitude());
 
             return "asc".equalsIgnoreCase(direction)
                     ? Double.compare(dDist1, dDist2)

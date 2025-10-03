@@ -1,6 +1,7 @@
 package kma.health.app.kma_health.service;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import kma.health.app.kma_health.exceptions.CoordinatesNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -33,7 +34,7 @@ public class HospitalGeocodingService {
             double lon = Double.parseDouble(response[0].getLon());
             return new Coordinates(lat, lon);
         } else {
-            throw new IllegalArgumentException("Couldn't get coordinates for address: " + address);
+            throw new CoordinatesNotFoundException("Couldn't get coordinates for address: " + address);
         }
     }
 

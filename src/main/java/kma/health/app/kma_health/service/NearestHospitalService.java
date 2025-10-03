@@ -33,8 +33,8 @@ public class NearestHospitalService {
         }
 
         hospitals.sort((h1, h2) -> {
-            double d1 = distanceInKm(userLat, userLon, h1.getLatitude().doubleValue(), h1.getLongitude().doubleValue());
-            double d2 = distanceInKm(userLat, userLon, h2.getLatitude().doubleValue(), h2.getLongitude().doubleValue());
+            double d1 = distanceInKm(userLat, userLon, h1.getLatitude(), h1.getLongitude());
+            double d2 = distanceInKm(userLat, userLon, h2.getLatitude(), h2.getLongitude());
             return Double.compare(d1, d2);
         });
 
