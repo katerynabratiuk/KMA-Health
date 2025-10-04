@@ -3,6 +3,7 @@ package kma.health.app.kma_health.service;
 import kma.health.app.kma_health.dto.AppointmentFullViewDto;
 import kma.health.app.kma_health.dto.AppointmentShortViewDto;
 import kma.health.app.kma_health.entity.Appointment;
+import kma.health.app.kma_health.exception.AppointmentNotFoundException;
 import kma.health.app.kma_health.repository.AppointmentRepository;
 import org.springframework.stereotype.Service;
 
@@ -29,11 +30,12 @@ public class AppointmentService {
         return res;
     }
 
-    public AppointmentFullViewDto getFullAppointment(UUID id)
-    {
-        Appointment appointment = appointmentRepository.getReferenceById(id);
-        return new AppointmentFullViewDto(appointment);
+    public AppointmentFullViewDto getFullAppointment(UUID id) {
+        return appointmentRepository.findById(id)
+                .map(AppointmentFullViewDto::new)
+                .orElseThrow(() -> new AppointmentNotFoundException("Appointment is not found."));
     }
+
 
 
 }
