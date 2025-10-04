@@ -3,7 +3,7 @@ package kma.health.app.kma_health.service;
 import kma.health.app.kma_health.dto.EditHospitalRequest;
 import kma.health.app.kma_health.dto.HospitalDto;
 import kma.health.app.kma_health.entity.Hospital;
-import kma.health.app.kma_health.exceptions.CoordinatesNotFoundException;
+import kma.health.app.kma_health.exception.CoordinatesNotFoundException;
 import kma.health.app.kma_health.repository.HospitalRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;

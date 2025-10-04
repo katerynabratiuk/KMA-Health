@@ -111,5 +111,17 @@ public class AuthService {
     public String extractToken(String authHeader) {
         return authHeader.substring(7);
     }
+
+    public AuthUser getUserFromToken(String token) {
+        UserRole role = jwtUtils.getRoleFromToken(token);
+        String passportNumber = jwtUtils.getSubjectFromToken(token);
+
+        return switch (role) {
+            case UserRole.PATIENT -> repositories.get(UserRole.PATIENT).getReferenceById(passportNumber);
+            case UserRole.DOCTOR -> repositories.get(UserRole.DOCTOR).getReferenceById(passportNumber);
+            default -> throw new RuntimeException("Something");
+        };
+
+    }
 }
 

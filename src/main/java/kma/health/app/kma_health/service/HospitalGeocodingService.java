@@ -1,7 +1,7 @@
 package kma.health.app.kma_health.service;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import kma.health.app.kma_health.exceptions.CoordinatesNotFoundException;
+import kma.health.app.kma_health.exception.CoordinatesNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
