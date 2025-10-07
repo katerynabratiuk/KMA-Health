@@ -50,7 +50,7 @@ public class AppointmentService {
     }
 
     public void createAppointment(AppointmentFullViewDto appointmentDto) {
-        validateDoctorAndPatientAge(appointmentDto);
+        validateDoctorAndPatientAge(appointmentDto.getDoctorId(), appointmentDto.getPatientId());
         validateAppointmentTarget(appointmentDto);
 
         Appointment appointment = buildAppointment(appointmentDto);
@@ -83,14 +83,14 @@ public class AppointmentService {
         return appointment;
     }
 
-    private void validateDoctorAndPatientAge(AppointmentFullViewDto appointmentDto) {
-        LocalDate patientBirthDate = patientRepository.findById(appointmentDto.getPatientId())
+    public void validateDoctorAndPatientAge(UUID doctorID, UUID patientID) {
+        LocalDate patientBirthDate = patientRepository.findById(patientID)
                 .orElseThrow(() -> new EntityNotFoundException("Patient not found"))
                 .getBirthDate();
 
         int patientAge = LocalDate.now().getYear() - patientBirthDate.getYear();
 
-        String doctorType = doctorRepository.findById(appointmentDto.getDoctorId())
+        String doctorType = doctorRepository.findById(doctorID)
                 .orElseThrow(() -> new EntityNotFoundException("Doctor not found"))
                 .getType();
 
