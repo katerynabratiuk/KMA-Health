@@ -25,7 +25,7 @@ public class Appointment {
     private LocalTime time;
 
     @ManyToOne
-    @JoinColumn(name = "doctor_passport")
+    @JoinColumn(name = "doctor_id")
     private Doctor doctor;
 
     @ManyToOne

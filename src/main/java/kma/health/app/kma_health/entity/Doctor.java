@@ -13,6 +13,7 @@ import jakarta.validation.constraints.Pattern;
 
 import java.time.LocalDate;
 import java.util.Set;
+import java.util.UUID;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -22,6 +23,9 @@ import java.util.Set;
 @Table(name = "doctor")
 public class Doctor implements AuthUser {
     @Id
+    @Column(name = "doctor_id")
+    private UUID id;
+
     @Column(name = "passport_number")
     @Size(min=9, max=9)
     private String passportNumber;

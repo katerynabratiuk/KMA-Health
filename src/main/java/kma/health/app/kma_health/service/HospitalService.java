@@ -8,10 +8,13 @@ import kma.health.app.kma_health.repository.HospitalRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalTime;
+
 @Service
 @AllArgsConstructor
 public class HospitalService {
 
+    public static final LocalTime EXAMINATION_TIME = LocalTime.of(8, 0);
     private final HospitalRepository hospitalRepository;
     private final HospitalGeocodingService hospitalGeocodingService;
 

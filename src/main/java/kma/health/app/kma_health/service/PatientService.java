@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @AllArgsConstructor
@@ -18,7 +19,7 @@ public class PatientService{
     private final AppointmentRepository appointmentRepository;
 
 
-    public Patient getPatientById(String id) {
+    public Patient getPatientById(UUID id) {
         return patientRepository.getReferenceById(id);
     }
 

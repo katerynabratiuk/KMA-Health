@@ -24,7 +24,9 @@ public class AppointmentFullViewDto {
     private LocalTime time;
 
     private String doctorName;
-    private String doctorId;
+    private UUID doctorId;
+
+    private UUID patientId;
 
     private String diagnosis;
 
@@ -40,7 +42,8 @@ public class AppointmentFullViewDto {
         this.id = appointment.getId();
         this.date = appointment.getDate();
         this.time = appointment.getTime();
-        this.doctorId = appointment.getDoctor().getPassportNumber();
+        this.doctorId = appointment.getDoctor().getId();
+        this.patientId = appointment.getReferral().getPatient().getId();
         this.doctorName = appointment.getDoctor().getFullName();
         this.diagnosis = appointment.getDiagnosis();
         this.hospitalId = appointment.getDoctor().getHospital().getId();

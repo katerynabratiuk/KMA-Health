@@ -1,6 +1,7 @@
 package kma.health.app.kma_health.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import kma.health.app.kma_health.enums.UserRole;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -8,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.Set;
+import java.util.UUID;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -17,7 +19,11 @@ import java.util.Set;
 @Table(name = "lab_assistant")
 public class LabAssistant implements AuthUser {
     @Id
+    @Column(name = "lab_assistant_id")
+    private UUID id;
+
     @Column(name = "passport_number")
+    @Size(min=9, max=9)
     private String passportNumber;
 
     @Column(name = "full_name")

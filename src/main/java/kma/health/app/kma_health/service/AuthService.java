@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Function;
 
 @Service
@@ -68,8 +69,8 @@ public class AuthService {
         UserRole role = jwtUtils.getRoleFromToken(token);
         AuthUserRepository<T> repo = (AuthUserRepository<T>) getRepositoryByRole(role);
 
-        String subject = jwtUtils.getSubjectFromToken(token);
-        T user = repo.findByPassportNumber(subject)
+        UUID subject = jwtUtils.getSubjectFromToken(token);
+        T user = repo.findById(subject)
                 .orElseThrow(() -> new RuntimeException(role + " not found"));
 
         applyUpdates(user, updates);
@@ -90,11 +91,11 @@ public class AuthService {
 
     @SuppressWarnings("unchecked")
     public <T extends AuthUser> void deleteProfile(String token) {
-        String subject = jwtUtils.getSubjectFromToken(token);
+        UUID subject = jwtUtils.getSubjectFromToken(token);
         UserRole role = jwtUtils.getRoleFromToken(token);
 
         AuthUserRepository<T> repo = (AuthUserRepository<T>) getRepositoryByRole(role);
-        T user = repo.findByPassportNumber(subject)
+        T user = repo.findById(subject)
                 .orElseThrow(() -> new RuntimeException(role + " not found"));
 
         repo.delete(user);
@@ -114,14 +115,13 @@ public class AuthService {
 
     public AuthUser getUserFromToken(String token) {
         UserRole role = jwtUtils.getRoleFromToken(token);
-        String passportNumber = jwtUtils.getSubjectFromToken(token);
+        UUID id = jwtUtils.getSubjectFromToken(token);
 
         return switch (role) {
-            case UserRole.PATIENT -> repositories.get(UserRole.PATIENT).getReferenceById(passportNumber);
-            case UserRole.DOCTOR -> repositories.get(UserRole.DOCTOR).getReferenceById(passportNumber);
-            default -> throw new RuntimeException("Something");
+            case UserRole.PATIENT -> repositories.get(UserRole.PATIENT).getReferenceById(id);
+            case UserRole.DOCTOR -> repositories.get(UserRole.DOCTOR).getReferenceById(id);
+            default -> throw new RuntimeException("Couldn't find " + role);
         };
-
     }
 }
 

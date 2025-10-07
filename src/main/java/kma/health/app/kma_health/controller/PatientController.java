@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.UUID;
+
 @RestController
 @AllArgsConstructor
 public class PatientController {
@@ -18,7 +20,7 @@ public class PatientController {
     @GetMapping("/profile")
     public PatientDto getProfile(@RequestHeader("Authorization") String authHeader) {
         String token = authService.extractToken(authHeader);
-        String id = authService.getUserFromToken(token).getPassportNumber();
+        UUID id = authService.getUserFromToken(token).getId();
         return new PatientDto(patientService.getPatientById(id));
     }
 

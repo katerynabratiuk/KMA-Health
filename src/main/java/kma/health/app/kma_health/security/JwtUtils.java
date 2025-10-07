@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.UUID;
 
 @Component
 public class JwtUtils {
@@ -32,12 +33,13 @@ public class JwtUtils {
         return generateToken(user.getPassportNumber(), user.getRole());
     }
 
-    public String getSubjectFromToken(String token) {
-        return Jwts.parser()
+    public UUID getSubjectFromToken(String token) {
+        String subject = Jwts.parser()
                 .setSigningKey(jwtSecret.getBytes(StandardCharsets.UTF_8))
                 .parseClaimsJws(token)
                 .getBody()
                 .getSubject();
+        return UUID.fromString(subject);
     }
 
     public UserRole getRoleFromToken(String token) {
