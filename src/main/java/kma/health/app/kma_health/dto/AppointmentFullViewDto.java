@@ -1,7 +1,6 @@
 package kma.health.app.kma_health.dto;
 
 import kma.health.app.kma_health.entity.Appointment;
-import kma.health.app.kma_health.entity.MedicalFile;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,7 +8,6 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.ArrayList;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;

@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.UUID;
 import java.util.Set;
 
 @AllArgsConstructor
@@ -21,6 +20,8 @@ public class Examination {
 
     @Column(name = "exam_name")
     private String examName;
+
+    private String unit;
 
     @OneToMany(mappedBy = "examination")
     private Set<HospitalExamination> hospitalExaminations;

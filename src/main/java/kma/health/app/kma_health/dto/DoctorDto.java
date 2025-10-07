@@ -18,8 +18,8 @@ public class DoctorDto {
         this.passportNumber = doctor.getPassportNumber();
         this.fullName = doctor.getFullName();
         this.phoneNumber = doctor.getPhoneNumber();
-        this.email = email;
-        this.type = type;
-        this.doctorType = doctorType;
+        this.email = doctor.getEmail();
+        this.type = doctor.getType();
+        this.doctorType = doctor.getDoctorType().getTypeName();
     }
 }
