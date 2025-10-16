@@ -1,6 +1,7 @@
 package kma.health.app.kma_health.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Size;
 import kma.health.app.kma_health.enums.UserRole;
 import lombok.AllArgsConstructor;
@@ -21,6 +22,7 @@ import java.util.UUID;
 public class Patient implements AuthUser {
     @Id
     @Column(name = "patient_id")
+    @GeneratedValue
     private UUID id;
 
     @Column(name = "passport_number")
@@ -34,6 +36,7 @@ public class Patient implements AuthUser {
     @Column(name = "full_name")
     private String fullName;
 
+    @PastOrPresent
     private LocalDate birthDate;
 
     @OneToMany(mappedBy = "patient")

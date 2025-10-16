@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <property name="LOG_HOME" value="logs"/>
+<!--    <turboFilter class="ch.qos.logback.classic.turbo.MarkerFilter">-->
+<!--        <marker>SECURITY</marker>-->
+<!--        <onMatch>ACCEPT</onMatch>-->
+<!--        <onMismatch>DENY</onMismatch>-->
+<!--    </turboFilter>-->
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>
+                %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%marker] [%X{userRole}] [%X{userId}] [%X{email}] [%X{status}] [%X{reason}] %logger{36} - %msg%n
+            </Pattern>
+        </layout>
+    </appender>
+
+    <appender name="STANDARD_FILE" class="ch.qos.logback.core.FileAppender">
+        <file>${LOG_HOME}/application.log</file>
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>
+                %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%marker] [%X{userRole}] [%X{userId}] [%X{email}] [%X{status}] [%X{reason}] %logger{36} - %msg%n
+            </Pattern>
+        </layout>
+    </appender>
+
+    <appender name="SECURITY_FILE" class="kma.health.app.kma_health.logging.CustomFileAppender">
+        <file>${LOG_HOME}/security.log</file>
+
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>WARN</level>
+        </filter>
+
+        <layout class="kma.health.app.kma_health.logging.CustomLogLayout"/>
+
+    </appender>
+
+    <root level="info">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="STANDARD_FILE"/>
+        <appender-ref ref="SECURITY_FILE"/>
+    </root>
+</configuration>

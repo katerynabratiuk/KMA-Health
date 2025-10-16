@@ -24,6 +24,7 @@ import java.util.UUID;
 public class Doctor implements AuthUser {
     @Id
     @Column(name = "doctor_id")
+    @GeneratedValue
     private UUID id;
 
     @Column(name = "passport_number")

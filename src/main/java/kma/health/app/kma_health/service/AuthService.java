@@ -4,6 +4,7 @@ import kma.health.app.kma_health.entity.AuthUser;
 import kma.health.app.kma_health.enums.UserRole;
 import kma.health.app.kma_health.repository.AuthUserRepository;
 import kma.health.app.kma_health.security.JwtUtils;
+import org.slf4j.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,6 +21,8 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
     private final Map<UserRole, AuthUserRepository<? extends AuthUser>> repositories;
+    private static final Logger log = LoggerFactory.getLogger(AuthService.class);
+    private static final Marker SECURITY = MarkerFactory.getMarker("SECURITY");
 
     public AuthService(
             Map<UserRole, AuthUserRepository<? extends AuthUser>> repositories,
@@ -39,17 +42,40 @@ public class AuthService {
     private String login(Function<AuthUserRepository<?>, Optional<? extends AuthUser>> finder,
                          String password,
                          UserRole role) {
-
         AuthUserRepository<? extends AuthUser> repo = getRepositoryByRole(role);
+        MDC.put("userRole", role.toString());
 
-        AuthUser user = finder.apply(repo)
-                .orElseThrow(() -> new RuntimeException(role + " not found"));
+        try {
+            AuthUser user = finder.apply(repo)
+                    .orElseThrow(() -> {
+                        MDC.put("status", "FAILED");
+                        MDC.put("reason", "User not found");
+                        log.warn(SECURITY, "Failed login: user with role {} not found", role);
+                        return new RuntimeException(role + " not found");
+                    });
 
-        if (!passwordEncoder.matches(password, user.getPassword())) {
-            throw new RuntimeException("Invalid credentials");
+            MDC.put("userId", String.valueOf(user.getId()));
+
+            if (!passwordEncoder.matches(password, user.getPassword())) {
+                MDC.put("status", "FAILED");
+                MDC.put("reason", "Invalid password");
+                log.warn(SECURITY, "Failed login attempt for user ID: {} (Role: {}). Invalid password.", user.getId(), role);
+                throw new RuntimeException("Invalid credentials");
+            }
+
+            MDC.put("status", "SUCCESS");
+            log.info(SECURITY, "Successful login for user ID: {} (Role: {}).", user.getId(), role);
+            return jwtUtils.generateToken(user);
+
+        } catch (RuntimeException e) {
+            if (!MDC.getCopyOfContextMap().containsKey("status")) {
+                MDC.put("status", "FAILED");
+                MDC.put("reason", e.getMessage());
+            }
+            throw e;
+        } finally {
+            MDC.clear();
         }
-
-        return jwtUtils.generateToken(user);
     }
 
     public String loginByEmail(String email, String password, UserRole role) {

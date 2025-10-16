@@ -1,6 +1,7 @@
 package kma.health.app.kma_health.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Size;
 import kma.health.app.kma_health.enums.UserRole;
 import lombok.AllArgsConstructor;
@@ -8,6 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.util.Set;
 import java.util.UUID;
 
@@ -20,6 +22,7 @@ import java.util.UUID;
 public class LabAssistant implements AuthUser {
     @Id
     @Column(name = "lab_assistant_id")
+    @GeneratedValue
     private UUID id;
 
     @Column(name = "passport_number")
@@ -32,6 +35,9 @@ public class LabAssistant implements AuthUser {
     private String email;
     private String password;
     private String phoneNumber;
+
+    @PastOrPresent
+    private LocalDate birthDate;
 
     @ManyToOne
     @JoinColumn(name = "hospital_id")

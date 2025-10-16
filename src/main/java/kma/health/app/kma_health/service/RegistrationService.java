@@ -5,6 +5,7 @@ import kma.health.app.kma_health.entity.*;
 import kma.health.app.kma_health.enums.UserRole;
 import kma.health.app.kma_health.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -23,58 +24,81 @@ public class RegistrationService {
     @Value("${REGISTER_KEY}")
     private String registerKey;
 
-    public String register(RegisterRequest request) {
-        switch (request.getRole()) {
-            case PATIENT -> {
-                Patient patient = new Patient();
-                patient.setPassportNumber(request.getPassportNumber());
-                patient.setEmail(request.getEmail());
-                patient.setPassword(passwordEncoder.encode(request.getPassword()));
-                patient.setPhoneNumber(request.getPhoneNumber());
-                patient.setFullName(request.getFullName());
-                patient.setBirthDate(request.getBirthDate());
-                patientRepository.save(patient);
-                return "Patient registered successfully";
-            }
-            case DOCTOR, LAB_ASSISTANT -> {
-                validateRegisterKey(request.getRegisterKey());
+    private static final Logger log = LoggerFactory.getLogger(RegistrationService.class);
+    private static final Marker SECURITY = MarkerFactory.getMarker("SECURITY");
 
-                if (request.getRole() == UserRole.DOCTOR) {
-                    Doctor doctor = new Doctor();
-                    doctor.setPassportNumber(request.getPassportNumber());
-                    doctor.setEmail(request.getEmail());
-                    doctor.setPassword(passwordEncoder.encode(request.getPassword()));
-                    doctor.setPhoneNumber(request.getPhoneNumber());
-                    doctor.setFullName(request.getFullName());
-                    doctor.setBirthDate(request.getBirthDate());
-                    doctor.setType(request.getType());
-                    doctor.setDoctorType(
-                            doctorTypeRepository.findById(request.getDoctorTypeId())
-                                    .orElseThrow(() -> new RuntimeException("Doctor type not found"))
-                    );
-                    doctor.setHospital(
-                            hospitalRepository.findById(request.getHospitalId())
-                                    .orElseThrow(() -> new RuntimeException("Hospital not found"))
-                    );
-                    doctorRepository.save(doctor);
-                    return "Doctor registered successfully";
-                } else {
-                    LabAssistant labAssistant = new LabAssistant();
-                    labAssistant.setPassportNumber(request.getPassportNumber());
-                    labAssistant.setEmail(request.getEmail());
-                    labAssistant.setPassword(passwordEncoder.encode(request.getPassword()));
-                    labAssistant.setPhoneNumber(request.getPhoneNumber());
-                    labAssistant.setFullName(request.getFullName());
-                    labAssistant.setHospital(
-                            hospitalRepository.findById(request.getLabHospitalId())
-                                    .orElseThrow(() -> new RuntimeException("Hospital not found"))
-                    );
-                    labAssistantRepository.save(labAssistant);
-                    return "Lab Assistant registered successfully";
+    public String register(RegisterRequest request) {
+        MDC.put("userRole", request.getRole().toString());
+        MDC.put("email", request.getEmail());
+
+        try {
+            switch (request.getRole()) {
+                case PATIENT -> {
+                    Patient patient = new Patient();
+                    fillCommonFields(patient, request);
+                    patientRepository.save(patient);
+                    MDC.put("userId", String.valueOf(patient.getId()));
+                    MDC.put("status", "SUCCESS");
+                    log.info("Patient registered successfully");
+                    return "Patient registered successfully";
                 }
+                case DOCTOR, LAB_ASSISTANT -> {
+                    validateRegisterKey(request.getRegisterKey());
+
+                    if (request.getRole() == UserRole.DOCTOR) {
+                        Doctor doctor = new Doctor();
+                        fillCommonFields(doctor, request);
+                        doctor.setType(request.getType());
+                        doctor.setDoctorType(
+                                doctorTypeRepository.findById(request.getDoctorTypeId())
+                                        .orElseThrow(() -> new RuntimeException("Doctor type not found"))
+                        );
+                        doctor.setHospital(
+                                hospitalRepository.findById(request.getHospitalId())
+                                        .orElseThrow(() -> new RuntimeException("Hospital not found"))
+                        );
+                        doctorRepository.save(doctor);
+                        MDC.put("userId", String.valueOf(doctor.getId()));
+                        MDC.put("status", "SUCCESS");
+                        log.info("Doctor registered successfully");
+                        return "Doctor registered successfully";
+                    } else {
+                        LabAssistant labAssistant = new LabAssistant();
+                        fillCommonFields(labAssistant, request);
+                        labAssistant.setHospital(
+                                hospitalRepository.findById(request.getLabHospitalId())
+                                        .orElseThrow(() -> new RuntimeException("Hospital not found"))
+                        );
+                        labAssistantRepository.save(labAssistant);
+                        MDC.put("userId", String.valueOf(labAssistant.getId()));
+                        MDC.put("status", "SUCCESS");
+                        log.info("Lab Assistant registered successfully");
+                        return "Lab Assistant registered successfully";
+                    }
+                }
+                default -> throw new IllegalArgumentException("Unsupported role");
             }
-            default -> throw new IllegalArgumentException("Unsupported role");
+        } catch (RuntimeException e) {
+            MDC.put("status", "FAILED");
+            MDC.put("reason", e.getMessage());
+            if (e.getMessage().contains("Invalid register key")) {
+                log.warn(SECURITY, "Registration failed for email {} (role {}). Reason: invalid key.", request.getEmail(), request.getRole());
+            } else {
+                log.warn("Registration failed for email {} (role {}). Reason: {}", request.getEmail(), request.getRole(), e.getMessage());
+            }
+            throw e;
+        } finally {
+            MDC.clear();
         }
+    }
+
+    private void fillCommonFields(AuthUser user, RegisterRequest request) {
+        user.setPassportNumber(request.getPassportNumber());
+        user.setEmail(request.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setPhoneNumber(request.getPhoneNumber());
+        user.setFullName(request.getFullName());
+        user.setBirthDate(request.getBirthDate());
     }
 
     private void validateRegisterKey(String providedKey) {
@@ -83,3 +107,4 @@ public class RegistrationService {
         }
     }
 }
+
