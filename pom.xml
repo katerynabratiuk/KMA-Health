@@ -102,6 +102,11 @@
 			<artifactId>poi-ooxml</artifactId>
 			<version>5.2.5</version>
 		</dependency>
+		<dependency>
+			<groupId>kma.health.app</groupId>
+			<artifactId>kma-health-security-starter</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
 	</dependencies>
 
 	<build>

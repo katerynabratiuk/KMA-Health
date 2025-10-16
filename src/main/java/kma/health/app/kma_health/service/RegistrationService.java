@@ -4,9 +4,9 @@ import kma.health.app.kma_health.dto.RegisterRequest;
 import kma.health.app.kma_health.entity.*;
 import kma.health.app.kma_health.enums.UserRole;
 import kma.health.app.kma_health.repository.*;
+import kma.health.app.starter.service.SecretKeyProvider;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.*;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -21,11 +21,9 @@ public class RegistrationService {
     private final HospitalRepository hospitalRepository;
     private final PasswordEncoder passwordEncoder;
 
-    @Value("${REGISTER_KEY}")
-    private String registerKey;
-
     private static final Logger log = LoggerFactory.getLogger(RegistrationService.class);
     private static final Marker SECURITY = MarkerFactory.getMarker("SECURITY");
+    private final SecretKeyProvider keyProvider;
 
     public String register(RegisterRequest request) {
         MDC.put("userRole", request.getRole().toString());
@@ -102,9 +100,9 @@ public class RegistrationService {
     }
 
     private void validateRegisterKey(String providedKey) {
-        if (providedKey == null || !providedKey.equals(registerKey)) {
+        String expectedKey = keyProvider.getRegistrationKey();
+        if (providedKey == null || !providedKey.equals(expectedKey))
             throw new RuntimeException("Invalid register key");
-        }
     }
 }
 
