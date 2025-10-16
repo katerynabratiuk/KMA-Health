@@ -6,9 +6,13 @@ import kma.health.app.kma_health.entity.Hospital;
 import kma.health.app.kma_health.exception.CoordinatesNotFoundException;
 import kma.health.app.kma_health.repository.HospitalRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalTime;
+import java.util.List;
 
 @Service
 @AllArgsConstructor
@@ -57,4 +61,25 @@ public class HospitalService {
         if (hospital == null) throw new IllegalArgumentException("Hospital not found");
         hospitalRepository.delete(hospital);
     }
+
+    public List<HospitalDto> searchHospitals(String name, Integer pageSize, Integer pageNum) {
+        int page = (pageNum != null && pageNum >= 0) ? pageNum : 0;
+        int size = (pageSize != null && pageSize > 0) ? pageSize : 20;
+
+        Specification<Hospital> spec = (root, q, cb) -> cb.conjunction();
+
+        if (name != null && !name.isBlank()) {
+            String like = "%" + name.trim().toLowerCase() + "%";
+            spec = spec.and((root, q, cb) -> cb.like(cb.lower(root.get("name")), like));
+        }
+
+        var pageable = PageRequest.of(page, size, Sort.by("name").ascending());
+
+        return hospitalRepository.findAll(spec, pageable)
+                .getContent()
+                .stream()
+                .map(HospitalDto::fromEntity)
+                .toList();
+    }
+
 }
