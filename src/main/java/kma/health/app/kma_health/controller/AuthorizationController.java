@@ -1,5 +1,6 @@
 package kma.health.app.kma_health.controller;
 
+import jakarta.validation.Valid;
 import kma.health.app.kma_health.dto.LoginRequest;
 import kma.health.app.kma_health.dto.RegisterRequest;
 import kma.health.app.kma_health.service.AuthService;
@@ -19,7 +20,7 @@ public class AuthorizationController {
     private final RegistrationService registrationService;
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<String> login(@Valid @RequestBody LoginRequest request) {
         String token;
         switch (request.getMethod()) {
             case EMAIL -> token = authService.loginByEmail(request.getIdentifier(), request.getPassword(), request.getRole());

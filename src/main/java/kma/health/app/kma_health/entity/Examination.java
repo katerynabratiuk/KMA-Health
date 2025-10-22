@@ -23,8 +23,8 @@ public class Examination {
 
     private String unit;
 
-    @OneToMany(mappedBy = "examination")
-    private Set<HospitalExamination> hospitalExaminations;
+    @ManyToMany(mappedBy = "examinations")
+    private Set<Hospital> hospitals;
 }
 
 

@@ -26,7 +26,13 @@ public class Hospital {
     private double longitude;
     private String city;
 
-    @OneToMany(mappedBy = "hospital")
-    private Set<HospitalExamination> hospitalExaminations;
+    @ManyToMany
+    @JoinTable(
+            name = "hospital_examination",
+            joinColumns = @JoinColumn(name = "hospital_id"),
+            inverseJoinColumns = @JoinColumn(name = "examination_id")
+    )
+    private Set<Examination> examinations;
 }
+
 
