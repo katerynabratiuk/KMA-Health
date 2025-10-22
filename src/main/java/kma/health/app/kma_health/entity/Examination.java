@@ -13,7 +13,9 @@ import java.util.Set;
 @Getter
 @Setter
 @Entity
-@Table(name = "examination")
+@Table(name = "examination", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"exam_name", "unit"})
+})
 public class Examination {
     @Id
     private Long id;
