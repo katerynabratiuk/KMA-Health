@@ -1,0 +1,792 @@
+{
+  "info": {
+    "_postman_id": "d06960ea-fe62-43cb-bc75-82088ffee31e",
+    "name": "KMA Health API",
+    "description": "REST API для системи управління здоров'ям KMA\n\nContact Support:\n Name: KMA Health Team\n Email: support@kmahealth.com",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "25913341"
+  },
+  "item": [
+    {
+      "name": "auth",
+      "item": [
+        {
+          "name": "register",
+          "item": [
+            {
+              "name": "register",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"User registered successfully with status 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "    const responseText = pm.response.text();",
+                      "    pm.expect(responseText).to.not.be.empty;",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"role\": \"PATIENT\",\n  \"passportNumber\": \"123456789\",\n  \"email\": \"example@com.hihi\",\n  \"password\": \"1234\",\n  \"phoneNumber\": \"+380501234567\",\n  \"fullName\": \"John Doe\",\n  \"birthDate\": \"1980-05-20\"\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/register",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "register"
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "OK",
+                  "originalRequest": {
+                    "method": "POST",
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      },
+                      {
+                        "key": "Accept",
+                        "value": "application/json"
+                      }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"role\": \"DOCTOR\",\n  \"passportNumber\": \"string\",\n  \"email\": \"string\",\n  \"password\": \"string\",\n  \"phoneNumber\": \"string\",\n  \"fullName\": \"string\",\n  \"birthDate\": \"2009-11-27\",\n  \"type\": \"string\",\n  \"doctorTypeId\": 7984,\n  \"hospitalId\": 7818,\n  \"labHospitalId\": 7278,\n  \"registerKey\": \"string\"\n}",
+                      "options": {
+                        "raw": {
+                          "headerFamily": "json",
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "{{baseUrl}}/auth/register",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "auth",
+                        "register"
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "string"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "login",
+          "item": [
+            {
+              "name": "login",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Valid JWT token received on successful login\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "    const token = pm.response.text();",
+                      "    ",
+                      "    const jwtRegex = /^eyJ[A-Za-z0-9-_]+\\.eyJ[A-Za-z0-9-_]+\\.[A-Za-z0-9-_]+$/;",
+                      "    pm.expect(token).to.match(jwtRegex);",
+                      "    ",
+                      "    pm.collectionVariables.set(\"jwt_token\", token);",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"role\": \"PATIENT\",\n  \"method\": \"PASSPORT\",\n  \"identifier\": \"123456789\",\n  \"password\": \"1234\"\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/login",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "OK",
+                  "originalRequest": {
+                    "method": "POST",
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      },
+                      {
+                        "key": "Accept",
+                        "value": "application/json"
+                      }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"identifier\": \"string\",\n  \"method\": \"PHONE\",\n  \"password\": \"stri\",\n  \"role\": \"LAB_ASSISTANT\"\n}",
+                      "options": {
+                        "raw": {
+                          "headerFamily": "json",
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "{{baseUrl}}/auth/login",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "auth",
+                        "login"
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "string"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "profile",
+          "item": [
+            {
+              "name": "delete Profile",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Profile deletion executed with proper authorization\", function () {",
+                      "    if (pm.request.headers.has(\"Authorization\")) {",
+                      "        pm.response.to.have.status(200);",
+                      "        pm.expect(pm.response.text()).to.include(\"deleted\");",
+                      "    }",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIyYmQ3Y2I1Ni1jZTY5LTQ1ZDgtYWYyZi01YTM1MzFhYzkwZjEiLCJyb2xlIjoiUEFUSUVOVCIsImlhdCI6MTc2MTIwNzY4NSwiZXhwIjoxNzYxMjk0MDg1fQ.Foz3N62fBU2MXVI2vBcAU4hnp6vyQQB3Rae-dpbAcGT4qSUZE4qv31zCMyXmSckAhET5eAWy__sUIVxDw330eQ",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/profile",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "profile"
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "OK",
+                  "originalRequest": {
+                    "method": "DELETE",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "application/json"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/auth/profile",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "auth",
+                        "profile"
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "string"
+                }
+              ]
+            },
+            {
+              "name": "update Profile",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Profile update requires valid authorization\", function () {",
+                      "    if (pm.request.headers.has(\"Authorization\")) {",
+                      "        pm.expect(pm.response.code).to.be.oneOf([200, 400]);",
+                      "    } else {",
+                      "        pm.expect(pm.response.code).to.be.oneOf([401, 403]);",
+                      "    }",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIyYmQ3Y2I1Ni1jZTY5LTQ1ZDgtYWYyZi01YTM1MzFhYzkwZjEiLCJyb2xlIjoiUEFUSUVOVCIsImlhdCI6MTc2MTIwNzY4NSwiZXhwIjoxNzYxMjk0MDg1fQ.Foz3N62fBU2MXVI2vBcAU4hnp6vyQQB3Rae-dpbAcGT4qSUZE4qv31zCMyXmSckAhET5eAWy__sUIVxDw330eQ",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"passport\": \"123456789\",\n    \"email\": \"example222@com.hihi\",\n    \"phoneNumber\": \"+380501234568\"\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/profile",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "profile"
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "OK",
+                  "originalRequest": {
+                    "method": "PATCH",
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      },
+                      {
+                        "key": "Accept",
+                        "value": "application/json"
+                      }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"key_0\": \"string\"\n}",
+                      "options": {
+                        "raw": {
+                          "headerFamily": "json",
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "{{baseUrl}}/auth/profile",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "auth",
+                        "profile"
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "string"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "profile",
+      "item": [
+        {
+          "name": "get Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Patient profile contains required fields from PatientDto\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const profile = pm.response.json();",
+                  "    ",
+                  "    pm.expect(profile).to.have.all.keys('passportNumber', 'email', 'phoneNumber', 'fullName', 'birthDate');",
+                  "    ",
+                  "    pm.expect(profile.passportNumber).to.have.lengthOf(9);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIyYmQ3Y2I1Ni1jZTY5LTQ1ZDgtYWYyZi01YTM1MzFhYzkwZjEiLCJyb2xlIjoiUEFUSUVOVCIsImlhdCI6MTc2MTIwNzY4NSwiZXhwIjoxNzYxMjk0MDg1fQ.Foz3N62fBU2MXVI2vBcAU4hnp6vyQQB3Rae-dpbAcGT4qSUZE4qv31zCMyXmSckAhET5eAWy__sUIVxDw330eQ",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "profile"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/profile",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "profile"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"passportNumber\": \"string\",\n  \"email\": \"string\",\n  \"phoneNumber\": \"string\",\n  \"fullName\": \"string\",\n  \"birthDate\": \"2019-10-12\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "appointments",
+      "item": [
+        {
+          "name": "{appointmentId}",
+          "item": [
+            {
+              "name": "get Appointment",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Appointment details contain full view data including medical files\", function () {",
+                      "    if (pm.response.code === 200) {",
+                      "        const appointment = pm.response.json();",
+                      "        ",
+                      "        pm.expect(appointment).to.have.property('id');",
+                      "        pm.expect(appointment).to.have.property('diagnosis');",
+                      "        pm.expect(appointment).to.have.property('medicalFiles');",
+                      "        pm.expect(appointment.medicalFiles).to.be.an('array');",
+                      "        ",
+                      "        if (appointment.medicalFiles.length > 0) {",
+                      "            const file = appointment.medicalFiles[0];",
+                      "            pm.expect(file).to.have.all.keys('id', 'fileType', 'name', 'extension', 'link');",
+                      "        }",
+                      "    }",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/appointments/:appointmentId",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "appointments",
+                    ":appointmentId"
+                  ],
+                  "variable": [
+                    {
+                      "key": "appointmentId",
+                      "value": "75efff47-42cf-1a85-1194-af2ce0021493"
+                    }
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "OK",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "application/json"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/appointments/:appointmentId",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "appointments",
+                        ":appointmentId"
+                      ],
+                      "variable": [
+                        {
+                          "key": "appointmentId"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"id\": \"062a7ac6-533e-039d-a6ca-0977347e0f8a\",\n  \"date\": \"1974-11-30\",\n  \"time\": \"string\",\n  \"doctorName\": \"string\",\n  \"doctorId\": \"43b35ae9-66ae-f488-1758-dd54d77164c9\",\n  \"patientId\": \"d9b29ec2-720e-cba8-c950-29ebc1901f52\",\n  \"diagnosis\": \"string\",\n  \"hospitalId\": 6121,\n  \"hospitalName\": \"string\",\n  \"referralId\": \"a7650e1c-9115-12b9-5993-a3ae98c6c7ce\",\n  \"medicalFiles\": [\n    {\n      \"id\": \"6eaa6823-c44b-dccd-9f21-6741e5a2c8e2\",\n      \"fileType\": \"string\",\n      \"name\": \"string\",\n      \"extension\": \"string\",\n      \"link\": \"string\"\n    },\n    {\n      \"id\": \"05553f75-1d00-de37-0435-7625e9165783\",\n      \"fileType\": \"string\",\n      \"name\": \"string\",\n      \"extension\": \"string\",\n      \"link\": \"string\"\n    }\n  ]\n}"
+                },
+                {
+                  "name": "Not Found",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "application/json"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/appointments/:appointmentId",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "appointments",
+                        ":appointmentId"
+                      ],
+                      "variable": [
+                        {
+                          "key": "appointmentId"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "Not Found",
+                  "code": 404,
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"statusCode\": 688,\n  \"message\": \"string\",\n  \"timestamp\": \"1960-01-03\"\n}"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "get Patient Appointments",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Appointments list matches AppointmentShortViewDto structure\", function () {",
+                  "    if (pm.response.code === 200) {",
+                  "        const appointments = pm.response.json();",
+                  "        pm.expect(appointments).to.be.an('array');",
+                  "        ",
+                  "        if (appointments.length > 0) {",
+                  "            const appointment = appointments[0];",
+                  "            pm.expect(appointment).to.have.property('id');",
+                  "            pm.expect(appointment).to.have.property('date');",
+                  "            pm.expect(appointment).to.have.property('doctorId');",
+                  "            pm.expect(appointment).to.have.property('hospitalId');",
+                  "            ",
+                  "            pm.collectionVariables.set(\"appointment_id\", appointment.id);",
+                  "        }",
+                  "    } else {",
+                  "        pm.expect(pm.response.code).to.equal(404);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/appointments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "appointments"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/appointments",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "appointments"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "[\n  {\n    \"id\": \"bd952339-cb32-88d7-0877-605ed06f7160\",\n    \"date\": \"2011-05-14\",\n    \"time\": \"string\",\n    \"doctorName\": \"string\",\n    \"doctorId\": \"4a91d766-4999-b110-89d6-7df291d05a5c\",\n    \"hospitalId\": 8442,\n    \"patientId\": \"7db6417b-3000-c12d-76ef-1382c15661e5\"\n  },\n  {\n    \"id\": \"764b8b5f-2271-5cf5-861a-cb2fa1144dde\",\n    \"date\": \"2012-07-15\",\n    \"time\": \"string\",\n    \"doctorName\": \"string\",\n    \"doctorId\": \"2587fbfc-a820-fedd-1f37-914c014a5d08\",\n    \"hospitalId\": 4955,\n    \"patientId\": \"67347e55-3357-90fd-bd89-d79368f5c1ce\"\n  }\n]"
+            },
+            {
+              "name": "Not Found",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/appointments",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "appointments"
+                  ]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"statusCode\": 688,\n  \"message\": \"string\",\n  \"timestamp\": \"1960-01-03\"\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8090"
+    },
+    {
+      "key": "last_passport",
+      "value": ""
+    },
+    {
+      "key": "jwt_token",
+      "value": ""
+    }
+  ]
+}
