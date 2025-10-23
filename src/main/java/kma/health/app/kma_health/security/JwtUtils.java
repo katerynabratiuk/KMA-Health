@@ -30,7 +30,7 @@ public class JwtUtils {
     }
 
     public String generateToken(AuthUser user) {
-        return generateToken(user.getPassportNumber(), user.getRole());
+        return generateToken(user.getId().toString(), user.getRole());
     }
 
     public UUID getSubjectFromToken(String token) {
