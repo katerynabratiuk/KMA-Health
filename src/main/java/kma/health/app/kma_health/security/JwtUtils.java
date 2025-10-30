@@ -1,12 +1,15 @@
 package kma.health.app.kma_health.security;
 
 import io.jsonwebtoken.*;
+import io.jsonwebtoken.security.Keys;
 import kma.health.app.kma_health.entity.AuthUser;
 import kma.health.app.kma_health.enums.UserRole;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.Date;
 import java.util.UUID;
 
@@ -19,13 +22,20 @@ public class JwtUtils {
     @Value("${jwt.expiration-ms}")
     private long jwtExpirationMs;
 
+    private SecretKey getSigningKey() {
+        return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+    }
+
     public String generateToken(String subject, UserRole role) {
+        Instant now = Instant.now();
+        Instant expiry = now.plusMillis(jwtExpirationMs);
+
         return Jwts.builder()
-                .setSubject(subject)
+                .subject(subject)
                 .claim("role", role.name())
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
-                .signWith(SignatureAlgorithm.HS512, jwtSecret.getBytes(StandardCharsets.UTF_8))
+                .issuedAt(Date.from(now))
+                .expiration(Date.from(expiry))
+                .signWith(getSigningKey(), Jwts.SIG.HS512)
                 .compact();
     }
 
@@ -33,31 +43,53 @@ public class JwtUtils {
         return generateToken(user.getId().toString(), user.getRole());
     }
 
+    private Claims getAllClaimsFromToken(String token) {
+        try {
+            return Jwts.parser()
+                    .verifyWith(getSigningKey())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+        } catch (JwtException e) {
+            throw new RuntimeException("Invalid JWT token: " + e.getMessage(), e);
+        }
+    }
+
     public UUID getSubjectFromToken(String token) {
-        String subject = Jwts.parser()
-                .setSigningKey(jwtSecret.getBytes(StandardCharsets.UTF_8))
-                .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
-        return UUID.fromString(subject);
+        return UUID.fromString(getAllClaimsFromToken(token).getSubject());
     }
 
     public UserRole getRoleFromToken(String token) {
-        String roleName = (String) Jwts.parser()
-                .setSigningKey(jwtSecret.getBytes(StandardCharsets.UTF_8))
-                .parseClaimsJws(token)
-                .getBody()
-                .get("role");
-
+        String roleName = getAllClaimsFromToken(token).get("role", String.class);
         return UserRole.fromString(roleName);
     }
 
     public boolean validateToken(String token) {
         try {
-            Jwts.parser().setSigningKey(jwtSecret.getBytes(StandardCharsets.UTF_8)).parseClaimsJws(token);
+            Jwts.parser()
+                    .verifyWith(getSigningKey())
+                    .build()
+                    .parseSignedClaims(token);
             return true;
-        } catch (JwtException | IllegalArgumentException e) {
-            return false;
+        } catch (ExpiredJwtException e) {
+            System.err.println("JWT expired: " + e.getMessage());
+        } catch (UnsupportedJwtException e) {
+            System.err.println("JWT unsupported: " + e.getMessage());
+        } catch (MalformedJwtException e) {
+            System.err.println("JWT malformed: " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            System.err.println("JWT illegal argument: " + e.getMessage());
+        } catch (JwtException e) {
+            System.err.println("JWT validation failed: " + e.getMessage());
         }
+        return false;
+    }
+
+    public Date getExpirationDate(String token) {
+        return getAllClaimsFromToken(token).getExpiration();
+    }
+
+    public boolean isTokenExpired(String token) {
+        return getExpirationDate(token).before(new Date());
     }
 }

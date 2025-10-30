@@ -5,8 +5,7 @@ import kma.health.app.kma_health.enums.UserRole;
 import kma.health.app.kma_health.repository.AuthUserRepository;
 import kma.health.app.kma_health.security.JwtUtils;
 import org.slf4j.*;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -91,12 +90,17 @@ public class AuthService {
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends AuthUser> void updateProfile(String token, Map<String, String> updates) {
-        UserRole role = jwtUtils.getRoleFromToken(token);
+    public <T extends AuthUser> void updateProfile(UUID userId, Map<String, String> updates) {
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        String roleName = auth.getAuthorities().stream()
+                .findFirst()
+                .map(a -> a.getAuthority().replace("ROLE_", ""))
+                .orElseThrow(() -> new RuntimeException("Role not found"));
+
+        UserRole role = UserRole.valueOf(roleName);
         AuthUserRepository<T> repo = (AuthUserRepository<T>) getRepositoryByRole(role);
 
-        UUID subject = jwtUtils.getSubjectFromToken(token);
-        T user = repo.findById(subject)
+        T user = repo.findById(userId)
                 .orElseThrow(() -> new RuntimeException(role + " not found"));
 
         applyUpdates(user, updates);
@@ -116,23 +120,20 @@ public class AuthService {
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends AuthUser> void deleteProfile(String token) {
-        UUID subject = jwtUtils.getSubjectFromToken(token);
-        UserRole role = jwtUtils.getRoleFromToken(token);
+    public <T extends AuthUser> void deleteProfile(UUID userId) {
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        String roleName = auth.getAuthorities().stream()
+                .findFirst()
+                .map(a -> a.getAuthority().replace("ROLE_", ""))
+                .orElseThrow(() -> new RuntimeException("Role not found"));
 
+        UserRole role = UserRole.valueOf(roleName);
         AuthUserRepository<T> repo = (AuthUserRepository<T>) getRepositoryByRole(role);
-        T user = repo.findById(subject)
+
+        T user = repo.findById(userId)
                 .orElseThrow(() -> new RuntimeException(role + " not found"));
 
         repo.delete(user);
-    }
-
-    public ResponseEntity<String> validateAuthorizationHeader(String authHeader) {
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("Missing or invalid Authorization header");
-        }
-        return null;
     }
 
     public String extractToken(String authHeader) {
@@ -150,4 +151,3 @@ public class AuthService {
         };
     }
 }
-

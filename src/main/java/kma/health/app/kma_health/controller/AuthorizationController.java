@@ -7,13 +7,16 @@ import kma.health.app.kma_health.service.AuthService;
 import kma.health.app.kma_health.service.RegistrationService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 public class AuthorizationController {
 
     private final AuthService authService;
@@ -21,42 +24,32 @@ public class AuthorizationController {
 
     @PostMapping("/login")
     public ResponseEntity<String> login(@Valid @RequestBody LoginRequest request) {
-        String token;
-        switch (request.getMethod()) {
-            case EMAIL -> token = authService.loginByEmail(request.getIdentifier(), request.getPassword(), request.getRole());
-            case PHONE -> token = authService.loginByPhone(request.getIdentifier(), request.getPassword(), request.getRole());
-            case PASSPORT -> token = authService.loginByPassport(request.getIdentifier(), request.getPassword(), request.getRole());
-            default -> throw new IllegalArgumentException("Unknown login method");
-        }
+        String token = switch (request.getMethod()) {
+            case EMAIL -> authService.loginByEmail(request.getIdentifier(), request.getPassword(), request.getRole());
+            case PHONE -> authService.loginByPhone(request.getIdentifier(), request.getPassword(), request.getRole());
+            case PASSPORT -> authService.loginByPassport(request.getIdentifier(), request.getPassword(), request.getRole());
+        };
         return ResponseEntity.ok(token);
     }
 
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody RegisterRequest request) {
-        String result = registrationService.register(request);
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(registrationService.register(request));
     }
 
+    @PreAuthorize("isAuthenticated()")
     @PatchMapping("/profile")
-    public ResponseEntity<String> updateProfile(@RequestHeader("Authorization") String authHeader,
+    public ResponseEntity<String> updateProfile(@AuthenticationPrincipal UUID userId,
                                                 @RequestBody Map<String, String> updates) {
-
-        ResponseEntity<String> validationResponse = authService.validateAuthorizationHeader(authHeader);
-        if (validationResponse != null) return validationResponse;
-
-        String token = authService.extractToken(authHeader);
-        authService.updateProfile(token, updates);
+        authService.updateProfile(userId, updates);
         return ResponseEntity.ok("Profile updated successfully");
     }
 
+    @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/profile")
-    public ResponseEntity<String> deleteProfile(@RequestHeader("Authorization") String authHeader) {
-
-        ResponseEntity<String> validationResponse = authService.validateAuthorizationHeader(authHeader);
-        if (validationResponse != null) return validationResponse;
-
-        String token = authService.extractToken(authHeader);
-        authService.deleteProfile(token);
+    public ResponseEntity<String> deleteProfile(@AuthenticationPrincipal UUID userId) {
+        authService.deleteProfile(userId);
         return ResponseEntity.ok("Profile deleted successfully");
     }
 }
+
