@@ -29,7 +29,7 @@ public class Feedback {
     private Hospital hospital;
 
     @ManyToOne
-    @JoinColumn(name = "doctor_passport")
+    @JoinColumn(name = "doctor_id")
     private Doctor doctor;
 }
 

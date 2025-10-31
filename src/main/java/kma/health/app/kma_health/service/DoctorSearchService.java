@@ -20,11 +20,11 @@ public class DoctorSearchService {
     private final EntityManager em;
 
     @Autowired
-    private RatingService ratingService;
+    private FeedbackService feedbackService;
 
     @Autowired
-    public void setRatingService(RatingService ratingService) {
-        this.ratingService = ratingService;
+    public void setRatingService(FeedbackService feedbackService) {
+        this.feedbackService = feedbackService;
     }
 
     public List<Doctor> searchDoctors(DoctorSearchDto dto, double userLat, double userLon) {
@@ -69,8 +69,8 @@ public class DoctorSearchService {
 
     private void sortByRating(List<Doctor> doctors, String direction) {
         doctors.sort((d1, d2) -> {
-            double r1 = ratingService.calculateDoctorRating(d1);
-            double r2 = ratingService.calculateDoctorRating(d2);
+            double r1 = feedbackService.calculateDoctorRating(d1);
+            double r2 = feedbackService.calculateDoctorRating(d2);
 
             return "asc".equalsIgnoreCase(direction)
                     ? Double.compare(r1, r2)

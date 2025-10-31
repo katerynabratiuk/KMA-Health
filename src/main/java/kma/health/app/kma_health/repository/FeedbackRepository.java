@@ -9,5 +9,5 @@ import java.util.List;
 
 public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
     List<Feedback> findByDoctor(Doctor doctor);
-    List<Feedback> findByHospital(Hospital hospital);
+    List<Feedback> findByHospital_Id(Long id);
 }
