@@ -26,6 +26,7 @@ public class HospitalFeedbackController {
     public void createFeedback(@PathVariable Long hospitalId,
                                @RequestBody FeedbackDto feedback)
     {
+        feedback.setHospital_id(hospitalId);
         feedbackService.createFeedback(feedback);
     }
 

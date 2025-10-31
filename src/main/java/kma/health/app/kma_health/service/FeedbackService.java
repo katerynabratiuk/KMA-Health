@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.UUID;
 
 @AllArgsConstructor
 @Component
@@ -15,8 +16,8 @@ public class FeedbackService {
 
     private final FeedbackRepository feedbackRepository;
 
-    public double calculateDoctorRating(Doctor doctor) {
-        List<Feedback> feedbacks = feedbackRepository.findByDoctor(doctor);
+    public double calculateDoctorRating(UUID id) {
+        List<Feedback> feedbacks = feedbackRepository.findByDoctor_Id(id);
         return calculateAverage(feedbacks);
     }
 

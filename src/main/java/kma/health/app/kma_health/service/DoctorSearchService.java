@@ -69,8 +69,8 @@ public class DoctorSearchService {
 
     private void sortByRating(List<Doctor> doctors, String direction) {
         doctors.sort((d1, d2) -> {
-            double r1 = feedbackService.calculateDoctorRating(d1);
-            double r2 = feedbackService.calculateDoctorRating(d2);
+            double r1 = feedbackService.calculateDoctorRating(d1.getId());
+            double r2 = feedbackService.calculateDoctorRating(d2.getId());
 
             return "asc".equalsIgnoreCase(direction)
                     ? Double.compare(r1, r2)
