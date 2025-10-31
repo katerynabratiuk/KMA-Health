@@ -48,4 +48,14 @@ public class FeedbackService {
         Feedback feedbackEntity = FeedbackDto.toEntity(feedback);
         feedbackRepository.save(feedbackEntity);
     }
+
+    public List<Feedback> getDoctorFeedbacks(UUID doctorId)
+    {
+        return feedbackRepository.findByDoctor_Id(doctorId);
+    }
+
+    public void deleteFeedback(Long id)
+    {
+        feedbackRepository.deleteById(id);
+    }
 }

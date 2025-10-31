@@ -2,31 +2,30 @@ package kma.health.app.kma_health.controller;
 
 import kma.health.app.kma_health.dto.FeedbackDto;
 import kma.health.app.kma_health.entity.Feedback;
-import kma.health.app.kma_health.entity.Hospital;
 import kma.health.app.kma_health.service.FeedbackService;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("/hospitals/{hospitalId}/feedback")
-public class HospitalFeedbackController {
-
+@RequestMapping("/doctor/{doctorId}/feedback")
+public class DoctorFeedbackController {
     FeedbackService feedbackService;
 
     @GetMapping()
-    public List<Feedback> getAllFeedbacks(@PathVariable Long hospitalId)
+    public List<Feedback> getAllFeedbacks(@PathVariable UUID doctorId)
     {
-        return feedbackService.getHospitalFeedbacks(hospitalId);
+        return feedbackService.getDoctorFeedbacks(doctorId);
     }
 
     @PostMapping()
-    public void createFeedback(@PathVariable Long hospitalId,
+    public void createFeedback(@PathVariable UUID doctorId,
                                @RequestBody FeedbackDto feedback)
     {
-        feedback.setHospital_id(hospitalId);
+        feedback.setDoctor_id(doctorId);
         feedbackService.createFeedback(feedback);
     }
 
@@ -35,5 +34,4 @@ public class HospitalFeedbackController {
     {
         feedbackService.deleteFeedback(feedbackId);
     }
-
 }
