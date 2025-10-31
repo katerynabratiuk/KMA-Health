@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class HospitalDto
 {
+    private Long id;
     private String name;
     private String address;
     private String phoneNumber;
@@ -17,6 +18,7 @@ public class HospitalDto
 
     public static HospitalDto fromEntity(Hospital h) {
         HospitalDto d = new HospitalDto();
+        d.setId(h.getId());
         d.setName(h.getName());
         d.setAddress(h.getAddress());
         d.setCity(h.getCity());

@@ -1,12 +1,10 @@
 package kma.health.app.kma_health.controller;
 
 import kma.health.app.kma_health.dto.HospitalDto;
+import kma.health.app.kma_health.repository.HospitalRepository;
 import kma.health.app.kma_health.service.HospitalService;
 import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -18,14 +16,19 @@ public class HospitalController {
     HospitalService hospitalService;
 
     @GetMapping()
-    public List<HospitalDto> searchHospitals(
-            @RequestParam(required = false) String name,
-//            @RequestParam(required = false) Double lat,
-//            @RequestParam(required = false) Double lon, // TODO
-            @RequestParam() Integer pageSize,
-            @RequestParam() Integer pageNum
-    ){
-        return hospitalService.searchHospitals(name, pageNum, pageSize);
+    public List<HospitalDto> getHospitals(
+            @RequestParam(name = "name", required = false) String name,
+            @RequestParam(name = "pageNum", defaultValue = "0")  int pageNum,
+            @RequestParam(name = "pageSize", defaultValue = "20") int pageSize
+    ) {
+        int page = Math.max(0, pageNum);
+        int size = Math.max(1, pageSize);
+        return hospitalService.searchHospitals(name, size, page);
+    }
+
+    @GetMapping("/{hospitalId}")
+    public HospitalDto getHospital(@PathVariable Long hospitalId) {
+        return hospitalService.getHospital(hospitalId);
     }
 
 }

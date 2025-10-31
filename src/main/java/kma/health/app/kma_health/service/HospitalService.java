@@ -82,4 +82,9 @@ public class HospitalService {
                 .toList();
     }
 
+    public HospitalDto getHospital(Long id) {
+        var h = hospitalRepository.getReferenceById(id);
+        return HospitalDto.fromEntity(h);
+    }
+
 }
