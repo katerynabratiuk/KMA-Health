@@ -2,6 +2,8 @@ package kma.health.app.kma_health.service;
 
 import kma.health.app.kma_health.entity.AuthUser;
 import kma.health.app.kma_health.enums.UserRole;
+import kma.health.app.kma_health.exception.InvalidCredentialsException;
+import kma.health.app.kma_health.exception.RoleNotFoundException;
 import kma.health.app.kma_health.repository.AuthUserRepository;
 import kma.health.app.kma_health.security.JwtUtils;
 import org.slf4j.*;
@@ -50,7 +52,7 @@ public class AuthService {
                         MDC.put("status", "FAILED");
                         MDC.put("reason", "User not found");
                         log.warn(SECURITY, "Failed login: user with role {} not found", role);
-                        return new RuntimeException(role + " not found");
+                        return new RoleNotFoundException(role + " not found");
                     });
 
             MDC.put("userId", String.valueOf(user.getId()));
@@ -59,7 +61,7 @@ public class AuthService {
                 MDC.put("status", "FAILED");
                 MDC.put("reason", "Invalid password");
                 log.warn(SECURITY, "Failed login attempt for user ID: {} (Role: {}). Invalid password.", user.getId(), role);
-                throw new RuntimeException("Invalid credentials");
+                throw new InvalidCredentialsException("Invalid credentials");
             }
 
             MDC.put("status", "SUCCESS");
@@ -101,7 +103,7 @@ public class AuthService {
         AuthUserRepository<T> repo = (AuthUserRepository<T>) getRepositoryByRole(role);
 
         T user = repo.findById(userId)
-                .orElseThrow(() -> new RuntimeException(role + " not found"));
+                .orElseThrow(() -> new RoleNotFoundException(role + " not found"));
 
         applyUpdates(user, updates);
         repo.save(user);
@@ -125,13 +127,13 @@ public class AuthService {
         String roleName = auth.getAuthorities().stream()
                 .findFirst()
                 .map(a -> a.getAuthority().replace("ROLE_", ""))
-                .orElseThrow(() -> new RuntimeException("Role not found"));
+                .orElseThrow(() -> new RoleNotFoundException("Role not found"));
 
         UserRole role = UserRole.valueOf(roleName);
         AuthUserRepository<T> repo = (AuthUserRepository<T>) getRepositoryByRole(role);
 
         T user = repo.findById(userId)
-                .orElseThrow(() -> new RuntimeException(role + " not found"));
+                .orElseThrow(() -> new RoleNotFoundException(role + " not found"));
 
         repo.delete(user);
     }
@@ -147,7 +149,7 @@ public class AuthService {
         return switch (role) {
             case UserRole.PATIENT -> repositories.get(UserRole.PATIENT).getReferenceById(id);
             case UserRole.DOCTOR -> repositories.get(UserRole.DOCTOR).getReferenceById(id);
-            default -> throw new RuntimeException("Couldn't find " + role);
+            default -> throw new RoleNotFoundException("Couldn't find " + role);
         };
     }
 }

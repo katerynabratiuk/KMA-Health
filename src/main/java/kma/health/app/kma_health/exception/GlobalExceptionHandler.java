@@ -2,6 +2,7 @@ package kma.health.app.kma_health.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.web.authentication.rememberme.InvalidCookieException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -37,6 +38,27 @@ public class GlobalExceptionHandler{
 
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<ErrorResponse> handle(InvalidCredentialsException ex){
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setStatusCode(HttpStatus.UNAUTHORIZED.value());
+        errorResponse.setMessage(ex.getMessage());
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(RoleNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handle(RoleNotFoundException ex){
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setStatusCode(HttpStatus.UNAUTHORIZED.value());
+        errorResponse.setMessage(ex.getMessage());
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
+    }
+
+
+
 
 
 }
