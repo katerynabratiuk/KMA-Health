@@ -1,10 +1,10 @@
 package kma.health.app.kma_health.controller;
 
-import kma.health.app.kma_health.dto.FeedbackDto;
+import kma.health.app.kma_health.dto.FeedbackCreateUpdateDto;
 import kma.health.app.kma_health.entity.Feedback;
-import kma.health.app.kma_health.entity.Hospital;
 import kma.health.app.kma_health.service.FeedbackService;
 import lombok.AllArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,14 +23,16 @@ public class HospitalFeedbackController {
     }
 
     @PostMapping()
+    @PreAuthorize("hasRole('PATIENT')")
     public void createFeedback(@PathVariable Long hospitalId,
-                               @RequestBody FeedbackDto feedback)
+                               @RequestBody FeedbackCreateUpdateDto feedback)
     {
         feedback.setHospital_id(hospitalId);
         feedbackService.createFeedback(feedback);
     }
 
     @DeleteMapping("/{feedbackId}")
+    @PreAuthorize("hasRole('PATIENT')")
     public void deleteFeedback(@PathVariable Long feedbackId)
     {
         feedbackService.deleteFeedback(feedbackId);

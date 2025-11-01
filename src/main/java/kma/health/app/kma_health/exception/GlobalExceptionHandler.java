@@ -57,7 +57,14 @@ public class GlobalExceptionHandler{
         return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
     }
 
+    @ExceptionHandler(FeedbackNotPermitted.class)
+    public ResponseEntity<ErrorResponse> handle(FeedbackNotPermitted ex) {
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setStatusCode(HttpStatus.FORBIDDEN.value());
+        errorResponse.setMessage(ex.getMessage());
 
+        return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
+    }
 
 
 

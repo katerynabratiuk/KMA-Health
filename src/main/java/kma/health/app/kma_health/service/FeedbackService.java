@@ -1,8 +1,10 @@
 package kma.health.app.kma_health.service;
 
-import kma.health.app.kma_health.dto.FeedbackDto;
-import kma.health.app.kma_health.entity.Doctor;
+import kma.health.app.kma_health.dto.FeedbackCreateUpdateDto;
+import kma.health.app.kma_health.entity.Appointment;
 import kma.health.app.kma_health.entity.Feedback;
+import kma.health.app.kma_health.exception.FeedbackNotPermitted;
+import kma.health.app.kma_health.repository.AppointmentRepository;
 import kma.health.app.kma_health.repository.FeedbackRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -15,6 +17,7 @@ import java.util.UUID;
 public class FeedbackService {
 
     private final FeedbackRepository feedbackRepository;
+    private final AppointmentRepository appointmentRepository;
 
     public double calculateDoctorRating(UUID id) {
         List<Feedback> feedbacks = feedbackRepository.findByDoctor_Id(id);
@@ -43,9 +46,30 @@ public class FeedbackService {
         return feedbackRepository.findByHospital_Id(hospitalId);
     }
 
-    public void createFeedback(FeedbackDto feedback)
+    public void createFeedback(FeedbackCreateUpdateDto feedback)
     {
-        Feedback feedbackEntity = FeedbackDto.toEntity(feedback);
+        if (feedback.getDoctor_id() != null) {
+            List<Appointment> result = appointmentRepository
+                    .findByReferral_Patient_IdAndDoctor_Id(
+                            feedback.getPatient_id(),
+                            feedback.getDoctor_id()
+                    );
+            if (result.isEmpty())
+                throw new FeedbackNotPermitted("You cannot rate this doctor as you do not have any history with them.");
+        }
+
+        if (feedback.getHospital_id() != null) {
+            List<Appointment> result = appointmentRepository
+                    .findByReferral_Patient_IdAndHospital_Id(
+                            feedback.getPatient_id(),
+                            feedback.getHospital_id()
+                    );
+
+            if (result.isEmpty())
+                throw new FeedbackNotPermitted("You cannot rate this hospital as you do not have history with it.");
+        }
+
+        Feedback feedbackEntity = FeedbackCreateUpdateDto.toEntity(feedback);
         feedbackRepository.save(feedbackEntity);
     }
 

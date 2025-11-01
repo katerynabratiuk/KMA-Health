@@ -1,11 +1,9 @@
 package kma.health.app.kma_health.dto;
 
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import kma.health.app.kma_health.entity.Doctor;
 import kma.health.app.kma_health.entity.Feedback;
 import kma.health.app.kma_health.entity.Hospital;
+import kma.health.app.kma_health.entity.Patient;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,8 +16,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Getter
 @Setter
-public class FeedbackDto {
-    private Long id;
+public class FeedbackCreateUpdateDto {
 
     private LocalDate date;
 
@@ -30,27 +27,27 @@ public class FeedbackDto {
     private Long hospital_id;
 
     private UUID doctor_id;
+    private UUID patient_id;
 
-    public static FeedbackDto fromEntity(Feedback feedback){
-        FeedbackDto dto = new FeedbackDto();
-        dto.setId(feedback.getId());
-        dto.setDate(feedback.getDate());
-        dto.setComment(feedback.getComment());
-        dto.setScore(feedback.getScore());
-        if (feedback.getDoctor() != null)
+    public static FeedbackCreateUpdateDto fromEntity(Feedback entity){
+        FeedbackCreateUpdateDto dto = new FeedbackCreateUpdateDto();
+        dto.setDate(entity.getDate());
+        dto.setComment(entity.getComment());
+        dto.setScore(entity.getScore());
+        if (entity.getDoctor() != null)
         {
-            dto.setDoctor_id(feedback.getDoctor().getId());
+            dto.setDoctor_id(entity.getDoctor().getId());
         }
-        else if (feedback.getHospital() != null)
+        else if (entity.getHospital() != null)
         {
-            dto.setHospital_id(feedback.getHospital().getId());
+            dto.setHospital_id(entity.getHospital().getId());
         }
+        dto.setPatient_id(entity.getPatient().getId());
         return dto;
     }
 
-    public static Feedback toEntity(FeedbackDto dto){
+    public static Feedback toEntity(FeedbackCreateUpdateDto dto){
         Feedback entity = new Feedback();
-        entity.setId(dto.getId());
         entity.setDate(dto.getDate());
         entity.setComment(dto.getComment());
         entity.setScore(dto.getScore());
@@ -64,6 +61,9 @@ public class FeedbackDto {
             entity.setHospital(new Hospital());
             entity.getHospital().setId(dto.getHospital_id());
         }
+
+        entity.setPatient(new Patient());
+        entity.getPatient().setId(dto.getPatient_id());
         return entity;
     }
 
