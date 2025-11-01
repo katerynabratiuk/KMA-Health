@@ -12,6 +12,8 @@ import lombok.Setter;
 import jakarta.validation.constraints.Pattern;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -61,6 +63,9 @@ public class Doctor implements AuthUser {
 
     @OneToMany(mappedBy = "doctor")
     private Set<Appointment> appointments;
+
+    @OneToMany(mappedBy = "doctor", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Feedback> feedback = new ArrayList<>();
 
     @Override
     public UserRole getRole() {

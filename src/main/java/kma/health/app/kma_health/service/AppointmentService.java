@@ -1,6 +1,8 @@
 package kma.health.app.kma_health.service;
 
+import java.time.Period;
 import jakarta.persistence.EntityNotFoundException;
+import kma.health.app.kma_health.dto.AppointmentCreateUpdateDto;
 import kma.health.app.kma_health.dto.AppointmentFullViewDto;
 import kma.health.app.kma_health.dto.AppointmentShortViewDto;
 import kma.health.app.kma_health.entity.Appointment;
@@ -27,9 +29,9 @@ public class AppointmentService {
     private final HospitalRepository hospitalRepository;
     private final ReferralRepository referralRepository;
 
-    public List<AppointmentShortViewDto> getAppointments(String patientPassportNumber) {
+    public List<AppointmentShortViewDto> getAppointments(UUID patientId) {
 
-        List<Appointment> queryRes = appointmentRepository.findAllByReferralPatientPassportNumber(patientPassportNumber);
+        List<Appointment> queryRes = appointmentRepository.findByReferral_Patient_Id(patientId);
         List<AppointmentShortViewDto> res = new ArrayList<>();
         for (Appointment app : queryRes) {
             res.add(new AppointmentShortViewDto(app));
@@ -49,65 +51,66 @@ public class AppointmentService {
         else throw new AppointmentNotFoundException("Appointment is not found.");
     }
 
-    public void createAppointment(AppointmentFullViewDto appointmentDto) {
-        validateDoctorAndPatientAge(appointmentDto.getDoctorId(), appointmentDto.getPatientId());
+    public void createAppointment(AppointmentCreateUpdateDto appointmentDto) {
         validateAppointmentTarget(appointmentDto);
-
+        if (appointmentDto.getDoctorId() != null) {
+            validateDoctorAndPatientAge(appointmentDto.getDoctorId(), appointmentDto.getPatientId());
+        }
         Appointment appointment = buildAppointment(appointmentDto);
         appointmentRepository.save(appointment);
     }
 
-    private Appointment buildAppointment(AppointmentFullViewDto appointmentDto) {
-        Appointment appointment = new Appointment();
-        appointment.setReferral(
-                referralRepository.findById(appointmentDto.getReferralId())
-                        .orElseThrow(() -> new EntityNotFoundException("Referral not found")));
+    private Appointment buildAppointment(AppointmentCreateUpdateDto dto) {
+        Appointment a = new Appointment();
 
-        if (appointmentDto.getDoctorId() != null) {
-            appointment.setDoctor(
-                    doctorRepository.findById(appointmentDto.getDoctorId())
-                            .orElseThrow(() -> new EntityNotFoundException("Doctor not found"))
-            );
-            appointment.setDate(appointmentDto.getDate());
-            appointment.setTime(appointmentDto.getTime());
-
-        } else {
-            appointment.setHospital(
-                    hospitalRepository.findById(appointmentDto.getHospitalId())
-                            .orElseThrow(() -> new EntityNotFoundException("Hospital not found"))
-            );
-            appointment.setDate(appointmentDto.getDate());
-            appointment.setTime(EXAMINATION_TIME);
+        if (dto.getReferralId() != null) {
+            a.setReferral(referralRepository.findById(dto.getReferralId())
+                    .orElseThrow(() -> new EntityNotFoundException("Referral not found")));
         }
 
-        return appointment;
+        if (dto.getDoctorId() != null) {
+            a.setDoctor(doctorRepository.findById(dto.getDoctorId())
+                    .orElseThrow(() -> new EntityNotFoundException("Doctor not found")));
+            a.setDate(dto.getDate());
+            a.setTime(dto.getTime());
+        } else {
+            a.setHospital(hospitalRepository.findById(dto.getHospitalId())
+                    .orElseThrow(() -> new EntityNotFoundException("Hospital not found")));
+            a.setDate(dto.getDate());
+            a.setTime(EXAMINATION_TIME);
+        }
+
+        a.setId(UUID.randomUUID());
+        return a;
     }
 
+
+
     public void validateDoctorAndPatientAge(UUID doctorID, UUID patientID) {
-        LocalDate patientBirthDate = patientRepository.findById(patientID)
-                .orElseThrow(() -> new EntityNotFoundException("Patient not found"))
-                .getBirthDate();
+        if (doctorID == null) return;
 
-        int patientAge = LocalDate.now().getYear() - patientBirthDate.getYear();
+        var patient = patientRepository.findById(patientID)
+                .orElseThrow(() -> new EntityNotFoundException("Patient not found"));
 
-        String doctorType = doctorRepository.findById(doctorID)
-                .orElseThrow(() -> new EntityNotFoundException("Doctor not found"))
-                .getType();
+        var doctor = doctorRepository.findById(doctorID)
+                .orElseThrow(() -> new EntityNotFoundException("Doctor not found"));
+
+        int patientAge = Period.between(patient.getBirthDate(), LocalDate.now()).getYears();
+        String doctorType = doctor.getType();
 
         if (patientAge < 18 && !"child".equals(doctorType)) {
             throw new DoctorSpecializationAgeRestrictionException(
                     "Incompatible patient age and doctor specialization: underage patient cannot be assigned to an adult doctor."
             );
         }
-
-        if (patientAge > 18 && !"adult".equals(doctorType)) {
+        if (patientAge >= 18 && !"adult".equals(doctorType)) {
             throw new DoctorSpecializationAgeRestrictionException(
                     "Incompatible patient age and doctor specialization: adult patient cannot be assigned to a pediatric doctor."
             );
         }
     }
 
-    private void validateAppointmentTarget(AppointmentFullViewDto appointmentDto) {
+    private void validateAppointmentTarget(AppointmentCreateUpdateDto appointmentDto) {
         boolean doctorAppointment = appointmentDto.getDoctorId() != null;
         boolean hospitalAppointment = appointmentDto.getHospitalId() != null;
 

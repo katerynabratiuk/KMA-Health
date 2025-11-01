@@ -23,8 +23,8 @@ public class PatientService{
         return patientRepository.getReferenceById(id);
     }
 
-    public List<Appointment> getAppointments(String patientId) {
-        return appointmentRepository.findAllByReferralPatientPassportNumber(patientId);
+    public List<Appointment> getAppointments(UUID patientId) {
+        return appointmentRepository.findByReferral_Patient_Id(patientId);
     }
 
     public List<Declaration> getDeclarations(String patientId) {
