@@ -16,6 +16,7 @@ import java.time.LocalDate;
 @Table(name = "feedback")
 public class Feedback {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private LocalDate date;
@@ -23,6 +24,10 @@ public class Feedback {
     private Short score;
 
     private String comment;
+
+    @ManyToOne
+    @JoinColumn(name = "patient_id")
+    private Patient patient;
 
     @ManyToOne
     @JoinColumn(name = "hospital_id")
