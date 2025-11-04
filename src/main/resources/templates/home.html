@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Home Page</title>
+    <link rel="stylesheet" th:href="@{/css/home.css}">
+</head>
+<body>
+<header>
+    <div id="home-header">
+        <h1 id="home-title">KMA Health</h1>
+        <button type="button" id="login-register-button">Login / Register</button>
+    </div>
+</header>
+
+<section id="search-section">
+    <div id="search-top-row">
+        <div id="search-container">
+            <select id="search-type">
+                <option value="doctor" selected>Search by Doctor</option>
+                <option value="clinic">Search by Clinic</option>
+            </select>
+            <input type="text" id="search-input" placeholder="Enter the name or speciality"/>
+            <button id="search-button">🔍</button>
+        </div>
+        <button id="advanced-search-button">Advanced Search</button>
+    </div>
+
+    <div id="advanced-search-container" class="hidden"></div>
+</section>
+
+<script th:src="@{/js/home.js}"></script>
+</body>
+</html>
