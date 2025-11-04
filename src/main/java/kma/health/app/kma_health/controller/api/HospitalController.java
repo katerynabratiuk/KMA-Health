@@ -1,7 +1,6 @@
-package kma.health.app.kma_health.controller;
+package kma.health.app.kma_health.controller.api;
 
 import kma.health.app.kma_health.dto.HospitalDto;
-import kma.health.app.kma_health.repository.HospitalRepository;
 import kma.health.app.kma_health.service.HospitalService;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -10,7 +9,7 @@ import java.util.List;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("/hospital")
+@RequestMapping("/api/hospital")
 public class HospitalController {
 
     HospitalService hospitalService;

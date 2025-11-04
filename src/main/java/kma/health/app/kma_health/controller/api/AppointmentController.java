@@ -1,4 +1,4 @@
-package kma.health.app.kma_health.controller;
+package kma.health.app.kma_health.controller.api;
 
 import kma.health.app.kma_health.dto.AppointmentCreateUpdateDto;
 import kma.health.app.kma_health.dto.AppointmentFullViewDto;
@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/appointments")
+@RequestMapping("/api/appointments")
 @AllArgsConstructor
 public class AppointmentController {
 

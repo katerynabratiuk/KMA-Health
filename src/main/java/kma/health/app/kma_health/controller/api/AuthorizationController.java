@@ -1,4 +1,4 @@
-package kma.health.app.kma_health.controller;
+package kma.health.app.kma_health.controller.api;
 
 import jakarta.validation.Valid;
 import kma.health.app.kma_health.dto.LoginRequest;

@@ -1,4 +1,4 @@
-package kma.health.app.kma_health.controller;
+package kma.health.app.kma_health.controller.api;
 
 import kma.health.app.kma_health.dto.FeedbackCreateUpdateDto;
 import kma.health.app.kma_health.entity.Feedback;
@@ -11,7 +11,7 @@ import java.util.List;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("/hospitals/{hospitalId}/feedback")
+@RequestMapping("/api/hospitals/{hospitalId}/feedback")
 public class HospitalFeedbackController {
 
     FeedbackService feedbackService;
