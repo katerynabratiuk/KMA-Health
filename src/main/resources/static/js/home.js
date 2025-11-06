@@ -107,11 +107,30 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     const form = document.getElementById("search-container");
+    let userLatInput = document.getElementById("userLat");
+    let userLonInput = document.getElementById("userLon");
+
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                userLatInput.value = pos.coords.latitude;
+                userLonInput.value = pos.coords.longitude;
+            },
+            () => {
+                console.warn("User denied geolocation — using default (0,0)");
+                userLatInput.value = 0;
+                userLonInput.value = 0;
+            }
+        );
+    } else {
+        userLatInput.value = 0;
+        userLonInput.value = 0;
+    }
 
     form.addEventListener("submit", (e) => {
         const doctorTypeSelect = document.getElementById("doctor-type");
         const citySelect = document.getElementById("city");
-        const sortRadio = document.querySelector('input[name="sort"]:checked');
+        const sortRadio = advancedSearchContainer.querySelector('input[name="sort"]:checked');
 
         document.getElementById("hidden-doctor-type").value = doctorTypeSelect ? doctorTypeSelect.value : "";
         document.getElementById("hidden-city").value = citySelect ? citySelect.value : "";

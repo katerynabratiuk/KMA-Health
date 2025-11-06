@@ -24,6 +24,8 @@
             <input type="hidden" name="doctorType" id="hidden-doctor-type">
             <input type="hidden" name="city" id="hidden-city">
             <input type="hidden" name="sort" id="hidden-sort">
+            <input type="hidden" name="userLat" id="userLat" value="0">
+            <input type="hidden" name="userLon" id="userLon" value="0">
             <button type="submit" id="search-button">🔍</button>
         </form>
 
@@ -65,7 +67,7 @@
     <div th:if="${searchType == 'clinic'}" class="search-result-container">
         <div th:each="hospital : ${hospitals}" class="doctor-card">
             <div class="doctor-left">
-                <img th:src="@{/images/star.png}" alt="Hospital Photo" class="doctor-photo">
+                <img th:src="@{/images/hospital-default.png}" alt="Hospital Photo" class="doctor-photo">
             </div>
 
             <div class="doctor-info">
@@ -87,7 +89,8 @@
         </div>
     </div>
 
-    <div th:if="${#lists.isEmpty(doctors) and #lists.isEmpty(hospitals)}" class="no-results">
+    <div th:if="${searchPerformed and #lists.isEmpty(doctors) and #lists.isEmpty(hospitals)}"
+         class="no-results">
         No results found for your search.
     </div>
 </section>

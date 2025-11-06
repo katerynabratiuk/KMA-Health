@@ -3,10 +3,7 @@ package kma.health.app.kma_health.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import kma.health.app.kma_health.enums.HospitalType;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,8 +11,7 @@ import java.util.Set;
 
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
-@Setter
+@Data
 @Entity
 @Table(name = "hospital")
 public class Hospital {
