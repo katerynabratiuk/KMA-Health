@@ -1,0 +1,48 @@
+:root {
+    --kma-health-blue: #15479D;
+    --kma-health-dark-blue: #062159;
+    --kma-health-light-blue: #e8ecf4;
+}
+
+body { margin:0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; }
+.screen {
+    min-height: 100dvh;
+    background: var(--kma-health-blue);
+    display: grid;
+    place-items: center;
+    padding: 24px;
+}
+.stack { display: grid; gap: 24px; width: min(720px, 95vw); }
+.pill {
+    display: grid;
+    grid-template-columns: 72px 1fr;
+    align-items: center;
+    gap: 12px;
+    background: var(--kma-health-light-blue);
+    color: #111;
+    border-radius: 28px;
+    padding: 16px 22px;
+    box-shadow: 0 6px 18px rgba(0,0,0,.15);
+    text-decoration: none;
+    transition: transform .05s ease, box-shadow .2s ease;
+}
+.pill:hover { transform: translateY(-1px); box-shadow: 0 10px 22px rgba(0,0,0,.22); }
+.pill:active { transform: translateY(0); box-shadow: 0 6px 18px rgba(0,0,0,.15); }
+.pill__icon { width: 52px; height: 52px; }
+.pill__text {
+    font-weight: 800;
+    font-size: clamp(20px, 3.4vw, 36px);
+    letter-spacing: .2px;
+    text-align: center;
+}
+.top-left {
+    position: fixed; left: 18px; top: 10px;
+    color: #dbe6ff; font-weight: 600; font-size: 14px;
+}
+
+.patient-img,
+.doctor-img {
+    width: 52px;
+    height: 52px;
+    object-fit: contain;
+}
