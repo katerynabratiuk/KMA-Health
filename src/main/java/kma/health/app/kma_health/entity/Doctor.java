@@ -1,5 +1,6 @@
 package kma.health.app.kma_health.entity;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import kma.health.app.kma_health.enums.UserRole;
@@ -64,7 +65,7 @@ public class Doctor implements AuthUser {
     @Transient
     private Double rating;
 
-    @NotNull
+    @Nullable
     private String description;
 
     @OneToMany(mappedBy = "doctor", cascade = CascadeType.ALL, orphanRemoval = true)
