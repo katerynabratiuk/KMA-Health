@@ -34,12 +34,13 @@ public class HospitalGeocodingService {
             ObjectMapper mapper = new ObjectMapper();
             JsonNode root = mapper.readTree(response.toString());
 
+            System.out.println(url);
+
             if (root.isArray() && !root.isEmpty()) {
                 double lat = root.get(0).get("lat").asDouble();
                 double lon = root.get(0).get("lon").asDouble();
                 return new Coordinates(lat, lon);
-            }
-            else {
+            } else {
                 throw new CoordinatesNotFoundException("Couldn't get coordinates for address: " + address);
             }
         }

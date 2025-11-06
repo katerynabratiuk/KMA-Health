@@ -2,15 +2,12 @@ package kma.health.app.kma_health.controller.ui;
 
 import kma.health.app.kma_health.dto.DoctorSearchDto;
 import kma.health.app.kma_health.dto.HospitalSearchDto;
-import kma.health.app.kma_health.entity.Doctor;
 import kma.health.app.kma_health.service.DoctorSearchService;
 import kma.health.app.kma_health.service.HospitalSearchService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
@@ -27,6 +24,7 @@ public class HomeController
         dto.setSortBy(new DoctorSearchDto.SortBy("rating", "asc"));
         model.addAttribute("dto", dto);
         model.addAttribute("doctors", null);
+        model.addAttribute("searchPerformed", false);
         return "home";
     }
 
@@ -55,6 +53,8 @@ public class HomeController
 
         if (doctorDto.getSortBy() == null)
             doctorDto.setSortBy(new DoctorSearchDto.SortBy("rating", "asc"));
+
+        model.addAttribute("searchPerformed", true);
 
         return "home";
     }
