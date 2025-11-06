@@ -9,6 +9,10 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionSystemException;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import org.springframework.transaction.TransactionSystemException;
 
 @Service
 @RequiredArgsConstructor
@@ -77,7 +81,18 @@ public class RegistrationService {
                 }
                 default -> throw new IllegalArgumentException("Unsupported role");
             }
-        } catch (RuntimeException e) {
+        } catch (TransactionSystemException tse) {
+        Throwable root = tse.getMostSpecificCause();
+        if (root instanceof ConstraintViolationException cve) {
+            cve.getConstraintViolations().forEach(v ->
+                    log.warn("BeanValidation: {} invalid value='{}' -> {}",
+                            v.getPropertyPath(), v.getInvalidValue(), v.getMessage())
+            );
+        }
+        throw tse;
+    }
+
+        catch (RuntimeException e) {
             MDC.put("status", "FAILED");
             MDC.put("reason", e.getMessage());
             if (e.getMessage().contains("Invalid register key")) {

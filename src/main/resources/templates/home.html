@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title>Home Page</title>
@@ -11,6 +12,14 @@
         <h1 id="home-title">KMA Health</h1>
         <a th:href="@{~/ui/public/login}" id="login-register-button" class="button">Login / Register</a>
     </div>
+    <div sec:authorize="isAuthenticated()" class="user-actions">
+      <span class="hello">
+        Привіт, <span sec:authentication="name">user</span>!
+        (<span sec:authentication="principal.authorities">ROLE</span>)
+      </span>
+    </div>
+    <a sec:authorize="hasRole('PATIENT')"  th:href="@{~/ui/public/appointments}" class="button">Записи</a>
+    <a sec:authorize="hasRole('DOCTOR')" th:href="@{~/ui/public/schedule}" class="button">Розклад</a>
 </header>
 
 <section id="search-section">

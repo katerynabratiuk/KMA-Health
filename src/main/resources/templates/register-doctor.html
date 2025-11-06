@@ -13,30 +13,39 @@
     <div>
         <label for="fullName">Повне ім'я</label>
         <input id="fullName" type="text" th:field="*{fullName}">
-        <p th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}"></p>
+        <p th:if="${#fields.hasErrors('fullName')}" th:errorclass="error" th:errors="*{fullName}"></p>
     </div>
 
     <div>
         <label for="birthDate">Дата народження</label>
         <input id="birthDate" type="date" th:field="*{birthDate}">
-        <p th:if="${#fields.hasErrors('birthDate')}" th:errors="*{birthDate}"></p>
+        <p th:if="${#fields.hasErrors('birthDate')}" th:errorclass="error" th:errors="*{birthDate}"></p>
     </div>
+
+
+    <div>
+        <label for="passportNumber">Номер паспорта</label>
+        <input id="passportNumber" type="text" th:field="*{passportNumber}">
+        <p th:if="${#fields.hasErrors('passportNumber')}" th:errorclass="error" th:errors="*{passportNumber}"></p>
+    </div>
+
+    <div>
+        <label for="phoneNumber">Номер телефону</label>
+        <input id="phoneNumber" type="text" th:field="*{phoneNumber}">
+        <p th:if="${#fields.hasErrors('phoneNumber')}" th:errorclass="error" th:errors="*{phoneNumber}"></p>
+    </div>
+
+
     <div>
         <label for="email">Email</label>
         <input id="email" type="email" th:field="*{email}">
-        <p th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></p>
+        <p th:if="${#fields.hasErrors('email')}" th:errorclass="error" th:errors="*{email}"></p>
     </div>
 
     <div>
         <label for="password">Пароль</label>
         <input id="password" type="password" th:field="*{password}">
-        <p th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></p>
-    </div>
-
-    <div>
-        <label for="passportNumber">Номер паспорта</label>
-        <input id="passportNumber" type="text" th:field="*{passportNumber}">
-        <p th:if="${#fields.hasErrors('passportNumber')}" th:errors="*{passportNumber}"></p>
+        <p th:if="${#fields.hasErrors('password')}" th:errorclass="error" th:errors="*{password}"></p>
     </div>
 
     <div>
@@ -61,12 +70,28 @@
         </select>
     </div>
 
+    <div class="type-select">
+        <label>
+            <input type="radio" name="type" value="adult" th:field="*{type}" required>
+            Дорослий лікар
+        </label>
+        <label>
+            <input type="radio" name="type" value="child" th:field="*{type}">
+            Дитячий лікар
+        </label>
+    </div>
+
     <div>
         <label for="registerKey">Код реєстрації</label>
         <input id="registerKey" type="text" th:field="*{registerKey}">
-        <p th:if="${#fields.hasErrors('registerKey')}" th:errors="*{registerKey}"></p>
+        <p th:if="${#fields.hasErrors('registerKey')}" th:errorclass="error" th:errors="*{registerKey}"></p>
     </div>
 
+    <div th:if="${#fields.hasAnyErrors()}">
+        <ul>
+            <li th:each="err : ${#fields.allErrors()}" th:text="${err}" />
+        </ul>
+    </div>
 
     <button type="submit">Створити користувача</button>
 </form>
