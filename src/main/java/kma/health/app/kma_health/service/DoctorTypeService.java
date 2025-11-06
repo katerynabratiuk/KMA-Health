@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -30,5 +31,9 @@ public class DoctorTypeService {
         if (doctorType.isEmpty())
             throw new EntityNotFoundException("Doctor type " + dto.getTypeName() + " does not exist");
         doctorTypeRepository.delete(doctorType.get());
+    }
+
+    public List<DoctorType> getAllDoctorTypes(){
+        return doctorTypeRepository.findAll();
     }
 }

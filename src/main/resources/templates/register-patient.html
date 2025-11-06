@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Patient registration</title>
+    <link rel="stylesheet" th:href="@{/css/register.css}">
+</head>
+<body>
+<form th:object="${registerRequest}"
+      th:action="@{/ui/public/register/patient}"
+      method="post">
+    <div>
+        <label for="fullName">Повне ім'я</label>
+        <input id="fullName" type="text" th:field="*{fullName}">
+        <p th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}"></p>
+    </div>
+    <div>
+        <label for="birthDate">Дата народження</label>
+        <input id="birthDate" type="date" th:field="*{birthDate}">
+        <p th:if="${#fields.hasErrors('birthDate')}" th:errors="*{birthDate}"></p>
+    </div>
+    <div>
+        <label for="email">Email</label>
+        <input id="email" type="email" th:field="*{email}">
+        <p th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></p>
+    </div>
+    <div>
+        <label for="phone_number">Номер телефону</label>
+        <input id="phone_number" th:field="*{phoneNumber}">
+        <p th:if="${#fields.hasErrors('phoneNumber')}" th:errors="*{phoneNumber}"></p>
+    </div>
+    <div>
+        <label for="password">Пароль</label>
+        <input id="password" type="password" th:field="*{password}">
+        <p th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></p>
+    </div>
+    <div>
+        <label for="passportNumber">Номер паспорта</label>
+        <input id="passportNumber" type="text" th:field="*{passportNumber}">
+        <p th:if="${#fields.hasErrors('passportNumber')}" th:errors="*{passportNumber}"></p>
+    </div>
+    <button type="submit">Створити користувача</button>
+</form>
+</body>
+</html>

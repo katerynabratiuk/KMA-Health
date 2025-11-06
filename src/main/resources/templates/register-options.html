@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Реєстрація</title>
+    <link rel="stylesheet" th:href="@{/css/register-options.css}">
+</head>
+<body>
+<div class="top-left">Реєстрація</div>
+
+<main class="screen">
+    <div class="stack">
+        <a class="pill"
+           th:href="@{/ui/public/register/patient(return=${param.return})}">
+            <img class="patient-img" src="/images/patient.svg" alt="patient-img">
+            <div class="pill__text">Я — пацієнт!</div>
+        </a>
+
+        <a class="pill"
+           th:href="@{/ui/public/register/doctor(return=${param.return})}">
+            <img class="doctor-img" src="/images/stethoscope.svg" alt="doctor-img">
+            <div class="pill__text">Я — лікар!</div>
+        </a>
+    </div>
+</main>
+</body>
+</html>
