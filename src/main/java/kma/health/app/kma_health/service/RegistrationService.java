@@ -47,6 +47,7 @@ public class RegistrationService {
                         Doctor doctor = new Doctor();
                         fillCommonFields(doctor, request);
                         doctor.setType(request.getType());
+                        doctor.setDescription(request.getDescription());
                         doctor.setDoctorType(
                                 doctorTypeRepository.findById(request.getDoctorTypeId())
                                         .orElseThrow(() -> new RuntimeException("Doctor type not found"))

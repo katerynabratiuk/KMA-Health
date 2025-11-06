@@ -36,6 +36,7 @@ public class HospitalService {
         }
         newHospital.setLatitude(coordinates.getLatitude());
         newHospital.setLongitude(coordinates.getLongitude());
+        newHospital.setType(hospital.getType());
         hospitalRepository.save(newHospital);
     }
 

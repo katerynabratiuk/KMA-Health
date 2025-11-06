@@ -23,6 +23,7 @@ public class RegisterRequest {
     private String type;
     private Long doctorTypeId;
     private Long hospitalId;
+    private String description;
 
     private Long labHospitalId;
 

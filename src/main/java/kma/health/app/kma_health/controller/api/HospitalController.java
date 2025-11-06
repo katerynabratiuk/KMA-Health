@@ -3,6 +3,8 @@ package kma.health.app.kma_health.controller.api;
 import kma.health.app.kma_health.dto.HospitalDto;
 import kma.health.app.kma_health.service.HospitalService;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,4 +32,13 @@ public class HospitalController {
         return hospitalService.getHospital(hospitalId);
     }
 
+    @PostMapping("/")
+    public ResponseEntity<String> createHospital(@RequestBody HospitalDto hospitalDto) {
+        try {
+            hospitalService.createHospital(hospitalDto);
+            return ResponseEntity.status(HttpStatus.CREATED).build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }

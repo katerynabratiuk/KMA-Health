@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 <label for="doctor-type">Doctor Type</label>
                 <select id="doctor-type">
                     <option value="">All Specialties</option>
-                    <option value="cardiology">Cardiologist</option>
+                    <option value="cardiologist">Cardiologist</option>
                     <option value="pediatrics">Pediatrician</option>
                     <option value="dermatology">Dermatologist</option>
                     <option value="surgery">Surgeon</option>
@@ -104,5 +104,17 @@ document.addEventListener("DOMContentLoaded", function () {
         if (isVisible) {
             renderAdvancedForm();
         }
+    });
+
+    const form = document.getElementById("search-container");
+
+    form.addEventListener("submit", (e) => {
+        const doctorTypeSelect = document.getElementById("doctor-type");
+        const citySelect = document.getElementById("city");
+        const sortRadio = document.querySelector('input[name="sort"]:checked');
+
+        document.getElementById("hidden-doctor-type").value = doctorTypeSelect ? doctorTypeSelect.value : "";
+        document.getElementById("hidden-city").value = citySelect ? citySelect.value : "";
+        document.getElementById("hidden-sort").value = sortRadio ? sortRadio.value : "";
     });
 });

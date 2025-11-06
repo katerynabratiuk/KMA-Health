@@ -1,40 +1,50 @@
 package kma.health.app.kma_health.service;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import kma.health.app.kma_health.exception.CoordinatesNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 
 @Service
 public class HospitalGeocodingService {
-
-    private final RestTemplate restTemplate;
-
-    @Autowired
-    public HospitalGeocodingService(RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
-    }
-
     public Coordinates getCoordinatesByAddress(String address) {
-        String url = UriComponentsBuilder.fromHttpUrl("https://nominatim.openstreetmap.org/search")
-                .queryParam("q", address)
-                .queryParam("format", "json")
-                .queryParam("limit", 1)
-                .toUriString();
+        try {
+            String encodedAddress = java.net.URLEncoder.encode(address, StandardCharsets.UTF_8);
+            String url = "https://nominatim.openstreetmap.org/search?q=" + encodedAddress + "&format=json&limit=1";
+            ProcessBuilder pb = new ProcessBuilder(
+                    "curl", "-s", "-A", "KMAHealthApp/1.0 (kmahealth@example.com)", url
+            );
+            Process process = pb.start();
 
-        NominatimResponse[] response = restTemplate.getForObject(url, NominatimResponse[].class);
+            BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8)
+            );
+            StringBuilder response = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                response.append(line);
+            }
+            process.waitFor();
 
-        if (response != null && response.length > 0) {
-            double lat = Double.parseDouble(response[0].getLat());
-            double lon = Double.parseDouble(response[0].getLon());
-            return new Coordinates(lat, lon);
-        } else {
-            throw new CoordinatesNotFoundException("Couldn't get coordinates for address: " + address);
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode root = mapper.readTree(response.toString());
+
+            if (root.isArray() && !root.isEmpty()) {
+                double lat = root.get(0).get("lat").asDouble();
+                double lon = root.get(0).get("lon").asDouble();
+                return new Coordinates(lat, lon);
+            }
+            else {
+                throw new CoordinatesNotFoundException("Couldn't get coordinates for address: " + address);
+            }
+        }
+        catch (Exception e) {
+            throw new CoordinatesNotFoundException("Error while fetching coordinates: " + e.getMessage());
         }
     }
 
@@ -43,13 +53,5 @@ public class HospitalGeocodingService {
     public static class Coordinates {
         private double latitude;
         private double longitude;
-    }
-
-    @Data
-    @NoArgsConstructor
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    private static class NominatimResponse {
-        private String lat;
-        private String lon;
     }
 }

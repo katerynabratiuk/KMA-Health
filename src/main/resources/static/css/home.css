@@ -30,11 +30,18 @@ body {
 #login-register-button {
     background-color: white;
     color: var(--kma-health-blue);
-    border: none;
+    border: var(--kma-health-blue) 1px solid;
     border-radius: 6px;
     padding: 8px 16px;
     font-weight: bold;
+    transition: background-color 0.3s;
     cursor: pointer;
+}
+
+#login-register-button:hover {
+    background-color: var(--kma-health-blue);
+    color: white;
+    border: white 1px solid;
 }
 
 /* ---------- SEARCH SECTION ---------- */
@@ -191,3 +198,129 @@ body {
 .sort-group input[type="radio"] {
     margin-right: 8px;
 }
+
+/* ---------- SEARCH RESULT SECTION ---------- */
+
+#search-result-section {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.search-result-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.doctor-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    width: 100%;
+    max-width: 900px;
+    padding: 16px 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: box-shadow 0.3s ease;
+}
+
+.doctor-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.doctor-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.doctor-photo {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.doctor-experience {
+    font-size: 0.9em;
+    color: gray;
+}
+
+.doctor-info {
+    flex: 1;
+    margin-left: 20px;
+}
+
+.doctor-type {
+    color: var(--kma-health-blue);
+    font-weight: bold;
+    font-size: 0.9em;
+    text-transform: uppercase;
+}
+
+.doctor-name {
+    margin: 5px 0;
+    font-size: 1.4em;
+}
+
+.doctor-description {
+    color: #777;
+    font-size: 0.95em;
+    margin-top: 7px;
+}
+
+.doctor-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+}
+
+.doctor-rating {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.rating-star {
+    width: 30px;
+    height: 30px;
+}
+
+.rating-value {
+    font-weight: bold;
+    font-size: 1.4em;
+}
+
+.more-button,
+.appointment-button {
+    background-color: var(--kma-health-blue);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.more-button:hover,
+.appointment-button:hover {
+    background-color: #003d99;
+}
+
+.appointment-button {
+    margin-top: 20px;
+    background-color: var(--kma-health-blue);
+    font-size: 0.95em;
+}
+

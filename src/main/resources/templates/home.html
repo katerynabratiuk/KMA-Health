@@ -15,19 +15,83 @@
 
 <section id="search-section">
     <div id="search-top-row">
-        <div id="search-container">
-            <select id="search-type">
+        <form th:action="@{/ui/public/search}" method="post" id="search-container">
+            <select id="search-type" name="searchType">
                 <option value="doctor" selected>Search by Doctor</option>
                 <option value="clinic">Search by Clinic</option>
             </select>
-            <input type="text" id="search-input" placeholder="Enter the name or speciality"/>
-            <button id="search-button">🔍</button>
-        </div>
-        <button id="advanced-search-button">Advanced Search</button>
-    </div>
+            <input type="text" id="search-input" name="query" placeholder="Enter the name or speciality"/>
+            <input type="hidden" name="doctorType" id="hidden-doctor-type">
+            <input type="hidden" name="city" id="hidden-city">
+            <input type="hidden" name="sort" id="hidden-sort">
+            <button type="submit" id="search-button">🔍</button>
+        </form>
 
+        <button id="advanced-search-button" type="button">Advanced Search</button>
+    </div>
     <div id="advanced-search-container" class="hidden"></div>
 </section>
+
+<section id="search-result-section">
+    <div th:if="${searchType == 'doctor'}" class="search-result-container">
+        <div th:each="doctor : ${doctors}" class="doctor-card">
+            <div class="doctor-left">
+                <img th:src="@{/images/Segin.jpg}" alt="Doctor Photo" class="doctor-photo">
+                <span class="doctor-experience"
+                      th:text="${'10 years of experience'}">10 years of experience</span>
+            </div>
+
+            <div class="doctor-info">
+                <span class="doctor-type" th:text="${doctor.doctorType.typeName}">Cardiologist</span>
+                <h2 class="doctor-name" th:text="${doctor.fullName}">Dr. Segin Liubomyr</h2>
+                <p class="doctor-description"
+                   th:text="${doctor.description != null ? doctor.description : 'No description available'}">
+                    Specializes in heart and vascular diseases.
+                </p>
+            </div>
+
+            <div class="doctor-right">
+                <div class="doctor-rating">
+                    <span class="rating-value"
+                          th:text="${doctor.rating != null ? #numbers.formatDecimal(doctor.rating, 1, 1) : '—'}">0</span>
+                    <img th:src="@{/images/star.png}" alt="Star" class="rating-star">
+                </div>
+                <button class="more-button">More</button>
+                <button class="appointment-button">Book an Appointment</button>
+            </div>
+        </div>
+    </div>
+
+    <div th:if="${searchType == 'clinic'}" class="search-result-container">
+        <div th:each="hospital : ${hospitals}" class="doctor-card">
+            <div class="doctor-left">
+                <img th:src="@{/images/star.png}" alt="Hospital Photo" class="doctor-photo">
+            </div>
+
+            <div class="doctor-info">
+                <span class="doctor-type" th:text="${hospital.type}">Private</span>
+                <h2 class="doctor-name" th:text="${hospital.name}">St. Mary’s Hospital</h2>
+                <p class="doctor-description"
+                   th:text="${hospital.address}">Kyiv, Shevchenko Street 25</p>
+            </div>
+
+            <div class="doctor-right">
+                <div class="doctor-rating">
+                    <span class="rating-value"
+                          th:text="${hospital.rating != null ? #numbers.formatDecimal(hospital.rating, 1, 1) : '—'}">0</span>
+                    <img th:src="@{/images/star.png}" alt="Star" class="rating-star">
+                </div>
+                <button class="more-button">More</button>
+                <button class="appointment-button">Book an Appointment</button>
+            </div>
+        </div>
+    </div>
+
+    <div th:if="${#lists.isEmpty(doctors) and #lists.isEmpty(hospitals)}" class="no-results">
+        No results found for your search.
+    </div>
+</section>
+
 
 <script th:src="@{/js/home.js}"></script>
 </body>

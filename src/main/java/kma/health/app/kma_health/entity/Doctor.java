@@ -1,15 +1,12 @@
 package kma.health.app.kma_health.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.PastOrPresent;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import kma.health.app.kma_health.enums.UserRole;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import jakarta.validation.constraints.Pattern;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -63,6 +60,12 @@ public class Doctor implements AuthUser {
 
     @OneToMany(mappedBy = "doctor")
     private Set<Appointment> appointments;
+
+    @Transient
+    private Double rating;
+
+    @NotNull
+    private String description;
 
     @OneToMany(mappedBy = "doctor", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Feedback> feedback = new ArrayList<>();

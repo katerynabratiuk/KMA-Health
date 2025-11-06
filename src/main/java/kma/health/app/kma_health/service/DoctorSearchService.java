@@ -3,12 +3,14 @@ package kma.health.app.kma_health.service;
 import jakarta.persistence.EntityManager;
 import kma.health.app.kma_health.dto.DoctorSearchDto;
 import kma.health.app.kma_health.entity.Doctor;
+import kma.health.app.kma_health.entity.Feedback;
 import kma.health.app.kma_health.entity.Hospital;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import static kma.health.app.kma_health.service.NearestHospitalService.distanceInKm;
@@ -35,24 +37,41 @@ public class DoctorSearchService {
         List<jakarta.persistence.criteria.Predicate> predicates = new ArrayList<>();
 
         if (dto.getDoctorType() != null && !dto.getDoctorType().isEmpty())
-            predicates.add(cb.equal(root.get("doctorType").get("name"), dto.getDoctorType()));
+            predicates.add(
+                    cb.equal(
+                            cb.lower(root.get("doctorType").get("typeName")),
+                            dto.getDoctorType().toLowerCase()
+                    )
+            );
 
-        if (dto.getCity() != null && !dto.getCity().isEmpty())
-            predicates.add(cb.equal(root.get("hospital").get("city"), dto.getCity()));
+        if (dto.getCity() != null && !dto.getCity().isEmpty()) {
+            predicates.add(
+                    cb.equal(
+                            cb.lower(root.get("hospital").get("city")),
+                            dto.getCity().toLowerCase()
+                    )
+            );
+        }
 
         if (dto.getHospitalId() != null)
             predicates.add(cb.equal(root.get("hospital").get("id"), dto.getHospitalId()));
 
-        if (dto.getDoctorName() != null && !dto.getDoctorName().isEmpty())
-            predicates.add(cb.like(cb.lower(root.get("fullName")), "%" + dto.getDoctorName().toLowerCase() + "%"));
+        if (dto.getQuery() != null && !dto.getQuery().isEmpty()) {
+            predicates.add(
+                    cb.like(
+                            cb.lower(root.get("fullName")),
+                            "%" + dto.getQuery().toLowerCase() + "%"
+                    )
+            );
+        }
 
         cq.where(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
 
         List<Doctor> doctors = em.createQuery(cq).getResultList();
 
         DoctorSearchDto.SortBy sort = dto.getSortBy();
-        String param = sort.param();
-        String direction = sort.direction();
+        String param = sort.getParam();
+        String direction = sort.getDirection();
 
         if ("rating".equalsIgnoreCase(param)) {
             sortByRating(doctors, direction);
@@ -64,19 +83,48 @@ public class DoctorSearchService {
             }
         }
 
+        for (Doctor doctor : doctors) {
+            if (doctor.getFeedback() != null && !doctor.getFeedback().isEmpty()) {
+                double avg = doctor.getFeedback().stream()
+                        .filter(f -> f.getScore() != null)
+                        .mapToInt(Feedback::getScore)
+                        .average()
+                        .orElse(0.0);
+                doctor.setRating(avg);
+            }
+            else {
+                doctor.setRating(0.0);
+            }
+        }
+
+        System.out.println(dto.getQuery());
+        System.out.println(dto.getCity());
+        System.out.println(dto.getDoctorType());
+        System.out.println(doctors);
         return doctors;
     }
 
     private void sortByRating(List<Doctor> doctors, String direction) {
-        doctors.sort((d1, d2) -> {
-            double r1 = feedbackService.calculateDoctorRating(d1.getId());
-            double r2 = feedbackService.calculateDoctorRating(d2.getId());
-
-            return "asc".equalsIgnoreCase(direction)
-                    ? Double.compare(r1, r2)
-                    : Double.compare(r2, r1);
-        });
+        for (Doctor doctor : doctors) {
+            if (doctor.getRating() == null) {
+                if (doctor.getFeedback() != null && !doctor.getFeedback().isEmpty()) {
+                    double avg = doctor.getFeedback().stream()
+                            .filter(f -> f.getScore() != null)
+                            .mapToInt(Feedback::getScore)
+                            .average()
+                            .orElse(0.0);
+                    doctor.setRating(avg);
+                }
+            }
+        }
+        Comparator<Doctor> comparator = Comparator.comparing(
+                d -> d.getRating() == null ? 0.0 : d.getRating()
+        );
+        if ("dsc".equalsIgnoreCase(direction))
+            comparator = comparator.reversed();
+        doctors.sort(comparator);
     }
+
 
     private void sortByDistance(List<Doctor> doctors, String direction,
                                 double userLat, double userLon) {

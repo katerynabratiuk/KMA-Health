@@ -6,24 +6,31 @@ import lombok.Data;
 
 @Data
 public class DoctorSearchDto {
-
     private String doctorType;
     private String city;
     private Long hospitalId;
-    private String doctorName;
+    private String query;
+
     @NotNull(message = "sortBy cannot be null")
-    private SortBy sortBy;
+    private SortBy sortBy = new SortBy("rating", "asc");
 
-    /**
-     * @param param     "distance" | "rating"
-     * @param direction "asc" | "dsc"
-     */
-    public record SortBy(
-            @Pattern(regexp = "rating|distance", message = "param must be 'rating' or 'distance'")
-            String param,
+    @Data
+    public static class SortBy {
+        @Pattern(regexp = "rating|distance", message = "param must be 'rating' or 'distance'")
+        private String param;
 
-            @Pattern(regexp = "asc|dsc", message = "direction must be 'asc' or 'dsc'")
-            String direction
-    ) {}
+        @Pattern(regexp = "asc|dsc", message = "direction must be 'asc' or 'dsc'")
+        private String direction;
+
+        public SortBy() {
+            this.param = "rating";
+            this.direction = "asc";
+        }
+
+        public SortBy(String param, String direction) {
+            this.param = param;
+            this.direction = direction;
+        }
+    }
 }
 
