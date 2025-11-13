@@ -17,7 +17,7 @@ public class HomeController
     private final DoctorSearchService doctorSearchService;
     private final HospitalSearchService hospitalSearchService;
 
-    @GetMapping("/")
+    @GetMapping({"/", ""})
     public String home(Model model)
     {
         var dto = new DoctorSearchDto();

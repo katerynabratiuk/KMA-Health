@@ -1,4 +1,26 @@
 document.addEventListener("DOMContentLoaded", function () {
+    const authToken = localStorage.getItem('authToken');
+    const userRole = localStorage.getItem('userRole');
+    
+    const loginRegisterButton = document.getElementById("login-register-button");
+    if (authToken && loginRegisterButton) {
+        loginRegisterButton.textContent = "Вийти";
+        loginRegisterButton.href = "#";
+        loginRegisterButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userRole');
+            window.location.href = '/ui/public/login';
+        });
+        
+        const userActionsDiv = document.createElement('div');
+        userActionsDiv.className = 'user-actions';
+        userActionsDiv.innerHTML = `
+            <span class="hello">Привіт! Ви увійшли як ${userRole}</span>
+        `;
+        loginRegisterButton.parentElement.appendChild(userActionsDiv);
+    }
+    
     const searchType = document.getElementById("search-type");
     const searchInput = document.getElementById("search-input");
     const advancedSearchBtn = document.getElementById("advanced-search-button");
@@ -135,5 +157,17 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("hidden-doctor-type").value = doctorTypeSelect ? doctorTypeSelect.value : "";
         document.getElementById("hidden-city").value = citySelect ? citySelect.value : "";
         document.getElementById("hidden-sort").value = sortRadio ? sortRadio.value : "";
+    });
+    
+    const appointmentButtons = document.querySelectorAll('.appointment-button');
+    appointmentButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            if (!authToken) {
+                alert('Будь ласка, увійдіть в систему для запису на прийом');
+                window.location.href = '/ui/public/login';
+            } else {
+                console.log('Book appointment - implement this functionality');
+            }
+        });
     });
 });

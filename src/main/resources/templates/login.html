@@ -2,43 +2,71 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Login</title>
-    <link rel="stylesheet" th:href="@{/css/home.css}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вхід - KMA Health</title>
+    <link rel="stylesheet" th:href="@{/css/login.css}">
 </head>
 <body>
-<header>
-    <div id="home-header">
-        <h1 id="home-title">KMA Health</h1>
+    <div class="logo-header">KMA Health</div>
+    
+    <div class="login-container">
+        <h2>Вхід до системи</h2>
+        
+        <div id="general-error" class="alert alert-error" style="display: none;"></div>
+        <div id="success-message" class="alert alert-success" style="display: none;"></div>
+        
+        <form id="login-form">
+            <div class="input-group">
+                <label for="username">Email</label>
+                <input type="email" 
+                       id="username" 
+                       name="username" 
+                       placeholder="example@email.com"
+                       required
+                       autofocus>
+                <div class="error-message" id="username-error" style="display: none;"></div>
+            </div>
+            
+            <div class="input-group">
+                <label for="password">Пароль</label>
+                <input type="password" 
+                       id="password" 
+                       name="password" 
+                       placeholder="Введіть пароль"
+                       required>
+                <div class="error-message" id="password-error" style="display: none;"></div>
+                <a href="#" class="forgot-password">Забули пароль?</a>
+            </div>
+            
+            <div class="input-group">
+                <label for="role">Увійти як</label>
+                <select id="role" name="role" class="role-select">
+                    <option value="PATIENT">Пацієнт</option>
+                    <option value="DOCTOR">Лікар</option>
+                    <option value="LAB_ASSISTANT">Лаборант</option>
+                </select>
+            </div>
+            
+            <div class="remember-me">
+                <input type="checkbox" id="remember" name="remember-me">
+                <label for="remember">Запам'ятати мене</label>
+            </div>
+            
+            <button type="submit" class="login-button">Увійти</button>
+        </form>
+        
+        <div class="divider">
+            <span>або</span>
+        </div>
+        
+        <div class="register-section">
+            <p>Ще не маєте акаунту?</p>
+            <a th:href="@{/ui/public/register}" class="register-link">
+                Зареєструватися
+            </a>
+        </div>
     </div>
-</header>
-
-<section id="login-section">
-    <h2>Login</h2>
-
-    <form th:action="@{/login}" method="post">
-        <div>
-            <label for="username">Username:</label>
-            <input type="text" id="username" name="username" required>
-        </div>
-
-        <div>
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required>
-        </div>
-
-        <button type="submit">Login</button>
-    </form>
-
-    <hr>
-
-    <p>Don't have an account?</p>
-    <button type="button" id="register-button">Register</button>
-</section>
-
-<script>
-    document.getElementById("register-button").addEventListener("click", () => {
-        window.location.href = "register";
-    });
-</script>
+    
+    <script th:src="@{/js/login.js}"></script>
 </body>
 </html>

@@ -44,6 +44,16 @@ body {
     border: white 1px solid;
 }
 
+.user-actions {
+    color: white;
+    font-size: 14px;
+    margin-left: 20px;
+}
+
+.hello {
+    font-weight: 500;
+}
+
 /* ---------- SEARCH SECTION ---------- */
 #search-section {
     width: 100%;
