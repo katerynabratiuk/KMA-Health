@@ -38,13 +38,21 @@ public class HomeController
             Model model
     ) {
         if ("clinic".equalsIgnoreCase(searchType)) {
-            var hospitals = hospitalSearchService.searchHospitals(hospitalDto, userLat, userLon);
-            model.addAttribute("hospitals", hospitals);
-            model.addAttribute("doctors", null);
+            try {
+                var hospitals = hospitalSearchService.searchHospitals(hospitalDto, userLat, userLon);
+                model.addAttribute("hospitals", hospitals);
+                model.addAttribute("doctors", null);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         } else {
-            var doctors = doctorSearchService.searchDoctors(doctorDto, userLat, userLon);
-            model.addAttribute("doctors", doctors);
-            model.addAttribute("hospitals", null);
+            try {
+                var doctors = doctorSearchService.searchDoctors(doctorDto, userLat, userLon);
+                model.addAttribute("doctors", doctors);
+                model.addAttribute("hospitals", null);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
         model.addAttribute("searchType", searchType);

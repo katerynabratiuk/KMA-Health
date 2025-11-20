@@ -4,6 +4,7 @@ import kma.health.app.kma_health.entity.AuthUser;
 import kma.health.app.kma_health.enums.UserRole;
 import kma.health.app.kma_health.exception.InvalidCredentialsException;
 import kma.health.app.kma_health.exception.RoleNotFoundException;
+import kma.health.app.kma_health.logging.RateLimited;
 import kma.health.app.kma_health.repository.AuthUserRepository;
 import kma.health.app.kma_health.security.JwtUtils;
 import org.slf4j.*;
@@ -56,6 +57,7 @@ public class AuthService {
                     });
 
             MDC.put("userId", String.valueOf(user.getId()));
+            System.out.println("MDC in login: " + MDC.getCopyOfContextMap());
 
             if (!passwordEncoder.matches(password, user.getPassword())) {
                 MDC.put("status", "FAILED");
@@ -74,21 +76,24 @@ public class AuthService {
                 MDC.put("reason", e.getMessage());
             }
             throw e;
-        } finally {
-            MDC.clear();
         }
     }
 
+    @RateLimited(maxCalls = 5, timeWindowSeconds = 60)
     public String loginByEmail(String email, String password, UserRole role) {
         return login(r -> r.findByEmail(email), password, role);
     }
 
+    @RateLimited(maxCalls = 5, timeWindowSeconds = 60)
     public String loginByPhone(String phone, String password, UserRole role) {
         return login(r -> r.findByPhoneNumber(phone), password, role);
     }
 
+    @RateLimited(maxCalls = 5, timeWindowSeconds = 60)
     public String loginByPassport(String passport, String password, UserRole role) {
-        return login(r -> r.findByPassportNumber(passport), password, role);
+        String token = login(r -> r.findByPassportNumber(passport), password, role);
+        System.out.println("Id " + MDC.get("userId")); // Тепер не null
+        return token;
     }
 
     @SuppressWarnings("unchecked")

@@ -3,6 +3,7 @@ package kma.health.app.kma_health.service;
 import kma.health.app.kma_health.dto.RegisterRequest;
 import kma.health.app.kma_health.entity.*;
 import kma.health.app.kma_health.enums.UserRole;
+import kma.health.app.kma_health.logging.NotifyInvalidKey;
 import kma.health.app.kma_health.repository.*;
 import kma.health.app.starter.service.SecretKeyProvider;
 import lombok.RequiredArgsConstructor;
@@ -10,9 +11,7 @@ import org.slf4j.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionSystemException;
-import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
-import org.springframework.transaction.TransactionSystemException;
 
 @Service
 @RequiredArgsConstructor
@@ -29,18 +28,14 @@ public class RegistrationService {
     private static final Marker SECURITY = MarkerFactory.getMarker("SECURITY");
     private final SecretKeyProvider keyProvider;
 
+    @NotifyInvalidKey
     public String register(RegisterRequest request) {
-        MDC.put("userRole", request.getRole().toString());
-        MDC.put("email", request.getEmail());
-
         try {
             switch (request.getRole()) {
                 case PATIENT -> {
                     Patient patient = new Patient();
                     fillCommonFields(patient, request);
                     patientRepository.save(patient);
-                    MDC.put("userId", String.valueOf(patient.getId()));
-                    MDC.put("status", "SUCCESS");
                     log.info("Patient registered successfully");
                     return "Patient registered successfully";
                 }
@@ -61,8 +56,6 @@ public class RegistrationService {
                                         .orElseThrow(() -> new RuntimeException("Hospital not found"))
                         );
                         doctorRepository.save(doctor);
-                        MDC.put("userId", String.valueOf(doctor.getId()));
-                        MDC.put("status", "SUCCESS");
                         log.info("Doctor registered successfully");
                         return "Doctor registered successfully";
                     } else {
@@ -73,8 +66,6 @@ public class RegistrationService {
                                         .orElseThrow(() -> new RuntimeException("Hospital not found"))
                         );
                         labAssistantRepository.save(labAssistant);
-                        MDC.put("userId", String.valueOf(labAssistant.getId()));
-                        MDC.put("status", "SUCCESS");
                         log.info("Lab Assistant registered successfully");
                         return "Lab Assistant registered successfully";
                     }
@@ -93,16 +84,12 @@ public class RegistrationService {
     }
 
         catch (RuntimeException e) {
-            MDC.put("status", "FAILED");
-            MDC.put("reason", e.getMessage());
             if (e.getMessage().contains("Invalid register key")) {
                 log.warn(SECURITY, "Registration failed for email {} (role {}). Reason: invalid key.", request.getEmail(), request.getRole());
             } else {
                 log.warn("Registration failed for email {} (role {}). Reason: {}", request.getEmail(), request.getRole(), e.getMessage());
             }
             throw e;
-        } finally {
-            MDC.clear();
         }
     }
 

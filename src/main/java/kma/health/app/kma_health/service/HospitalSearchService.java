@@ -6,6 +6,7 @@ import kma.health.app.kma_health.dto.HospitalSearchDto;
 import kma.health.app.kma_health.entity.Feedback;
 import kma.health.app.kma_health.entity.Hospital;
 import kma.health.app.kma_health.enums.FeedbackTargetType;
+import kma.health.app.kma_health.logging.TimedInterruptible;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +20,13 @@ public class HospitalSearchService {
     private final EntityManager em;
     private final FeedbackService feedbackService;
 
-    public List<Hospital> searchHospitals(HospitalSearchDto dto, double userLat, double userLon) {
+    @TimedInterruptible(timeout = 150)
+    public List<Hospital> searchHospitals(HospitalSearchDto dto, double userLat, double userLon)
+            throws InterruptedException {
+
+        if (Thread.interrupted())
+            throw new InterruptedException("Hospital search interrupted before start");
+
         var cb = em.getCriteriaBuilder();
         var cq = cb.createQuery(Hospital.class);
         var root = cq.from(Hospital.class);
@@ -34,25 +41,31 @@ public class HospitalSearchService {
             ));
         }
 
-        if (dto.getCity() != null && !dto.getCity().isEmpty()) {
+        if (dto.getCity() != null && !dto.getCity().isEmpty())
             predicates.add(cb.equal(cb.lower(root.get("city")), dto.getCity().toLowerCase()));
-        }
-
-        if (dto.getHospitalType() != null) {
+        if (dto.getHospitalType() != null)
             predicates.add(cb.equal(root.get("hospitalType"), dto.getHospitalType()));
-        }
-
         cq.where(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
 
+        if (Thread.interrupted())
+            throw new InterruptedException("Hospital search interrupted before DB query");
+
         List<Hospital> hospitals = em.createQuery(cq).getResultList();
+
+        if (Thread.interrupted())
+            throw new InterruptedException("Hospital search interrupted after DB fetch");
 
         DoctorSearchDto.SortBy sort = dto.getSortBy();
         String param = sort.getParam();
         String direction = sort.getDirection();
 
         if ("rating".equalsIgnoreCase(param)) {
+            if (Thread.interrupted())
+                throw new InterruptedException("Interrupted before sorting hospitals by rating");
             sortByRating(hospitals, direction);
         } else if ("distance".equalsIgnoreCase(param)) {
+            if (Thread.interrupted())
+                throw new InterruptedException("Interrupted before sorting hospitals by distance");
             try {
                 sortByDistance(hospitals, direction, userLat, userLon);
             } catch (Exception e) {
@@ -60,7 +73,11 @@ public class HospitalSearchService {
             }
         }
 
+        System.out.println(hospitals);
+
         for (Hospital hospital : hospitals) {
+            if (Thread.interrupted())
+                throw new InterruptedException("Interrupted during hospital rating calculation");
             if (hospital.getFeedback() != null && !hospital.getFeedback().isEmpty()) {
                 double avg = hospital.getFeedback().stream()
                         .filter(f -> f.getTargetType() == FeedbackTargetType.HOSPITAL)
@@ -68,11 +85,16 @@ public class HospitalSearchService {
                         .mapToInt(Feedback::getScore)
                         .average()
                         .orElse(0.0);
+
                 hospital.setRating(avg);
             } else {
                 hospital.setRating(0.0);
             }
         }
+
+        if (Thread.interrupted())
+            throw new InterruptedException("Interrupted after hospital rating computation");
+        System.out.println(hospitals);
 
         return hospitals;
     }
@@ -88,9 +110,12 @@ public class HospitalSearchService {
     }
 
     private void sortByDistance(List<Hospital> hospitals, String direction, double userLat, double userLon) {
+        System.out.println("Sorting by distance (" + direction + ")");
         hospitals.sort((h1, h2) -> {
             double d1 = distance(userLat, userLon, h1.getLatitude(), h1.getLongitude());
             double d2 = distance(userLat, userLon, h2.getLatitude(), h2.getLongitude());
+            System.out.printf("Compare: %s(%.2f km) vs %s(%.2f km)%n",
+                    h1.getName(), d1, h2.getName(), d2);
             return "desc".equalsIgnoreCase(direction)
                     ? Double.compare(d2, d1)
                     : Double.compare(d1, d2);

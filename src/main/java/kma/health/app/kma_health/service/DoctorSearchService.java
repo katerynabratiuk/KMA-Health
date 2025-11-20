@@ -5,6 +5,7 @@ import kma.health.app.kma_health.dto.DoctorSearchDto;
 import kma.health.app.kma_health.entity.Doctor;
 import kma.health.app.kma_health.entity.Feedback;
 import kma.health.app.kma_health.entity.Hospital;
+import kma.health.app.kma_health.logging.TimedInterruptible;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,7 +30,13 @@ public class DoctorSearchService {
         this.feedbackService = feedbackService;
     }
 
-    public List<Doctor> searchDoctors(DoctorSearchDto dto, double userLat, double userLon) {
+    @TimedInterruptible(timeout = 150)
+    public List<Doctor> searchDoctors(DoctorSearchDto dto, double userLat, double userLon)
+            throws InterruptedException {
+
+        if (Thread.interrupted())
+            throw new InterruptedException("Search interrupted before start");
+
         var cb = em.getCriteriaBuilder();
         var cq = cb.createQuery(Doctor.class);
         var root = cq.from(Doctor.class);
@@ -67,15 +74,30 @@ public class DoctorSearchService {
 
         cq.where(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
 
+        if (Thread.interrupted())
+            throw new InterruptedException("Search interrupted before DB fetch");
+
         List<Doctor> doctors = em.createQuery(cq).getResultList();
+
+        if (Thread.interrupted())
+            throw new InterruptedException("Search interrupted after DB fetch");
 
         DoctorSearchDto.SortBy sort = dto.getSortBy();
         String param = sort.getParam();
         String direction = sort.getDirection();
 
         if ("rating".equalsIgnoreCase(param)) {
+
+            if (Thread.interrupted())
+                throw new InterruptedException("Interrupted before rating sort");
+
             sortByRating(doctors, direction);
+
         } else if ("distance".equalsIgnoreCase(param)) {
+
+            if (Thread.interrupted())
+                throw new InterruptedException("Interrupted before distance sort");
+
             try {
                 sortByDistance(doctors, direction, userLat, userLon);
             } catch (Exception e) {
@@ -84,23 +106,33 @@ public class DoctorSearchService {
         }
 
         for (Doctor doctor : doctors) {
+
+            if (Thread.interrupted())
+                throw new InterruptedException("Interrupted during rating calculation");
+
             if (doctor.getFeedback() != null && !doctor.getFeedback().isEmpty()) {
+
                 double avg = doctor.getFeedback().stream()
                         .filter(f -> f.getScore() != null)
                         .mapToInt(Feedback::getScore)
                         .average()
                         .orElse(0.0);
+
                 doctor.setRating(avg);
-            }
-            else {
+
+            } else {
                 doctor.setRating(0.0);
             }
         }
+
+        if (Thread.interrupted())
+            throw new InterruptedException("Interrupted after rating computation");
 
         System.out.println(dto.getQuery());
         System.out.println(dto.getCity());
         System.out.println(dto.getDoctorType());
         System.out.println(doctors);
+
         return doctors;
     }
 
