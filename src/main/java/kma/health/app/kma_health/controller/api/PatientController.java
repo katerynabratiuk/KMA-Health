@@ -1,17 +1,19 @@
 package kma.health.app.kma_health.controller.api;
 
+import kma.health.app.kma_health.dto.AppointmentFullViewDto;
 import kma.health.app.kma_health.dto.PatientContactsDto;
 import kma.health.app.kma_health.dto.PatientDto;
+import kma.health.app.kma_health.enums.UserRole;
+import kma.health.app.kma_health.security.JwtUtils;
 import kma.health.app.kma_health.service.AuthService;
 import kma.health.app.kma_health.service.PatientService;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -38,6 +40,29 @@ public class PatientController {
             return ResponseEntity.ok(patientContacts);
         } catch (Exception e) {
             return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PreAuthorize("hasAnyRole('PATIENT', 'DOCTOR')")
+    @GetMapping("/history")
+    public ResponseEntity<List<AppointmentFullViewDto>> getPatientHistory(@RequestHeader("Authorization") String authHeader, @RequestParam UUID patientId) {
+        JwtUtils jwtUtils = new JwtUtils();
+        UserRole role = jwtUtils.getRoleFromToken(authService.extractToken(authHeader));
+        switch (role) {
+            case PATIENT -> {
+                return ResponseEntity.ok(patientService.getPatientMedicalHistory(patientId, null, UserRole.PATIENT));
+            }
+            case DOCTOR -> {
+                try {
+                    UUID doctorId = authService.getUserFromToken(authService.extractToken(authHeader)).getId();
+                    return ResponseEntity.ok(patientService.getPatientMedicalHistory(patientId, doctorId, UserRole.DOCTOR));
+                } catch (Exception e) {
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+                }
+            }
+            default -> {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
         }
     }
 }

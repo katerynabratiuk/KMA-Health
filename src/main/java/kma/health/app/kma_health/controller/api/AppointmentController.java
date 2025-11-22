@@ -27,25 +27,20 @@ public class AppointmentController {
 
     @PreAuthorize("hasRole('PATIENT')")
     @GetMapping("/patient")
-    public ResponseEntity<List<AppointmentShortViewDto>> getPatientAppointments(@RequestHeader("Authorization") String authHeader,
-                                                                                @RequestParam LocalDate start, @RequestParam LocalDate end) {
+    public ResponseEntity<List<AppointmentShortViewDto>> getPatientAppointments(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestParam LocalDate start,
+            @RequestParam(required = false) LocalDate end
+    ) {
         try {
             String token = authService.extractToken(authHeader);
             UUID patientId = authService.getUserFromToken(token).getId();
-            return ResponseEntity.ok(appointmentService.getAppointmentsForPatient(patientId, start, end));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-    }
-
-    @PreAuthorize("hasRole('PATIENT')")
-    @GetMapping("/patient")
-    public ResponseEntity<List<AppointmentShortViewDto>> getPatientAppointments(@RequestHeader("Authorization") String authHeader,
-                                                                                @RequestParam LocalDate date) {
-        try {
-            String token = authService.extractToken(authHeader);
-            UUID patientId = authService.getUserFromToken(token).getId();
-            return ResponseEntity.ok(appointmentService.getAppointmentsForPatient(patientId, date));
+            List<AppointmentShortViewDto> appointments;
+            if (end == null)
+                appointments = appointmentService.getAppointmentsForPatient(patientId, start);
+            else
+                appointments = appointmentService.getAppointmentsForPatient(patientId, start, end);
+            return ResponseEntity.ok(appointments);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
@@ -53,20 +48,18 @@ public class AppointmentController {
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/doctor")
-    public ResponseEntity<List<AppointmentShortViewDto>> getDoctorAppointments(@RequestParam UUID doctorId, @RequestParam LocalDate start,
-                                                                               @RequestParam LocalDate end) {
+    public ResponseEntity<List<AppointmentShortViewDto>> getDoctorAppointments(
+            @RequestParam UUID doctorId,
+            @RequestParam LocalDate start,
+            @RequestParam(required = false) LocalDate end
+    ) {
         try {
-            return ResponseEntity.ok(appointmentService.getAppointmentsForDoctor(doctorId, start, end));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
-    }
-
-    @PreAuthorize("isAuthenticated()")
-    @GetMapping("/doctor")
-    public ResponseEntity<List<AppointmentShortViewDto>> getDoctorAppointments(@RequestParam UUID doctorId, @RequestParam LocalDate date) {
-        try {
-            return ResponseEntity.ok(appointmentService.getAppointmentsForDoctor(doctorId, date));
+            List<AppointmentShortViewDto> appointments;
+            if (end == null)
+                appointments = appointmentService.getAppointmentsForDoctor(doctorId, start);
+            else
+                appointments = appointmentService.getAppointmentsForDoctor(doctorId, start, end);
+            return ResponseEntity.ok(appointments);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }

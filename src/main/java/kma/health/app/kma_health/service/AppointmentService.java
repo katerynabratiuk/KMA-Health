@@ -1,6 +1,8 @@
 package kma.health.app.kma_health.service;
 
+import java.time.LocalDateTime;
 import java.time.Period;
+
 import jakarta.persistence.EntityNotFoundException;
 import kma.health.app.kma_health.dto.AppointmentCreateUpdateDto;
 import kma.health.app.kma_health.dto.AppointmentFullViewDto;
@@ -28,10 +30,10 @@ public class AppointmentService {
     private final HospitalRepository hospitalRepository;
     private final ReferralRepository referralRepository;
 
-    private List<AppointmentShortViewDto> getAppointmentsForPatient(UUID patientId) {
+    public List<AppointmentFullViewDto> getAppointmentsForPatient(UUID patientId) {
         return appointmentRepository.findByReferral_Patient_Id(patientId)
                 .stream()
-                .map(AppointmentShortViewDto::new)
+                .map(AppointmentFullViewDto::new)
                 .toList();
     }
 
@@ -43,7 +45,7 @@ public class AppointmentService {
     }
 
     public List<AppointmentShortViewDto> getAppointmentsForPatient(UUID patientId, LocalDate date) {
-        return  getAppointmentsForPatient(patientId, date, date);
+        return getAppointmentsForPatient(patientId, date, date);
     }
 
     private List<AppointmentShortViewDto> getAppointmentsForDoctor(UUID doctorId) {
@@ -61,7 +63,7 @@ public class AppointmentService {
     }
 
     public List<AppointmentShortViewDto> getAppointmentsForDoctor(UUID doctorId, LocalDate date) {
-        return  getAppointmentsForDoctor(doctorId, date, date);
+        return getAppointmentsForDoctor(doctorId, date, date);
     }
 
     public AppointmentFullViewDto getFullAppointment(UUID id) {
@@ -148,5 +150,18 @@ public class AppointmentService {
                     "Appointment must be assigned either to a doctor or to a hospital."
             );
         }
+    }
+
+    public boolean haveOpenAppointment(UUID doctorId, UUID patientId) {
+        List<Appointment> appointments = appointmentRepository
+                .findByDoctor_IdAndReferral_Patient_Id(doctorId, patientId);
+
+        return appointments.stream()
+                .anyMatch(app -> {
+                    LocalDateTime start = LocalDateTime.of(app.getDate(), app.getTime());
+                    LocalDateTime end = start.plusMinutes(20);
+                    LocalDateTime now = LocalDateTime.now();
+                    return !start.isAfter(now) && !end.isBefore(now);
+                });
     }
 }

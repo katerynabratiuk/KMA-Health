@@ -20,6 +20,8 @@ public interface AppointmentRepository extends JpaRepository<Appointment, UUID> 
 
     List<Appointment> findByDoctor_Id(UUID doctorId);
 
+    List<Appointment> findByDoctor_IdAndReferral_Patient_Id(UUID doctorId, UUID patientId);
+
     List<Appointment> findByReferral_Patient_idAndDateBetween(UUID patientId,  LocalDate start, LocalDate end);
 
     List<Appointment> findByDoctor_IdAndDateBetween(UUID doctorId, LocalDate start, LocalDate end);
