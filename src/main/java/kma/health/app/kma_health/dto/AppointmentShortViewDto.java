@@ -21,7 +21,6 @@ public class AppointmentShortViewDto {
     private String doctorName;
     private UUID doctorId;
     private Long hospitalId;
-    private UUID patientId;
 
     public AppointmentShortViewDto(Appointment appointment) {
         this.id = appointment.getId();
@@ -29,7 +28,6 @@ public class AppointmentShortViewDto {
         this.time = appointment.getTime();
         this.doctorId = appointment.getDoctor().getId();
         this.hospitalId = appointment.getHospital().getId();
-        this.patientId = appointment.getReferral().getPatient().getId();
         this.doctorName = appointment.getDoctor().getFullName();
     }
 }

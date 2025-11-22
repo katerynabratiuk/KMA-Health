@@ -4,6 +4,8 @@ import kma.health.app.kma_health.entity.Appointment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -15,5 +17,11 @@ public interface AppointmentRepository extends JpaRepository<Appointment, UUID> 
     List<Appointment> findByReferral_Patient_IdAndHospital_Id(UUID patientId, Long hospitalId);
 
     List<Appointment> findByReferral_Patient_IdAndDoctor_Id(UUID patientId, UUID doctorId);
+
+    List<Appointment> findByDoctor_Id(UUID doctorId);
+
+    List<Appointment> findByReferral_Patient_idAndDateBetween(UUID patientId,  LocalDate start, LocalDate end);
+
+    List<Appointment> findByDoctor_IdAndDateBetween(UUID doctorId, LocalDate start, LocalDate end);
 }
 

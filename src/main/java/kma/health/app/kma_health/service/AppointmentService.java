@@ -14,7 +14,6 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -29,14 +28,40 @@ public class AppointmentService {
     private final HospitalRepository hospitalRepository;
     private final ReferralRepository referralRepository;
 
-    public List<AppointmentShortViewDto> getAppointments(UUID patientId) {
+    private List<AppointmentShortViewDto> getAppointmentsForPatient(UUID patientId) {
+        return appointmentRepository.findByReferral_Patient_Id(patientId)
+                .stream()
+                .map(AppointmentShortViewDto::new)
+                .toList();
+    }
 
-        List<Appointment> queryRes = appointmentRepository.findByReferral_Patient_Id(patientId);
-        List<AppointmentShortViewDto> res = new ArrayList<>();
-        for (Appointment app : queryRes) {
-            res.add(new AppointmentShortViewDto(app));
-        }
-        return res;
+    public List<AppointmentShortViewDto> getAppointmentsForPatient(UUID patientId, LocalDate start, LocalDate end) {
+        return appointmentRepository.findByReferral_Patient_idAndDateBetween(patientId, start, end)
+                .stream()
+                .map(AppointmentShortViewDto::new)
+                .toList();
+    }
+
+    public List<AppointmentShortViewDto> getAppointmentsForPatient(UUID patientId, LocalDate date) {
+        return  getAppointmentsForPatient(patientId, date, date);
+    }
+
+    private List<AppointmentShortViewDto> getAppointmentsForDoctor(UUID doctorId) {
+        return appointmentRepository.findByDoctor_Id(doctorId)
+                .stream()
+                .map(AppointmentShortViewDto::new)
+                .toList();
+    }
+
+    public List<AppointmentShortViewDto> getAppointmentsForDoctor(UUID doctorId, LocalDate start, LocalDate end) {
+        return appointmentRepository.findByDoctor_IdAndDateBetween(doctorId, start, end)
+                .stream()
+                .map(AppointmentShortViewDto::new)
+                .toList();
+    }
+
+    public List<AppointmentShortViewDto> getAppointmentsForDoctor(UUID doctorId, LocalDate date) {
+        return  getAppointmentsForDoctor(doctorId, date, date);
     }
 
     public AppointmentFullViewDto getFullAppointment(UUID id) {
@@ -83,8 +108,6 @@ public class AppointmentService {
         a.setId(UUID.randomUUID());
         return a;
     }
-
-
 
     public void validateDoctorAndPatientAge(UUID doctorID, UUID patientID) {
         if (doctorID == null) return;
