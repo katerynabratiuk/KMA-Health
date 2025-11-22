@@ -3,10 +3,8 @@ package kma.health.app.kma_health.service;
 import jakarta.persistence.EntityNotFoundException;
 import kma.health.app.kma_health.dto.AppointmentFullViewDto;
 import kma.health.app.kma_health.dto.PatientContactsDto;
-import kma.health.app.kma_health.entity.Appointment;
-import kma.health.app.kma_health.entity.Declaration;
-import kma.health.app.kma_health.entity.Doctor;
-import kma.health.app.kma_health.entity.Patient;
+import kma.health.app.kma_health.dto.ReferralDto;
+import kma.health.app.kma_health.entity.*;
 import kma.health.app.kma_health.enums.UserRole;
 import kma.health.app.kma_health.exception.PatientHistoryAccessException;
 import kma.health.app.kma_health.repository.AppointmentRepository;
@@ -27,6 +25,7 @@ public class PatientService {
     private final AppointmentRepository appointmentRepository;
     private final DeclarationRepository declarationRepository;
     private final AppointmentService appointmentService;
+    private final ReferralService referralService;
 
     public Patient getPatientById(UUID id) {
         return patientRepository.getReferenceById(id);
@@ -73,5 +72,23 @@ public class PatientService {
                     "Denied medical history access to " + role
             );
         };
+    }
+
+    public List<ReferralDto> getPatientReferrals(UUID patientId, UUID doctorId, UserRole role) {
+        List<Referral> referrals = switch (role) {
+            case PATIENT -> referralService.getAllReferrals(patientId);
+            case DOCTOR -> {
+                if (!appointmentService.haveOpenAppointment(doctorId, patientId)) {
+                    throw new PatientHistoryAccessException(
+                            "Patient " + patientId + " has no open appointment with doctor " + doctorId
+                    );
+                }
+                yield referralService.getAllReferrals(patientId);
+            }
+            default -> throw new PatientHistoryAccessException("Denied medical history access to " + role);
+        };
+        return referrals.stream()
+                .map(ReferralDto::fromEntity)
+                .toList();
     }
 }

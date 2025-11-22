@@ -3,10 +3,14 @@ package kma.health.app.kma_health.service;
 import kma.health.app.kma_health.entity.*;
 import kma.health.app.kma_health.repository.ReferralRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.UUID;
 
 @AllArgsConstructor
+@Service
 public class ReferralService {
 
     private final ReferralRepository referralRepository;
@@ -34,5 +38,9 @@ public class ReferralService {
     public void deleteReferral(Referral referral) {
         if (referralRepository.existsById(referral.getId()))
             referralRepository.delete(referral);
+    }
+
+    public List<Referral> getAllReferrals(UUID patientId) {
+        return referralRepository.findByPatientId(patientId);
     }
 }
