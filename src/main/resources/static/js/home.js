@@ -66,10 +66,12 @@ document.addEventListener("DOMContentLoaded", function () {
         <div class="sort-section">
             <h3>Sort By</h3>
             <div class="sort-group">
-                <label><input type="radio" name="sort" value="rating-desc" checked> Rating: High to Low</label>
+                <label><input type="radio" name="sort" value="rating-dsc" checked> Rating: High to Low</label>
                 <label><input type="radio" name="sort" value="rating-asc"> Rating: Low to High</label>
                 <label><input type="radio" name="sort" value="distance-asc"> Distance: Nearest First</label>
-                <label><input type="radio" name="sort" value="distance-desc"> Distance: Farthest First</label>
+                <label><input type="radio" name="sort" value="distance-dsc"> Distance: Farthest First</label>
+                <input type="hidden" name="sortBy.param" id="hidden-sort-param" value="rating">
+                <input type="hidden" name="sortBy.direction" id="hidden-sort-direction" value="asc">
             </div>
         </div>
     `;
@@ -93,7 +95,7 @@ document.addEventListener("DOMContentLoaded", function () {
             <h3>Sort By</h3>
             <div class="sort-group">
                 <label><input type="radio" name="sort" value="distance-asc" checked> Distance: Nearest First</label>
-                <label><input type="radio" name="sort" value="distance-desc"> Distance: Farthest First</label>
+                <label><input type="radio" name="sort" value="distance-dsc"> Distance: Farthest First</label>
             </div>
         </div>
     `;
@@ -149,16 +151,20 @@ document.addEventListener("DOMContentLoaded", function () {
         userLonInput.value = 0;
     }
 
-    form.addEventListener("submit", (e) => {
+    form.addEventListener("submit", function (e) {
         const doctorTypeSelect = document.getElementById("doctor-type");
         const citySelect = document.getElementById("city");
         const sortRadio = advancedSearchContainer.querySelector('input[name="sort"]:checked');
 
-        document.getElementById("hidden-doctor-type").value = doctorTypeSelect ? doctorTypeSelect.value : "";
-        document.getElementById("hidden-city").value = citySelect ? citySelect.value : "";
-        document.getElementById("hidden-sort").value = sortRadio ? sortRadio.value : "";
+        const hiddenDoctorType = document.getElementById("hidden-doctor-type");
+        const hiddenCity = document.getElementById("hidden-city");
+        const hiddenSort = document.getElementById("hidden-sort");
+
+        hiddenDoctorType.value = doctorTypeSelect && doctorTypeSelect.value !== "" ? doctorTypeSelect.value : null;
+        hiddenCity.value = citySelect && citySelect.value !== "" ? citySelect.value : null;
+        hiddenSort.value = sortRadio ? sortRadio.value : "rating-asc";
     });
-    
+
     const appointmentButtons = document.querySelectorAll('.appointment-button');
     appointmentButtons.forEach(button => {
         button.addEventListener('click', function() {

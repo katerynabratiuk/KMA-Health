@@ -30,7 +30,7 @@ public class DoctorSearchService {
         this.feedbackService = feedbackService;
     }
 
-    @TimedInterruptible(timeout = 150)
+    //@TimedInterruptible(timeout = 600000)
     public List<Doctor> searchDoctors(DoctorSearchDto dto, double userLat, double userLon)
             throws InterruptedException {
 
@@ -87,17 +87,12 @@ public class DoctorSearchService {
         String direction = sort.getDirection();
 
         if ("rating".equalsIgnoreCase(param)) {
-
             if (Thread.interrupted())
                 throw new InterruptedException("Interrupted before rating sort");
-
             sortByRating(doctors, direction);
-
         } else if ("distance".equalsIgnoreCase(param)) {
-
             if (Thread.interrupted())
                 throw new InterruptedException("Interrupted before distance sort");
-
             try {
                 sortByDistance(doctors, direction, userLat, userLon);
             } catch (Exception e) {
@@ -106,12 +101,10 @@ public class DoctorSearchService {
         }
 
         for (Doctor doctor : doctors) {
-
             if (Thread.interrupted())
                 throw new InterruptedException("Interrupted during rating calculation");
 
             if (doctor.getFeedback() != null && !doctor.getFeedback().isEmpty()) {
-
                 double avg = doctor.getFeedback().stream()
                         .filter(f -> f.getScore() != null)
                         .mapToInt(Feedback::getScore)
@@ -119,7 +112,6 @@ public class DoctorSearchService {
                         .orElse(0.0);
 
                 doctor.setRating(avg);
-
             } else {
                 doctor.setRating(0.0);
             }
@@ -127,11 +119,6 @@ public class DoctorSearchService {
 
         if (Thread.interrupted())
             throw new InterruptedException("Interrupted after rating computation");
-
-        System.out.println(dto.getQuery());
-        System.out.println(dto.getCity());
-        System.out.println(dto.getDoctorType());
-        System.out.println(doctors);
 
         return doctors;
     }

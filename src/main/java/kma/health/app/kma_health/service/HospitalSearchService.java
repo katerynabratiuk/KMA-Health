@@ -20,7 +20,7 @@ public class HospitalSearchService {
     private final EntityManager em;
     private final FeedbackService feedbackService;
 
-    @TimedInterruptible(timeout = 150)
+    //@TimedInterruptible(timeout = 150)
     public List<Hospital> searchHospitals(HospitalSearchDto dto, double userLat, double userLon)
             throws InterruptedException {
 
@@ -103,7 +103,7 @@ public class HospitalSearchService {
         hospitals.sort((h1, h2) -> {
             double r1 = h1.getRating() != null ? h1.getRating() : 0.0;
             double r2 = h2.getRating() != null ? h2.getRating() : 0.0;
-            return "desc".equalsIgnoreCase(direction)
+            return "dsc".equalsIgnoreCase(direction)
                     ? Double.compare(r2, r1)
                     : Double.compare(r1, r2);
         });
@@ -116,7 +116,7 @@ public class HospitalSearchService {
             double d2 = distance(userLat, userLon, h2.getLatitude(), h2.getLongitude());
             System.out.printf("Compare: %s(%.2f km) vs %s(%.2f km)%n",
                     h1.getName(), d1, h2.getName(), d2);
-            return "desc".equalsIgnoreCase(direction)
+            return "dsc".equalsIgnoreCase(direction)
                     ? Double.compare(d2, d1)
                     : Double.compare(d1, d2);
         });
