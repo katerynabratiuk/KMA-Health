@@ -3,6 +3,7 @@ package kma.health.app.kma_health.service;
 import kma.health.app.kma_health.dto.EditHospitalRequest;
 import kma.health.app.kma_health.dto.HospitalDto;
 import kma.health.app.kma_health.dto.HospitalFormDto;
+import kma.health.app.kma_health.entity.Examination;
 import kma.health.app.kma_health.entity.Hospital;
 import kma.health.app.kma_health.exception.CoordinatesNotFoundException;
 import kma.health.app.kma_health.repository.HospitalRepository;
@@ -94,5 +95,12 @@ public class HospitalService {
                 .stream()
                 .map(HospitalFormDto::fromEntity)
                 .toList();
+    }
+
+    public boolean providesExamination(Hospital hospital, Examination examination) {
+        return hospital != null
+               && examination != null
+               && hospital.getExaminations() != null
+               && hospital.getExaminations().contains(examination);
     }
 }

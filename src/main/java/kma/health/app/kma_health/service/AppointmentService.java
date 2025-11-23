@@ -2,6 +2,7 @@ package kma.health.app.kma_health.service;
 
 import java.io.IOException;
 import java.nio.file.*;
+import java.sql.Ref;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Period;
@@ -9,10 +10,7 @@ import java.time.Period;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import kma.health.app.kma_health.dto.*;
-import kma.health.app.kma_health.entity.Appointment;
-import kma.health.app.kma_health.entity.Doctor;
-import kma.health.app.kma_health.entity.LabAssistant;
-import kma.health.app.kma_health.entity.MedicalFile;
+import kma.health.app.kma_health.entity.*;
 import kma.health.app.kma_health.enums.AppointmentStatus;
 import kma.health.app.kma_health.exception.AppointmentNotFoundException;
 import kma.health.app.kma_health.exception.AppointmentTargetConflictException;
@@ -41,6 +39,8 @@ public class AppointmentService {
     private final ReferralRepository referralRepository;
     private final MedicalFileRepository medicalFileRepository;
     private final LabAssistantRepository labAssistantRepository;
+    private final DoctorTypeRepository doctorTypeRepository;
+    private final HospitalService hospitalService;
 
     @Value("${root.file.path}")
     private String filePath;
@@ -81,7 +81,19 @@ public class AppointmentService {
         return getAppointmentsForDoctor(doctorId, date, date);
     }
 
-    public AppointmentFullViewDto getFullAppointment(UUID id) {
+    public AppointmentFullViewDto getFullAppointment(UUID id, UUID userId) throws AccessDeniedException {
+        Appointment appointment = appointmentRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Appointment not found"));
+
+        UUID doctorId = appointment.getDoctor() != null ? appointment.getDoctor().getId() : null;
+        UUID patientId = appointment.getReferral().getPatient().getId();
+
+        boolean isDoctor = userId.equals(doctorId);
+        boolean isPatient = userId.equals(patientId);
+
+        if (!isDoctor && !isPatient)
+            throw new AccessDeniedException("Appointment does not belong to user " + userId);
+
         return appointmentRepository.findById(id)
                 .map(AppointmentFullViewDto::new)
                 .orElseThrow(() -> new AppointmentNotFoundException("Appointment is not found."));
@@ -93,11 +105,15 @@ public class AppointmentService {
         else throw new AppointmentNotFoundException("Appointment is not found.");
     }
 
-    public void createAppointment(AppointmentCreateUpdateDto appointmentDto) {
+    public void createAppointment(AppointmentCreateUpdateDto appointmentDto, UUID userId) throws AccessDeniedException {
+        if (!userId.equals(appointmentDto.getPatientId()))
+            throw new AccessDeniedException("One user cannot create an appointment for another user");
+
         validateAppointmentTarget(appointmentDto);
         if (appointmentDto.getDoctorId() != null)
             validateDoctorAndPatientAge(appointmentDto.getDoctorId(), appointmentDto.getPatientId());
         Appointment appointment = buildAppointment(appointmentDto);
+
         appointmentRepository.save(appointment);
     }
 
@@ -177,35 +193,84 @@ public class AppointmentService {
     }
 
     private Appointment buildAppointment(AppointmentCreateUpdateDto dto) {
-        Appointment a = new Appointment();
-        if (dto.getReferralId() != null)
-            a.setReferral(referralRepository.findById(dto.getReferralId())
-                    .orElseThrow(() -> new EntityNotFoundException("Referral not found")));
+        Appointment appointment = new Appointment();
 
-        LocalDate date = dto.getDate();
-        LocalTime time;
+        Referral referral = resolveReferral(dto);
+        appointment.setReferral(referral);
 
-        if (dto.getDoctorId() != null) {
-            Doctor doctor = doctorRepository.findById(dto.getDoctorId())
-                    .orElseThrow(() -> new EntityNotFoundException("Doctor not found"));
-            a.setDoctor(doctor);
+        if (dto.getDoctorId() != null)
+            assignDoctorAppointment(appointment, dto);
+        else
+            assignHospitalAppointment(appointment, dto, referral);
 
-            time = dto.getTime();
-            validateFutureDateTime(date, time);
-            a.setDate(date);
-            a.setTime(time);
-        } else {
-            a.setHospital(hospitalRepository.findById(dto.getHospitalId())
-                    .orElseThrow(() -> new EntityNotFoundException("Hospital not found")));
+        appointment.setStatus(AppointmentStatus.SCHEDULED);
+        return appointment;
+    }
 
-            time = EXAMINATION_TIME;
-            validateFutureDateTime(date, time);
-
-            a.setDate(date);
-            a.setTime(time);
+    private Referral resolveReferral(AppointmentCreateUpdateDto dto) {
+        if (dto.getReferralId() != null) {
+            return referralRepository.findById(dto.getReferralId())
+                    .orElseThrow(() -> new EntityNotFoundException("Referral not found"));
         }
-        a.setStatus(AppointmentStatus.SCHEDULED);
-        return a;
+        return buildFamilyDoctorReferral(dto);
+    }
+
+    private void assignDoctorAppointment(Appointment appointment, AppointmentCreateUpdateDto dto) {
+        Doctor doctor = doctorRepository.findById(dto.getDoctorId())
+                .orElseThrow(() -> new EntityNotFoundException("Doctor not found"));
+
+        Referral referral = appointment.getReferral();
+
+        if (referral.getDoctorType() == null)
+            throw new IllegalArgumentException("Referral doctor type is null");
+
+        if (!doctor.getDoctorType().equals(referral.getDoctorType())) {
+            throw new AppointmentTargetConflictException(
+                    "Cannot assign to doctor of type " + doctor.getDoctorType() +
+                    " using referral for " + referral.getDoctorType()
+            );
+        }
+
+        appointment.setDoctor(doctor);
+
+        validateFutureDateTime(dto.getDate(), dto.getTime());
+        appointment.setDate(dto.getDate());
+        appointment.setTime(dto.getTime());
+    }
+
+    private void assignHospitalAppointment(Appointment appointment, AppointmentCreateUpdateDto dto, Referral referral) {
+
+        if (dto.getHospitalId() == null)
+            throw new IllegalArgumentException("Hospital id is null");
+
+        Hospital hospital = hospitalRepository.findById(dto.getHospitalId())
+                .orElseThrow(() -> new EntityNotFoundException("Hospital not found"));
+
+        if (!hospitalService.providesExamination(hospital, referral.getExamination())) {
+            throw new AppointmentTargetConflictException(
+                    "Hospital doesn't provide examination " + referral.getExamination().getExamName()
+            );
+        }
+
+        appointment.setHospital(hospital);
+
+        validateFutureDateTime(dto.getDate(), EXAMINATION_TIME);
+
+        appointment.setDate(dto.getDate());
+        appointment.setTime(EXAMINATION_TIME);
+    }
+
+    private Referral buildFamilyDoctorReferral(AppointmentCreateUpdateDto dto) {
+        Referral referral = new Referral();
+        referral.setDoctorType(doctorTypeRepository.findByTypeName("Family doctor")
+                .orElseThrow(() -> new EntityNotFoundException("Doctor type not found")));
+
+        referral.setPatient(patientRepository.findById(dto.getPatientId())
+                .orElseThrow(() -> new EntityNotFoundException("Patient not found")));
+
+        referral.setValidUntil(dto.getDate().plusDays(1));
+
+        return referral;
     }
 
     private void validateFutureDateTime(LocalDate date, LocalTime time) {

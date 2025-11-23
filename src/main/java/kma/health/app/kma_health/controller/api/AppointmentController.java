@@ -72,7 +72,7 @@ public class AppointmentController {
     }
 
     @PostMapping("/finish")
-    @PreAuthorize("hasAnyRole('DOCTOR, LAB_ASSISTANT')")
+    @PreAuthorize("hasAnyRole('DOCTOR', 'LAB_ASSISTANT')")
     public ResponseEntity<?> finishAppointment(
             @RequestHeader("Authorization") String authHeader,
             @RequestPart("files") List<MedicalFileUploadDto> filesDto,
@@ -101,7 +101,7 @@ public class AppointmentController {
     }
 
     @PostMapping("/cancel")
-    @PreAuthorize("hasAnyRole('DOCTOR, PATIENT')")
+    @PreAuthorize("hasAnyRole('PATIENT','DOCTOR')")
     public ResponseEntity<?> cancelAppointment(
             @RequestHeader("Authorization") String authHeader,
             @RequestParam UUID doctorId,
@@ -127,6 +127,8 @@ public class AppointmentController {
         return ResponseEntity.ok().build();
     }
 
+    @PreAuthorize("hasRole('LAB_ASSISTANT')")
+    @PostMapping("/assign/assistant")
     public ResponseEntity<?> assignLabAssistantToAppointment(
             @RequestHeader("Authorization") String authHeader,
             @RequestParam UUID appointmentId
@@ -136,15 +138,23 @@ public class AppointmentController {
         return ResponseEntity.ok().build();
     }
 
+    @PreAuthorize("hasAnyRole('PATIENT','DOCTOR')")
     @GetMapping("/{appointmentId}")
-    public AppointmentFullViewDto getAppointment(@PathVariable UUID appointmentId) {
-        return appointmentService.getFullAppointment(appointmentId);
+    public ResponseEntity<AppointmentFullViewDto> getAppointment(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable UUID appointmentId) throws AccessDeniedException {
+        UUID userId = authService.getUserFromToken(authHeader).getId();
+        AppointmentFullViewDto dto = appointmentService.getFullAppointment(appointmentId, userId);
+        return ResponseEntity.ok(dto);
     }
 
     @PreAuthorize("hasAnyRole('PATIENT','DOCTOR')")
     @PostMapping
-    public void createAppointment(@RequestBody AppointmentCreateUpdateDto app) {
-        appointmentService.createAppointment(app);
+    public ResponseEntity<?> createAppointment(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestBody AppointmentCreateUpdateDto app) throws AccessDeniedException {
+        appointmentService.createAppointment(app, authService.getUserFromToken(authHeader).getId());
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @ExceptionHandler(value = AppointmentNotFoundException.class)
@@ -152,5 +162,4 @@ public class AppointmentController {
     public ErrorResponse handleAppointmentNotFound(AppointmentNotFoundException e) {
         return new ErrorResponse(HttpStatus.NOT_FOUND.value(), e.getMessage());
     }
-
 }
