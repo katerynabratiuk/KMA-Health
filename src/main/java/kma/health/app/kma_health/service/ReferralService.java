@@ -1,6 +1,10 @@
 package kma.health.app.kma_health.service;
 
+import jakarta.persistence.EntityNotFoundException;
 import kma.health.app.kma_health.entity.*;
+import kma.health.app.kma_health.exception.InvalidFamilyDoctorReferralMethodException;
+import kma.health.app.kma_health.exception.MissingOpenAppointmentException;
+import kma.health.app.kma_health.repository.DoctorTypeRepository;
 import kma.health.app.kma_health.repository.ReferralRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,16 +18,44 @@ import java.util.UUID;
 public class ReferralService {
 
     private final ReferralRepository referralRepository;
+    private final DoctorTypeRepository doctorTypeRepository;
+    private final AppointmentService appointmentService;
+    private final ExaminationService examinationService;
 
-    public void createReferralForDoctorType(Doctor doctor, Patient patient, DoctorType doctorType) {
+    public void createReferral(Doctor doctor, Patient patient, String doctorTypeName) {
+        if (!appointmentService.haveOpenAppointment(doctor.getId(), patient.getId()))
+            throw new MissingOpenAppointmentException("Cannot create a referral with no open appointments");
+
         Referral referral = createReferralBoilerplate(doctor, patient);
-        referral.setDoctorType(doctorType);
+        if (doctorTypeName.equals("Family doctor"))
+            throw new InvalidFamilyDoctorReferralMethodException("Wrong method used for referral creation");
+
+        referral.setDoctorType(doctorTypeRepository.findByTypeName(doctorTypeName)
+                .orElseThrow(() -> new RuntimeException("Doctor type" + doctorTypeName + "not found")));
+
         referralRepository.save(referral);
     }
 
-    public void createReferralForExamination(Doctor doctor, Patient patient, Examination examination) {
+    public void createReferral(Doctor doctor, Patient patient, Long examinationId) {
+        if (!appointmentService.haveOpenAppointment(doctor.getId(), patient.getId()))
+            throw new MissingOpenAppointmentException("Cannot create a referral with no open appointments");
+
         Referral referral = createReferralBoilerplate(doctor, patient);
-        referral.setExamination(examination);
+        try {
+            referral.setExamination(examinationService.findExaminationById(examinationId));
+        } catch (Exception e) {
+          throw new EntityNotFoundException("Cannot create a referral with examination " + examinationId);
+        }
+
+        referralRepository.save(referral);
+    }
+
+    public void createReferralForFamilyDoctor(Patient patient, LocalDate appointmentDate) {
+        Referral referral = new Referral();
+        referral.setDoctorType(doctorTypeRepository.findByTypeName("Family doctor")
+                .orElseThrow(() -> new RuntimeException("Doctor type Family doctor not found")));
+        referral.setPatient(patient);
+        referral.setValidUntil(appointmentDate.plusDays(1));
         referralRepository.save(referral);
     }
 

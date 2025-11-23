@@ -1,5 +1,6 @@
 package kma.health.app.kma_health.service;
 
+import jakarta.persistence.EntityNotFoundException;
 import kma.health.app.kma_health.dto.ExaminationDto;
 import kma.health.app.kma_health.entity.Examination;
 import kma.health.app.kma_health.exception.ExaminationNotFoundException;
@@ -14,6 +15,11 @@ import java.util.Optional;
 @AllArgsConstructor
 public class ExaminationService {
     private final ExaminationRepository examinationRepository;
+
+    public Examination findExaminationById(long examinationId) {
+        return examinationRepository.findById(examinationId)
+                .orElseThrow(() -> new EntityNotFoundException("Examination " + examinationId + " not found"));
+    }
 
     public void createExamination(ExaminationDto dto) {
         Optional<Examination> examOpt = examinationRepository.findByExamNameAndUnit(dto.getName(), dto.getUnit());
