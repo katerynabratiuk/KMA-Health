@@ -1,6 +1,7 @@
 package kma.health.app.kma_health.service;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import kma.health.app.kma_health.entity.Declaration;
 import kma.health.app.kma_health.entity.Doctor;
 import kma.health.app.kma_health.entity.Patient;
@@ -41,6 +42,7 @@ public class DeclarationService {
     }
 
     @Scheduled(cron = "0 1 0 * * *")
+    @Transactional
     public void removeDeclarationsForAdultPatients() {
         List<Patient> patients = patientRepository.findAll();
 

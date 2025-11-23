@@ -3,6 +3,9 @@ package kma.health.app.kma_health.controller.api;
 import kma.health.app.kma_health.dto.AppointmentCreateUpdateDto;
 import kma.health.app.kma_health.dto.AppointmentFullViewDto;
 import kma.health.app.kma_health.dto.AppointmentShortViewDto;
+import kma.health.app.kma_health.dto.MedicalFileUploadDto;
+import kma.health.app.kma_health.entity.Doctor;
+import kma.health.app.kma_health.enums.UserRole;
 import kma.health.app.kma_health.exception.AppointmentNotFoundException;
 import kma.health.app.kma_health.service.AppointmentService;
 import kma.health.app.kma_health.service.AuthService;
@@ -13,8 +16,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import kma.health.app.kma_health.exception.ErrorResponse;
 
+import java.io.IOException;
+import java.nio.file.AccessDeniedException;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -63,6 +69,54 @@ public class AppointmentController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
+    }
+
+    @PostMapping("/finish")
+    @PreAuthorize("hasRole('DOCTOR')")
+    public ResponseEntity<?> finishAppointment(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestPart("files") List<MedicalFileUploadDto> filesDto,
+            @RequestParam UUID appointmentId,
+            @RequestParam String diagnosis
+    ) {
+        Doctor doctor = (Doctor) authService.getUserFromToken(authHeader);
+        try {
+            appointmentService.finishAppointment(doctor.getId(), appointmentId, diagnosis, filesDto);
+            return ResponseEntity.ok().build();
+        } catch (IOException ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Failed to store files"));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Unexpected error occurred"));
+        }
+    }
+
+    @PostMapping("/cancel")
+    @PreAuthorize("hasAnyRole('DOCTOR, PATIENT')")
+    public ResponseEntity<?> cancelAppointment(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestParam UUID doctorId,
+            @RequestParam UUID patientId,
+            @RequestParam UUID appointmentId
+    ) throws AccessDeniedException {
+        UserRole role = authService.getUserFromToken(authHeader).getRole();
+        boolean isRoleMatching;
+        switch (role) {
+            case PATIENT -> {
+                isRoleMatching = authService.getUserFromToken(authHeader).getId() == patientId;
+            }
+            case DOCTOR -> {
+                isRoleMatching = authService.getUserFromToken(authHeader).getId() == doctorId;
+            }
+            default -> {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+        }
+        if (!isRoleMatching)
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        appointmentService.cancelAppointment(doctorId, patientId, appointmentId);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/{appointmentId}")

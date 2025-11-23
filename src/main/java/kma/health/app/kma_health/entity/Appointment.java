@@ -1,6 +1,8 @@
 package kma.health.app.kma_health.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import kma.health.app.kma_health.enums.AppointmentStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,10 +21,16 @@ import java.util.UUID;
 @Table(name = "appointment")
 public class Appointment {
     @Id
+    @GeneratedValue
     private UUID id;
 
+    @NotNull
     private LocalDate date;
+    @NotNull
     private LocalTime time;
+
+    @NotNull
+    private AppointmentStatus status;
 
     @ManyToOne
     @JoinColumn(name = "doctor_id")
@@ -32,6 +40,7 @@ public class Appointment {
     @JoinColumn(name = "hospital_id")
     private Hospital hospital;
 
+    @NotNull
     @ManyToOne
     @JoinColumn(name = "referral_id")
     private Referral referral;

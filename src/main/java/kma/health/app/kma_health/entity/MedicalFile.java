@@ -16,6 +16,7 @@ import java.util.UUID;
 @Table(name = "medical_file")
 public class MedicalFile {
     @Id
+    @GeneratedValue
     private UUID id;
 
     @Column(name = "file_type")

@@ -3,6 +3,7 @@ package kma.health.app.kma_health.exception;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -91,5 +92,13 @@ public class GlobalExceptionHandler{
         errorResponse.setMessage(ex.getMessage());
 
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handle(AccessDeniedException ex) {
+        ErrorResponse error = new ErrorResponse();
+        error.setStatusCode(HttpStatus.FORBIDDEN.value());
+        error.setMessage(ex.getMessage());
+        return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
     }
 }
