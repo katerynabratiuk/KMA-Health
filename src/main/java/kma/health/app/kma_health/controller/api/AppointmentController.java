@@ -4,7 +4,7 @@ import kma.health.app.kma_health.dto.AppointmentCreateUpdateDto;
 import kma.health.app.kma_health.dto.AppointmentFullViewDto;
 import kma.health.app.kma_health.dto.AppointmentShortViewDto;
 import kma.health.app.kma_health.dto.MedicalFileUploadDto;
-import kma.health.app.kma_health.entity.Doctor;
+import kma.health.app.kma_health.entity.AuthUser;
 import kma.health.app.kma_health.enums.UserRole;
 import kma.health.app.kma_health.exception.AppointmentNotFoundException;
 import kma.health.app.kma_health.service.AppointmentService;
@@ -72,23 +72,31 @@ public class AppointmentController {
     }
 
     @PostMapping("/finish")
-    @PreAuthorize("hasRole('DOCTOR')")
+    @PreAuthorize("hasAnyRole('DOCTOR, LAB_ASSISTANT')")
     public ResponseEntity<?> finishAppointment(
             @RequestHeader("Authorization") String authHeader,
             @RequestPart("files") List<MedicalFileUploadDto> filesDto,
             @RequestParam UUID appointmentId,
             @RequestParam String diagnosis
     ) {
-        Doctor doctor = (Doctor) authService.getUserFromToken(authHeader);
-        try {
-            appointmentService.finishAppointment(doctor.getId(), appointmentId, diagnosis, filesDto);
-            return ResponseEntity.ok().build();
-        } catch (IOException ex) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("message", "Failed to store files"));
-        } catch (Exception ex) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("message", "Unexpected error occurred"));
+        UserRole role = authService.getUserFromToken(authHeader).getRole();
+        switch (role) {
+            case DOCTOR, LAB_ASSISTANT -> {
+                AuthUser user = authService.getUserFromToken(authHeader);
+                try {
+                    appointmentService.finishAppointment(user.getId(), appointmentId, diagnosis, filesDto);
+                    return ResponseEntity.ok().build();
+                } catch (IOException ex) {
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .body(Map.of("message", "Failed to store files"));
+                } catch (Exception ex) {
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .body(Map.of("message", "Unexpected error occurred"));
+                }
+            }
+            default -> {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
         }
     }
 
@@ -106,7 +114,7 @@ public class AppointmentController {
             case PATIENT -> {
                 isRoleMatching = authService.getUserFromToken(authHeader).getId() == patientId;
             }
-            case DOCTOR -> {
+            case DOCTOR, LAB_ASSISTANT -> {
                 isRoleMatching = authService.getUserFromToken(authHeader).getId() == doctorId;
             }
             default -> {
@@ -116,6 +124,15 @@ public class AppointmentController {
         if (!isRoleMatching)
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         appointmentService.cancelAppointment(doctorId, patientId, appointmentId);
+        return ResponseEntity.ok().build();
+    }
+
+    public ResponseEntity<?> assignLabAssistantToAppointment(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestParam UUID appointmentId
+            ) throws AccessDeniedException {
+        UUID userId = authService.getUserFromToken(authHeader).getId();
+        appointmentService.assignLabAssistantToAppointment(userId, appointmentId);
         return ResponseEntity.ok().build();
     }
 

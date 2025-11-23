@@ -11,6 +11,7 @@ import jakarta.transaction.Transactional;
 import kma.health.app.kma_health.dto.*;
 import kma.health.app.kma_health.entity.Appointment;
 import kma.health.app.kma_health.entity.Doctor;
+import kma.health.app.kma_health.entity.LabAssistant;
 import kma.health.app.kma_health.entity.MedicalFile;
 import kma.health.app.kma_health.enums.AppointmentStatus;
 import kma.health.app.kma_health.exception.AppointmentNotFoundException;
@@ -39,6 +40,7 @@ public class AppointmentService {
     private final HospitalRepository hospitalRepository;
     private final ReferralRepository referralRepository;
     private final MedicalFileRepository medicalFileRepository;
+    private final LabAssistantRepository labAssistantRepository;
 
     @Value("${root.file.path}")
     private String filePath;
@@ -106,8 +108,16 @@ public class AppointmentService {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new AppointmentNotFoundException("Appointment " + appointmentId + " not found."));
 
-        if (!appointment.getDoctor().getId().equals(doctorId))
-            throw new AccessDeniedException("Appointment " + appointmentId + " doesn't belong to doctor " + doctorId);
+        UUID doctorIdFromAppointment = appointment.getDoctor() != null ? appointment.getDoctor().getId() : null;
+        UUID labAssistantIdFromAppointment = appointment.getLabAssistant() != null ? appointment.getLabAssistant().getId() : null;
+
+        if (!doctorId.equals(doctorIdFromAppointment) &&
+            !doctorId.equals(labAssistantIdFromAppointment)) {
+            throw new AccessDeniedException(
+                    "Appointment " + appointmentId + " doesn't belong to doctor/lab assistant " + doctorId
+            );
+        }
+
         if (appointment.getStatus() != AppointmentStatus.OPEN)
             throw new AccessDeniedException("Appointment " + appointmentId + " is not open.");
 
@@ -142,10 +152,17 @@ public class AppointmentService {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new AppointmentNotFoundException("Appointment" + appointmentId + " not found."));
 
-        if (doctorId != null) {
-            if (!appointment.getDoctor().getId().equals(doctorId))
-                throw new AccessDeniedException("Appointment " + appointmentId + "doesn't belong to " + doctorId);
-            else if (appointment.getStatus() != AppointmentStatus.OPEN)
+        UUID doctorIdFromAppointment = appointment.getDoctor() != null ? appointment.getDoctor().getId() : null;
+        UUID labAssistantIdFromAppointment = appointment.getLabAssistant() != null ? appointment.getLabAssistant().getId() : null;
+
+        if (doctorIdFromAppointment != null || labAssistantIdFromAppointment != null) {
+            if (!doctorId.equals(doctorIdFromAppointment) &&
+                !doctorId.equals(labAssistantIdFromAppointment)) {
+                throw new AccessDeniedException(
+                        "Appointment " + appointmentId + " doesn't belong to doctor/lab assistant " + doctorId
+                );
+            }
+            if (appointment.getStatus() != AppointmentStatus.OPEN)
                 throw new AccessDeniedException("Appointment " + appointmentId + "is not open.");
         }
 
@@ -266,5 +283,28 @@ public class AppointmentService {
                 a.setStatus(AppointmentStatus.OPEN);
         }
         appointmentRepository.saveAll(scheduledAppointments);
+    }
+
+    public void assignLabAssistantToAppointment(UUID appointmentId, UUID labAssistantId) throws AccessDeniedException {
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new EntityNotFoundException("Appointment not found"));
+
+        LabAssistant labAssistant = labAssistantRepository.findById(labAssistantId)
+                .orElseThrow(() -> new EntityNotFoundException("Lab assistant not found"));
+
+        if (appointment.getStatus() == AppointmentStatus.FINISHED)
+            throw new AccessDeniedException("Appointment is already finished");
+
+        if (appointment.getLabAssistant() != null)
+            throw new AccessDeniedException("Lab assistant already assigned");
+
+        if (appointment.getHospital() == null)
+            throw new AppointmentTargetConflictException("Appointment's target is doctor");
+
+        if (!appointment.getHospital().equals(labAssistant.getHospital()))
+            throw new AccessDeniedException("Appointment is not from this assistant's hospital");
+
+        appointment.setLabAssistant(labAssistant);
+        appointmentRepository.save(appointment);
     }
 }

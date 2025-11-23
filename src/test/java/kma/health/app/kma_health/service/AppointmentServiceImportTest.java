@@ -1,15 +1,9 @@
 package kma.health.app.kma_health.service;
 
-import kma.health.app.kma_health.dto.AppointmentCreateUpdateDto;
-import kma.health.app.kma_health.entity.Appointment;
 import kma.health.app.kma_health.entity.Doctor;
 import kma.health.app.kma_health.entity.Patient;
 import kma.health.app.kma_health.exception.DoctorSpecializationAgeRestrictionException;
-import kma.health.app.kma_health.repository.AppointmentRepository;
-import kma.health.app.kma_health.repository.DoctorRepository;
-import kma.health.app.kma_health.repository.HospitalRepository;
-import kma.health.app.kma_health.repository.PatientRepository;
-import kma.health.app.kma_health.repository.ReferralRepository;
+import kma.health.app.kma_health.repository.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
@@ -23,7 +17,7 @@ import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
@@ -32,6 +26,7 @@ public class AppointmentServiceImportTest {
 
     @Configuration
     static class TestConfig {
+
         @Bean
         public AppointmentRepository appointmentRepository() {
             return Mockito.mock(AppointmentRepository.class);
@@ -58,18 +53,27 @@ public class AppointmentServiceImportTest {
         }
 
         @Bean
+        public MedicalFileRepository medicalFileRepository() {
+            return Mockito.mock(MedicalFileRepository.class);
+        }
+
+        @Bean
         public AppointmentService appointmentService(
                 AppointmentRepository appointmentRepository,
                 PatientRepository patientRepository,
                 DoctorRepository doctorRepository,
                 HospitalRepository hospitalRepository,
-                ReferralRepository referralRepository) {
+                ReferralRepository referralRepository,
+                MedicalFileRepository medicalFileRepository
+        ) {
             return new AppointmentService(
                     appointmentRepository,
                     patientRepository,
                     doctorRepository,
                     hospitalRepository,
-                    referralRepository);
+                    referralRepository,
+                    medicalFileRepository
+            );
         }
     }
 
@@ -98,11 +102,10 @@ public class AppointmentServiceImportTest {
         when(patientRepository.findById(patientId)).thenReturn(Optional.of(patient));
         when(doctorRepository.findById(doctorId)).thenReturn(Optional.of(doctor));
 
-        assertThrows(DoctorSpecializationAgeRestrictionException.class, () -> {
-            appointmentService.validateDoctorAndPatientAge(doctorId, patientId);
-        });
+        assertThrows(DoctorSpecializationAgeRestrictionException.class,
+                () -> appointmentService.validateDoctorAndPatientAge(doctorId, patientId));
 
-        verify(patientRepository, times(1)).findById(patientId);
-        verify(doctorRepository, times(1)).findById(doctorId);
+        verify(patientRepository).findById(patientId);
+        verify(doctorRepository).findById(doctorId);
     }
 }
