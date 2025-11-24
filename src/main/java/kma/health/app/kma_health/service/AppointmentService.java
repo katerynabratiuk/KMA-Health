@@ -105,6 +105,7 @@ public class AppointmentService {
         else throw new AppointmentNotFoundException("Appointment is not found.");
     }
 
+    @Transactional
     public void createAppointment(AppointmentCreateUpdateDto appointmentDto, UUID userId) throws AccessDeniedException {
         if (!userId.equals(appointmentDto.getPatientId()))
             throw new AccessDeniedException("One user cannot create an appointment for another user");
@@ -269,6 +270,7 @@ public class AppointmentService {
                 .orElseThrow(() -> new EntityNotFoundException("Patient not found")));
 
         referral.setValidUntil(dto.getDate().plusDays(1));
+        referralRepository.save(referral);
 
         return referral;
     }

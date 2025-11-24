@@ -3,6 +3,7 @@ package kma.health.app.kma_health.service;
 import kma.health.app.kma_health.dto.EditHospitalRequest;
 import kma.health.app.kma_health.dto.HospitalDto;
 import kma.health.app.kma_health.dto.HospitalFormDto;
+import kma.health.app.kma_health.entity.DoctorType;
 import kma.health.app.kma_health.entity.Examination;
 import kma.health.app.kma_health.entity.Hospital;
 import kma.health.app.kma_health.exception.CoordinatesNotFoundException;
@@ -102,5 +103,14 @@ public class HospitalService {
                && examination != null
                && hospital.getExaminations() != null
                && hospital.getExaminations().contains(examination);
+    }
+
+    public boolean providesDoctorType(Hospital hospital, DoctorType doctorType) {
+        return hospital != null
+               && doctorType != null
+               && doctorType.getDoctors() != null
+               && doctorType.getDoctors()
+                       .stream()
+                       .anyMatch(d -> hospital.equals(d.getHospital()));
     }
 }
