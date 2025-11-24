@@ -53,6 +53,7 @@ public class PatientService {
         dto.setEmail(patient.getEmail());
         dto.setPhone(patient.getPhoneNumber());
         dto.setFamilyDoctorName(doctor != null ? doctor.getFullName() : null);
+        dto.setBirthDate(patient.getBirthDate());
 
         return dto;
     }
