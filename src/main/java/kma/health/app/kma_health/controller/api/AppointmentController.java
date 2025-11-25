@@ -4,7 +4,6 @@ import kma.health.app.kma_health.dto.AppointmentCreateUpdateDto;
 import kma.health.app.kma_health.dto.AppointmentFullViewDto;
 import kma.health.app.kma_health.dto.AppointmentShortViewDto;
 import kma.health.app.kma_health.dto.MedicalFileUploadDto;
-import kma.health.app.kma_health.entity.AuthUser;
 import kma.health.app.kma_health.enums.UserRole;
 import kma.health.app.kma_health.exception.AppointmentNotFoundException;
 import kma.health.app.kma_health.service.AppointmentService;
@@ -13,6 +12,8 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import kma.health.app.kma_health.exception.ErrorResponse;
 
@@ -34,18 +35,16 @@ public class AppointmentController {
     @PreAuthorize("hasRole('PATIENT')")
     @GetMapping("/patient")
     public ResponseEntity<List<AppointmentShortViewDto>> getPatientAppointments(
-            @RequestHeader("Authorization") String authHeader,
+            @AuthenticationPrincipal UUID userId,
             @RequestParam LocalDate start,
             @RequestParam(required = false) LocalDate end
     ) {
         try {
-            String token = authService.extractToken(authHeader);
-            UUID patientId = authService.getUserFromToken(token).getId();
             List<AppointmentShortViewDto> appointments;
             if (end == null)
-                appointments = appointmentService.getAppointmentsForPatient(patientId, start);
+                appointments = appointmentService.getAppointmentsForPatient(userId, start);
             else
-                appointments = appointmentService.getAppointmentsForPatient(patientId, start, end);
+                appointments = appointmentService.getAppointmentsForPatient(userId, start, end);
             return ResponseEntity.ok(appointments);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -74,66 +73,57 @@ public class AppointmentController {
     @PostMapping("/finish")
     @PreAuthorize("hasAnyRole('DOCTOR', 'LAB_ASSISTANT')")
     public ResponseEntity<?> finishAppointment(
-            @RequestHeader("Authorization") String authHeader,
+            @AuthenticationPrincipal UUID userId,
             @RequestPart("files") List<MedicalFileUploadDto> filesDto,
             @RequestParam UUID appointmentId,
             @RequestParam String diagnosis
     ) {
-        UserRole role = authService.getUserFromToken(authHeader).getRole();
-        switch (role) {
-            case DOCTOR, LAB_ASSISTANT -> {
-                AuthUser user = authService.getUserFromToken(authHeader);
-                try {
-                    appointmentService.finishAppointment(user.getId(), appointmentId, diagnosis, filesDto);
-                    return ResponseEntity.ok().build();
-                } catch (IOException ex) {
-                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .body(Map.of("message", "Failed to store files"));
-                } catch (Exception ex) {
-                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .body(Map.of("message", "Unexpected error occurred"));
-                }
-            }
-            default -> {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-            }
+        try {
+            appointmentService.finishAppointment(userId, appointmentId, diagnosis, filesDto);
+            return ResponseEntity.ok().build();
+        } catch (IOException ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Failed to store files"));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Unexpected error occurred"));
         }
     }
 
     @PostMapping("/cancel")
     @PreAuthorize("hasAnyRole('PATIENT','DOCTOR')")
     public ResponseEntity<?> cancelAppointment(
-            @RequestHeader("Authorization") String authHeader,
+            @AuthenticationPrincipal UUID userId,
             @RequestParam UUID doctorId,
             @RequestParam UUID patientId,
             @RequestParam UUID appointmentId
     ) throws AccessDeniedException {
-        UserRole role = authService.getUserFromToken(authHeader).getRole();
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        UserRole role = UserRole.fromString(auth.getAuthorities().iterator().next().getAuthority().replace("ROLE_", ""));
+
         boolean isRoleMatching;
         switch (role) {
-            case PATIENT -> {
-                isRoleMatching = authService.getUserFromToken(authHeader).getId() == patientId;
-            }
-            case DOCTOR, LAB_ASSISTANT -> {
-                isRoleMatching = authService.getUserFromToken(authHeader).getId() == doctorId;
-            }
+            case PATIENT -> isRoleMatching = userId.equals(patientId);
+            case DOCTOR, LAB_ASSISTANT -> isRoleMatching = userId.equals(doctorId);
             default -> {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
         }
+
         if (!isRoleMatching)
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+
         appointmentService.cancelAppointment(doctorId, patientId, appointmentId);
         return ResponseEntity.ok().build();
     }
 
+
     @PreAuthorize("hasRole('LAB_ASSISTANT')")
     @PostMapping("/assign/assistant")
     public ResponseEntity<?> assignLabAssistantToAppointment(
-            @RequestHeader("Authorization") String authHeader,
+            @AuthenticationPrincipal UUID userId,
             @RequestParam UUID appointmentId
             ) throws AccessDeniedException {
-        UUID userId = authService.getUserFromToken(authHeader).getId();
         appointmentService.assignLabAssistantToAppointment(userId, appointmentId);
         return ResponseEntity.ok().build();
     }
@@ -141,9 +131,8 @@ public class AppointmentController {
     @PreAuthorize("hasAnyRole('PATIENT','DOCTOR')")
     @GetMapping("/{appointmentId}")
     public ResponseEntity<AppointmentFullViewDto> getAppointment(
-            @RequestHeader("Authorization") String authHeader,
+            @AuthenticationPrincipal UUID userId,
             @PathVariable UUID appointmentId) throws AccessDeniedException {
-        UUID userId = authService.getUserFromToken(authHeader).getId();
         AppointmentFullViewDto dto = appointmentService.getFullAppointment(appointmentId, userId);
         return ResponseEntity.ok(dto);
     }
@@ -151,9 +140,10 @@ public class AppointmentController {
     @PreAuthorize("hasAnyRole('PATIENT','DOCTOR')")
     @PostMapping
     public ResponseEntity<?> createAppointment(
-            @RequestHeader("Authorization") String authHeader,
-            @RequestBody AppointmentCreateUpdateDto app) throws AccessDeniedException {
-        appointmentService.createAppointment(app, authService.getUserFromToken(authHeader).getId());
+            @AuthenticationPrincipal UUID userId,
+            @RequestBody AppointmentCreateUpdateDto app
+    ) throws AccessDeniedException {
+        appointmentService.createAppointment(app, userId);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 

@@ -4,13 +4,17 @@ import kma.health.app.kma_health.dto.CreateReferralRequest;
 import kma.health.app.kma_health.entity.Doctor;
 import kma.health.app.kma_health.entity.Patient;
 import kma.health.app.kma_health.service.AuthService;
+import kma.health.app.kma_health.service.DoctorSearchService;
 import kma.health.app.kma_health.service.PatientService;
 import kma.health.app.kma_health.service.ReferralService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 @AllArgsConstructor
@@ -20,15 +24,18 @@ public class ReferralController {
     private final AuthService authService;
     private final ReferralService referralService;
     private final PatientService patientService;
+    private final DoctorSearchService doctorSearchService;
 
     @PreAuthorize("hasRole('DOCTOR')")
     @PostMapping
     public ResponseEntity<?> createReferral(
-            @RequestHeader("Authorization") String authHeader,
+            @AuthenticationPrincipal UUID userId,
             @RequestParam CreateReferralRequest request
     ) {
-        String token = authService.extractToken(authHeader);
-        Doctor doctor = (Doctor) authService.getUserFromToken(token);
+        Doctor doctor = doctorSearchService.getDoctorById(userId);
+        if (doctor == null)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
         Patient patient = patientService.getPatientById(request.getPatientId());
 
         if (request.getDoctorTypeName() == null || request.getDoctorTypeName().isEmpty())

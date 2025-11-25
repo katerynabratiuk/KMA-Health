@@ -5,13 +5,14 @@ import kma.health.app.kma_health.dto.PatientContactsDto;
 import kma.health.app.kma_health.dto.PatientDto;
 import kma.health.app.kma_health.dto.ReferralDto;
 import kma.health.app.kma_health.enums.UserRole;
-import kma.health.app.kma_health.security.JwtUtils;
 import kma.health.app.kma_health.service.AuthService;
 import kma.health.app.kma_health.service.PatientService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,10 +28,8 @@ public class PatientController {
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/profile")
-    public PatientDto getProfile(@RequestHeader("Authorization") String authHeader) {
-        String token = authService.extractToken(authHeader);
-        UUID id = authService.getUserFromToken(token).getId();
-        return new PatientDto(patientService.getPatientById(id));
+    public PatientDto getProfile(@AuthenticationPrincipal UUID userId) {
+        return new PatientDto(patientService.getPatientById(userId));
     }
 
     @PreAuthorize("hasRole('DOCTOR')")
@@ -46,49 +45,47 @@ public class PatientController {
 
     @PreAuthorize("hasAnyRole('PATIENT', 'DOCTOR')")
     @GetMapping("/history")
-    public ResponseEntity<List<AppointmentFullViewDto>> getPatientHistory(@RequestHeader("Authorization") String authHeader,
-                                                                          @RequestParam UUID patientId) {
-        JwtUtils jwtUtils = new JwtUtils();
-        UserRole role = jwtUtils.getRoleFromToken(authService.extractToken(authHeader));
-        switch (role) {
-            case PATIENT -> {
-                return ResponseEntity.ok(patientService.getPatientMedicalHistory(patientId, null, UserRole.PATIENT));
-            }
-            case DOCTOR -> {
-                try {
-                    UUID doctorId = authService.getUserFromToken(authService.extractToken(authHeader)).getId();
-                    return ResponseEntity.ok(patientService.getPatientMedicalHistory(patientId, doctorId, UserRole.DOCTOR));
-                } catch (Exception e) {
-                    return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-                }
-            }
-            default -> {
+    public ResponseEntity<List<AppointmentFullViewDto>> getPatientHistory(
+            @AuthenticationPrincipal UUID userId,
+            @RequestParam UUID patientId
+    ) {
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isPatient = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_PATIENT"));
+        boolean isDoctor = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_DOCTOR"));
+
+        if (isPatient) {
+            if (!userId.equals(patientId))
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-            }
+            return ResponseEntity.ok(patientService.getPatientMedicalHistory(patientId, null, UserRole.PATIENT));
+        } else if (isDoctor) {
+            return ResponseEntity.ok(patientService.getPatientMedicalHistory(patientId, userId, UserRole.DOCTOR));
+        } else {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
     }
 
     @PreAuthorize("hasAnyRole('PATIENT', 'DOCTOR')")
     @GetMapping("/referrals")
-    public ResponseEntity<List<ReferralDto>> getReferrals(@RequestHeader("Authorization") String authHeader,
-                                                          @RequestParam UUID patientId) {
-        JwtUtils jwtUtils = new JwtUtils();
-        UserRole role = jwtUtils.getRoleFromToken(authService.extractToken(authHeader));
-        switch (role) {
-            case PATIENT -> {
-                return ResponseEntity.ok(patientService.getPatientReferrals(patientId, null, role));
-            }
-            case DOCTOR -> {
-                try {
-                    UUID doctorId = authService.getUserFromToken(authService.extractToken(authHeader)).getId();
-                    return ResponseEntity.ok(patientService.getPatientReferrals(patientId, doctorId, role));
-                } catch (Exception e) {
-                    return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-                }
-            }
-            default -> {
+    public ResponseEntity<List<ReferralDto>> getReferrals(
+            @AuthenticationPrincipal UUID userId,
+            @RequestParam UUID patientId
+    ) {
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isPatient = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_PATIENT"));
+        boolean isDoctor = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_DOCTOR"));
+
+        if (isPatient) {
+            if (!userId.equals(patientId))
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-            }
+            return ResponseEntity.ok(patientService.getPatientReferrals(patientId, null, UserRole.PATIENT));
+        } else if (isDoctor) {
+            return ResponseEntity.ok(patientService.getPatientReferrals(patientId, userId, UserRole.DOCTOR));
+        } else {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
     }
 }

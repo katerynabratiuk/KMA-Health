@@ -6,6 +6,7 @@ import kma.health.app.kma_health.entity.Doctor;
 import kma.health.app.kma_health.entity.Feedback;
 import kma.health.app.kma_health.entity.Hospital;
 import kma.health.app.kma_health.logging.TimedInterruptible;
+import kma.health.app.kma_health.repository.DoctorRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.UUID;
 
 import static kma.health.app.kma_health.service.NearestHospitalService.distanceInKm;
 
@@ -24,6 +26,8 @@ public class DoctorSearchService {
 
     @Autowired
     private FeedbackService feedbackService;
+    @Autowired
+    private DoctorRepository doctorRepository;
 
     @Autowired
     public void setRatingService(FeedbackService feedbackService) {
@@ -161,5 +165,9 @@ public class DoctorSearchService {
                     ? Double.compare(dDist1, dDist2)
                     : Double.compare(dDist2, dDist1);
         });
+    }
+
+    public Doctor getDoctorById(UUID id) {
+        return doctorRepository.findById(id).orElse(null);
     }
 }

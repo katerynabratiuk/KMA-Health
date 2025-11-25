@@ -92,7 +92,7 @@ public class AuthService {
     @RateLimited(maxCalls = 5, timeWindowSeconds = 60)
     public String loginByPassport(String passport, String password, UserRole role) {
         String token = login(r -> r.findByPassportNumber(passport), password, role);
-        System.out.println("Id " + MDC.get("userId")); // Тепер не null
+        System.out.println("Id " + MDC.get("userId"));
         return token;
     }
 
