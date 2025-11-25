@@ -38,6 +38,8 @@ public class RegisterRequest {
     @NotNull(message="Дата народження є обов'язковим полем")
     private LocalDate birthDate;
 
+    private LocalDate startedWorking;
+
     private String type;
     private Long doctorTypeId;
     private Long hospitalId;

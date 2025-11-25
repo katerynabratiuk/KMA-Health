@@ -23,6 +23,7 @@ public class RegistrationService {
     private final DoctorTypeRepository doctorTypeRepository;
     private final HospitalRepository hospitalRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RandomProfileImageService randomProfileImageService;
 
     private static final Logger log = LoggerFactory.getLogger(RegistrationService.class);
     private static final Marker SECURITY = MarkerFactory.getMarker("SECURITY");
@@ -55,6 +56,7 @@ public class RegistrationService {
                                 hospitalRepository.findById(request.getHospitalId())
                                         .orElseThrow(() -> new RuntimeException("Hospital not found"))
                         );
+                        doctor.setStartedWorking(request.getStartedWorking());
                         doctorRepository.save(doctor);
                         log.info("Doctor registered successfully");
                         return "Doctor registered successfully";
@@ -100,6 +102,7 @@ public class RegistrationService {
         user.setPhoneNumber(request.getPhoneNumber());
         user.setFullName(request.getFullName());
         user.setBirthDate(request.getBirthDate());
+        user.setProfilePictureUrl(randomProfileImageService.getRandomProfilePicture());
     }
 
     private void validateRegisterKey(String providedKey) {

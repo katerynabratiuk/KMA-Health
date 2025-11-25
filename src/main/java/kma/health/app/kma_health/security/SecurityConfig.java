@@ -38,7 +38,8 @@ public class SecurityConfig {
                                 "/js/**",
                                 "/images/**",
                                 "/api-docs/**",
-                                "/swagger-ui/**"
+                                "/swagger-ui/**",
+                                "/api/**"
                         ).permitAll()
 
                         // patient API

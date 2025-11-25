@@ -21,5 +21,7 @@ public interface AuthUser {
     void setFullName(String fullName);
     LocalDate getBirthDate();
     void setBirthDate(LocalDate birthDate);
+    String getProfilePictureUrl();
+    void setProfilePictureUrl(String profilePictureUrl);
 }
 

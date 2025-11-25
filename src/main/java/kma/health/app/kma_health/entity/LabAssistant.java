@@ -1,5 +1,6 @@
 package kma.health.app.kma_health.entity;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Size;
@@ -35,6 +36,8 @@ public class LabAssistant implements AuthUser {
     private String email;
     private String password;
     private String phoneNumber;
+
+    private String profilePictureUrl;
 
     @PastOrPresent
     private LocalDate birthDate;

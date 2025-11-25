@@ -45,16 +45,17 @@
     <div th:if="${formDto.searchType == 'doctor'}" class="search-result-container">
         <div th:each="doctor : ${doctors}" class="doctor-card">
             <div class="doctor-left">
-                <img th:src="@{/images/Segin.jpg}" alt="Doctor Photo" class="doctor-photo">
-                <span class="doctor-experience">10 years of experience</span>
+                <img th:if="${doctor.profilePictureUrl != null}" th:src="${doctor.profilePictureUrl}" alt="Doctor Photo" class="doctor-photo">
+                <img th:unless="${doctor.profilePictureUrl != null}" th:src="@{/images/Segin.jpg}" alt="Doctor Photo" class="doctor-photo">
+                <span class="doctor-experience" th:text="|${doctor.yearsOfExperience} years of experience|">10 years of experience</span>
             </div>
 
             <div class="doctor-info">
-                <span class="doctor-type" th:text="${doctor.doctorType.typeName}">Cardiologist</span>
-                <h2 class="doctor-name" th:text="${doctor.fullName}">Dr. Segin Liubomyr</h2>
+                <span class="doctor-type" th:text="${doctor.doctorType.typeName}">Doctor</span>
+                <h2 class="doctor-name" th:text="|Dr. ${doctor.fullName}|">Dr. Segin Liubomyr</h2>
                 <p class="doctor-description"
                    th:text="${doctor.description != null ? doctor.description : 'No description available'}">
-                    Specializes in heart and vascular diseases.
+                    Doctor description.
                 </p>
             </div>
 

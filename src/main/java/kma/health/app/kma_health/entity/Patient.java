@@ -1,5 +1,6 @@
 package kma.health.app.kma_health.entity;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Size;
@@ -35,6 +36,8 @@ public class Patient implements AuthUser {
 
     @Column(name = "full_name")
     private String fullName;
+
+    private String profilePictureUrl;
 
     @PastOrPresent
     private LocalDate birthDate;

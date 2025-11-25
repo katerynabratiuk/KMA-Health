@@ -39,8 +39,14 @@ public class Doctor implements AuthUser {
     @Column(name = "full_name")
     private String fullName;
 
+    private String profilePictureUrl;
+
     @PastOrPresent
     private LocalDate birthDate;
+
+    @PastOrPresent
+    @NotNull
+    private LocalDate startedWorking;
 
     @Pattern(regexp = "adult|child", message = "Type must be either 'adult' or 'child'")
     private String type;
@@ -64,6 +70,9 @@ public class Doctor implements AuthUser {
 
     @Transient
     private Double rating;
+
+    @Transient
+    private int yearsOfExperience;
 
     @Nullable
     private String description;

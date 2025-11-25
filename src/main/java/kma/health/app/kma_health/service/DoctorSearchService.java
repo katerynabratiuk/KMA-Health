@@ -11,6 +11,8 @@ import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.Period;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -119,6 +121,10 @@ public class DoctorSearchService {
             } else {
                 doctor.setRating(0.0);
             }
+
+            LocalDate startDate = doctor.getStartedWorking();
+            int yearsOfExperience = Period.between(startDate, LocalDate.now()).getYears();
+            doctor.setYearsOfExperience(yearsOfExperience);
         }
 
         if (Thread.interrupted())
