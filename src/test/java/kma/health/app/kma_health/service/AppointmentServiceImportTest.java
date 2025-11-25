@@ -24,6 +24,38 @@ import static org.mockito.Mockito.*;
 @Import(AppointmentServiceImportTest.TestConfig.class)
 public class AppointmentServiceImportTest {
 
+    @Autowired
+    private AppointmentService appointmentService;
+
+    @Autowired
+    private PatientRepository patientRepository;
+
+    @Autowired
+    private DoctorRepository doctorRepository;
+
+    @Test
+    public void testValidateDoctorAndPatientAge_ShouldThrowExceptionWhenChildPatientWithAdultDoctor() {
+        UUID doctorId = UUID.randomUUID();
+        UUID patientId = UUID.randomUUID();
+
+        Patient patient = new Patient();
+        patient.setId(patientId);
+        patient.setBirthDate(LocalDate.now().minusYears(10));
+
+        Doctor doctor = new Doctor();
+        doctor.setId(doctorId);
+        doctor.setType("adult");
+
+        when(patientRepository.findById(patientId)).thenReturn(Optional.of(patient));
+        when(doctorRepository.findById(doctorId)).thenReturn(Optional.of(doctor));
+
+        assertThrows(DoctorSpecializationAgeRestrictionException.class,
+                () -> appointmentService.validateDoctorAndPatientAge(doctorId, patientId));
+
+        verify(patientRepository).findById(patientId);
+        verify(doctorRepository).findById(doctorId);
+    }
+
     @Configuration
     static class TestConfig {
 
@@ -58,13 +90,31 @@ public class AppointmentServiceImportTest {
         }
 
         @Bean
+        public LabAssistantRepository labAssistantRepository() {
+            return Mockito.mock(LabAssistantRepository.class);
+        }
+
+        @Bean
+        public DoctorTypeRepository doctorTypeRepository() {
+            return Mockito.mock(DoctorTypeRepository.class);
+        }
+
+        @Bean
+        public HospitalService hospitalService() {
+            return Mockito.mock(HospitalService.class);
+        }
+
+        @Bean
         public AppointmentService appointmentService(
                 AppointmentRepository appointmentRepository,
                 PatientRepository patientRepository,
                 DoctorRepository doctorRepository,
                 HospitalRepository hospitalRepository,
                 ReferralRepository referralRepository,
-                MedicalFileRepository medicalFileRepository
+                MedicalFileRepository medicalFileRepository,
+                LabAssistantRepository labAssistantRepository,
+                DoctorTypeRepository doctorTypeRepository,
+                HospitalService hospitalService
         ) {
             return new AppointmentService(
                     appointmentRepository,
@@ -72,40 +122,12 @@ public class AppointmentServiceImportTest {
                     doctorRepository,
                     hospitalRepository,
                     referralRepository,
-                    medicalFileRepository
+                    medicalFileRepository,
+                    labAssistantRepository,
+                    doctorTypeRepository,
+                    hospitalService
             );
         }
     }
-
-    @Autowired
-    private AppointmentService appointmentService;
-
-    @Autowired
-    private PatientRepository patientRepository;
-
-    @Autowired
-    private DoctorRepository doctorRepository;
-
-    @Test
-    public void testValidateDoctorAndPatientAge_ShouldThrowExceptionWhenChildPatientWithAdultDoctor() {
-        UUID doctorId = UUID.randomUUID();
-        UUID patientId = UUID.randomUUID();
-
-        Patient patient = new Patient();
-        patient.setId(patientId);
-        patient.setBirthDate(LocalDate.now().minusYears(10));
-
-        Doctor doctor = new Doctor();
-        doctor.setId(doctorId);
-        doctor.setType("adult");
-
-        when(patientRepository.findById(patientId)).thenReturn(Optional.of(patient));
-        when(doctorRepository.findById(doctorId)).thenReturn(Optional.of(doctor));
-
-        assertThrows(DoctorSpecializationAgeRestrictionException.class,
-                () -> appointmentService.validateDoctorAndPatientAge(doctorId, patientId));
-
-        verify(patientRepository).findById(patientId);
-        verify(doctorRepository).findById(doctorId);
-    }
 }
+

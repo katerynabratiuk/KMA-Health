@@ -36,13 +36,15 @@ public class AppointmentServiceTest {
 
     @Test
     public void testCreateAppointment_ShouldThrowExceptionWhenBothDoctorAndHospitalProvided() {
+        UUID userId = UUID.randomUUID();
+
         AppointmentCreateUpdateDto appointmentDto = new AppointmentCreateUpdateDto();
         appointmentDto.setDoctorId(UUID.randomUUID());
         appointmentDto.setHospitalId(1L);
-        appointmentDto.setPatientId(UUID.randomUUID());
+        appointmentDto.setPatientId(userId);
 
         assertThrows(AppointmentTargetConflictException.class, () -> {
-            appointmentService.createAppointment(appointmentDto);
+            appointmentService.createAppointment(appointmentDto, userId);
         });
     }
 }
