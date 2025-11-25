@@ -3,20 +3,34 @@ document.addEventListener("DOMContentLoaded", function () {
     const userRole = localStorage.getItem('userRole');
     
     const loginRegisterButton = document.getElementById("login-register-button");
+    let roleUkrainian;
     if (authToken && loginRegisterButton) {
         loginRegisterButton.textContent = "Вийти";
         loginRegisterButton.href = "#";
-        loginRegisterButton.addEventListener('click', function(e) {
+        loginRegisterButton.addEventListener('click', function (e) {
             e.preventDefault();
             localStorage.removeItem('authToken');
             localStorage.removeItem('userRole');
             window.location.href = '/ui/public/login';
         });
-        
+
         const userActionsDiv = document.createElement('div');
         userActionsDiv.className = 'user-actions';
+        switch (userRole) {
+            case "PATIENT":
+                roleUkrainian = "пацієнт";
+                break;
+            case "DOCTOR":
+                roleUkrainian = "лікар";
+                break;
+            case "LAB_ASSISTANT":
+                roleUkrainian = "лаборант";
+                break;
+            default:
+                roleUkrainian = "";
+        }
         userActionsDiv.innerHTML = `
-            <span class="hello">Привіт! Ви увійшли як ${userRole}</span>
+            <span class="hello">Привіт! Ви увійшли як ${roleUkrainian}</span>
         `;
         loginRegisterButton.parentElement.appendChild(userActionsDiv);
     }
