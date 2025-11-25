@@ -169,7 +169,7 @@
 					</execution>
 				</executions>
 				<configuration>
-					<apiDocsUrl>http://localhost:8080/api-docs</apiDocsUrl>
+					<apiDocsUrl>http://localhost:8090/api-docs</apiDocsUrl>
 					<outputFileName>openapi.json</outputFileName>
 					<outputDir>src/main/resources/api</outputDir>
 				</configuration>
