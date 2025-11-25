@@ -1,6 +1,5 @@
 package kma.health.app.kma_health.entity;
 
-import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Size;
@@ -26,15 +25,19 @@ public class LabAssistant implements AuthUser {
     @GeneratedValue
     private UUID id;
 
-    @Column(name = "passport_number")
-    @Size(min=9, max=9)
+    @Column(name = "passport_number", unique = true)
+    @Size(min = 9, max = 9)
     private String passportNumber;
 
     @Column(name = "full_name")
     private String fullName;
 
+    @Column(unique = true)
     private String email;
+
     private String password;
+
+    @Column(name = "phone_number", unique = true)
     private String phoneNumber;
 
     private String profilePictureUrl;

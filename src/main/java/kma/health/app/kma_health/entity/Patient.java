@@ -26,12 +26,16 @@ public class Patient implements AuthUser {
     @GeneratedValue
     private UUID id;
 
-    @Column(name = "passport_number")
-    @Size(min=9, max=9)
+    @Column(name = "passport_number", unique = true)
+    @Size(min = 9, max = 9)
     private String passportNumber;
 
+    @Column(unique = true)
     private String email;
+
     private String password;
+
+    @Column(name = "phone_number", unique = true)
     private String phoneNumber;
 
     @Column(name = "full_name")
