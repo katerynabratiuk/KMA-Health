@@ -51,56 +51,46 @@ document.addEventListener("DOMContentLoaded", function () {
     searchType.addEventListener("change", updatePlaceholder);
     updatePlaceholder();
 
-    const doctorFormHTML = `
-        <div class="filter-section">
-            <h3>Filter</h3>
-            <div class="filter-group">
-                <label for="doctor-type">Doctor Type</label>
-                <select id="doctor-type">
-                    <option value="">All Specialties</option>
-                    <option value="cardiologist">Cardiologist</option>
-                    <option value="pediatrics">Pediatrician</option>
-                    <option value="dermatology">Dermatologist</option>
-                    <option value="surgery">Surgeon</option>
-                </select>
-            </div>
+    function generateCityOptions() {
+        if (!Array.isArray(cities)) {
+            return '<option value="">All Cities</option>';
+        }
 
-            <div class="filter-group">
-                <label for="city">City</label>
-                <select id="city">
-                    <option value="">All Cities</option>
-                    <option value="kyiv">Kyiv</option>
-                    <option value="lviv">Lviv</option>
-                    <option value="kharkiv">Kharkiv</option>
-                    <option value="odesa">Odesa</option>
-                </select>
-            </div>
-        </div>
+        const options =
+            cities
+                .map(c => `<option value="${c.toLowerCase()}">${c}</option>`)
+                .join("");
 
-        <div class="sort-section">
-            <h3>Sort By</h3>
-            <div class="sort-group">
-                <label><input type="radio" name="sort" value="rating-dsc" checked> Rating: High to Low</label>
-                <label><input type="radio" name="sort" value="rating-asc"> Rating: Low to High</label>
-                <label><input type="radio" name="sort" value="distance-asc"> Distance: Nearest First</label>
-                <label><input type="radio" name="sort" value="distance-dsc"> Distance: Farthest First</label>
-                <input type="hidden" name="sortBy.param" id="hidden-sort-param" value="rating">
-                <input type="hidden" name="sortBy.direction" id="hidden-sort-direction" value="asc">
-            </div>
-        </div>
+        return `
+        <option value="">All Cities</option>
+        ${options}
     `;
+    }
 
-    const clinicFormHTML = `
+    function generateSpecialtyOptions() {
+        if (!Array.isArray(specialties)) {
+            return '<option value="">All Specialties</option>';
+        }
+
+        const options =
+            specialties
+                .map(s => `<option value="${s.toLowerCase()}">${s}</option>`)
+                .join("");
+
+        return `
+        <option value="">All Specialties</option>
+        ${options}
+    `;
+    }
+
+    function generateClinicFormHTML() {
+        return `
         <div class="filter-section">
             <h3>Filter</h3>
             <div class="filter-group">
                 <label for="city">City</label>
                 <select id="city">
-                    <option value="">All Cities</option>
-                    <option value="kyiv">Kyiv</option>
-                    <option value="lviv">Lviv</option>
-                    <option value="kharkiv">Kharkiv</option>
-                    <option value="odesa">Odesa</option>
+                    ${generateCityOptions()}
                 </select>
             </div>
         </div>
@@ -113,12 +103,47 @@ document.addEventListener("DOMContentLoaded", function () {
             </div>
         </div>
     `;
+    }
+
+    function generateDoctorFormHTML() {
+        return `
+        <div class="filter-section">
+            <h3>Filter</h3>
+            <div class="filter-group">
+                <label for="doctor-type">Doctor Type</label>
+                <select id="doctor-type">
+                    ${generateSpecialtyOptions()}
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="city">City</label>
+                <select id="city">
+                    ${generateCityOptions()}
+                </select>
+            </div>
+        </div>
+
+        <div class="sort-section">
+            <h3>Sort By</h3>
+            <div class="sort-group">
+                <label><input type="radio" name="sort" value="rating-dsc" checked> Rating: High to Low</label>
+                <label><input type="radio" name="sort" value="rating-asc"> Rating: Low to High</label>
+                <label><input type="radio" name="sort" value="distance-asc"> Distance: Nearest First</label>
+                <label><input type="radio" name="sort" value="distance-dsc"> Distance: Farthest First</label>
+
+                <input type="hidden" name="sortBy.param" id="hidden-sort-param" value="rating">
+                <input type="hidden" name="sortBy.direction" id="hidden-sort-direction" value="asc">
+            </div>
+        </div>
+    `;
+    }
 
     function renderAdvancedForm() {
         if (searchType.value === "clinic") {
-            advancedSearchContainer.innerHTML = clinicFormHTML;
+            advancedSearchContainer.innerHTML = generateClinicFormHTML();
         } else {
-            advancedSearchContainer.innerHTML = doctorFormHTML;
+            advancedSearchContainer.innerHTML = generateDoctorFormHTML();
         }
     }
 

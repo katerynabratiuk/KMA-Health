@@ -104,14 +104,21 @@ body {
     font-size: 16px;
 }
 
+.search-icon {
+    width: 25px;
+    height: 25px;
+}
+
 #search-button {
     background-color: white;
     border: none;
     width: 50px;
     height: 100%;
     cursor: pointer;
-    font-size: 18px;
     transition: background-color 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 #search-button:hover {

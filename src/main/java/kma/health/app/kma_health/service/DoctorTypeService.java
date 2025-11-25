@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -35,5 +36,12 @@ public class DoctorTypeService {
 
     public List<DoctorType> getAllDoctorTypes(){
         return doctorTypeRepository.findAll();
+    }
+
+    public List<String> getAllDoctorTypeNames() {
+        return doctorTypeRepository.findAll()
+                .stream()
+                .map(DoctorType::getTypeName)
+                .collect(Collectors.toList());
     }
 }

@@ -15,32 +15,38 @@
 
 <section id="search-section">
     <div id="search-top-row">
-        <form th:action="@{/ui/public/search}" method="post" id="search-container">
-            <select id="search-type" name="searchType">
-                <option value="doctor" selected>Search by Doctor</option>
-                <option value="clinic">Search by Clinic</option>
+        <form th:action="@{/ui/public/search}" method="post" id="search-container" th:object="${formDto}">
+            <select th:field="*{searchType}" id="search-type">
+                <option value="doctor" th:selected="${formDto.searchType == 'doctor'}">Search by Doctor</option>
+                <option value="clinic" th:selected="${formDto.searchType == 'clinic'}">Search by Clinic</option>
             </select>
-            <input type="text" id="search-input" name="query" placeholder="Enter the name or speciality"/>
-            <input type="hidden" name="doctorType" id="hidden-doctor-type">
-            <input type="hidden" name="city" id="hidden-city">
-            <input type="hidden" name="sort" id="hidden-sort">
-            <input type="hidden" name="userLat" id="userLat" value="0">
-            <input type="hidden" name="userLon" id="userLon" value="0">
-            <button type="submit" id="search-button">🔍</button>
+
+            <input type="text" th:field="*{query}" id="search-input" placeholder="Enter the name or speciality"/>
+
+            <input type="hidden" th:field="*{doctorType}" id="hidden-doctor-type">
+            <input type="hidden" th:field="*{city}" id="hidden-city">
+            <input type="hidden" th:field="*{sort}" id="hidden-sort">
+            <input type="hidden" th:field="*{userLat}" id="userLat" value="0">
+            <input type="hidden" th:field="*{userLon}" id="userLon" value="0">
+
+            <button type="submit" id="search-button">
+                <img src="/images/search.png" alt="Search" class="search-icon">
+            </button>
         </form>
 
         <button id="advanced-search-button" type="button">Advanced Search</button>
     </div>
-    <div id="advanced-search-container" class="hidden"></div>
+
+    <div id="advanced-search-container" class="hidden">
+    </div>
 </section>
 
 <section id="search-result-section">
-    <div th:if="${searchType == 'doctor'}" class="search-result-container">
+    <div th:if="${formDto.searchType == 'doctor'}" class="search-result-container">
         <div th:each="doctor : ${doctors}" class="doctor-card">
             <div class="doctor-left">
                 <img th:src="@{/images/Segin.jpg}" alt="Doctor Photo" class="doctor-photo">
-                <span class="doctor-experience"
-                      th:text="${'10 years of experience'}">10 years of experience</span>
+                <span class="doctor-experience">10 years of experience</span>
             </div>
 
             <div class="doctor-info">
@@ -64,7 +70,7 @@
         </div>
     </div>
 
-    <div th:if="${searchType == 'clinic'}" class="search-result-container">
+    <div th:if="${formDto.searchType == 'clinic'}" class="search-result-container">
         <div th:each="hospital : ${hospitals}" class="doctor-card">
             <div class="doctor-left">
                 <img th:src="@{/images/hospital-default.png}" alt="Hospital Photo" class="doctor-photo">
@@ -73,8 +79,7 @@
             <div class="doctor-info">
                 <span class="doctor-type" th:text="${hospital.type}">Private</span>
                 <h2 class="doctor-name" th:text="${hospital.name}">St. Mary’s Hospital</h2>
-                <p class="doctor-description"
-                   th:text="${hospital.address}">Kyiv, Shevchenko Street 25</p>
+                <p class="doctor-description" th:text="${hospital.address}">Kyiv, Shevchenko Street 25</p>
             </div>
 
             <div class="doctor-right">
@@ -95,6 +100,10 @@
     </div>
 </section>
 
+<script th:inline="javascript">
+    var cities = /*[[${cities}]]*/ [];
+    var specialties = /*[[${specialties}]]*/ [];
+</script>
 
 <script th:src="@{/js/home.js}"></script>
 </body>
