@@ -25,6 +25,9 @@ body {
 #home-title {
     margin: 0;
     font-size: 24px;
+    font-weight: bold;
+    text-decoration: none;
+    color: inherit;
 }
 
 #login-register-button {

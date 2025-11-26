@@ -30,7 +30,7 @@ public class ReferralController {
     @PostMapping
     public ResponseEntity<?> createReferral(
             @AuthenticationPrincipal UUID userId,
-            @RequestParam CreateReferralRequest request
+            @RequestBody CreateReferralRequest request
     ) {
         Doctor doctor = doctorSearchService.getDoctorById(userId);
         if (doctor == null)

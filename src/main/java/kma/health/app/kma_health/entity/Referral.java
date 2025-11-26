@@ -24,11 +24,11 @@ public class Referral {
     private LocalDate validUntil;
 
     @ManyToOne
-    @JoinColumn(name = "doctor_passport")
+    @JoinColumn(name = "doctor_id")
     private Doctor doctor;
 
     @ManyToOne
-    @JoinColumn(name = "patient_passport")
+    @JoinColumn(name = "patient_id")
     private Patient patient;
 
     @ManyToOne

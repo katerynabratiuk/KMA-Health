@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Appointment — Деталі</title>
+    <link rel="stylesheet" th:href="@{/css/appointment.css}">
+</head>
+<body>
+<div class="container">
+    <div class="card">
+        <div class="header">
+            <div>
+                <div class="title">Деталі запису</div>
+                <div class="meta">ID Запису: <span th:text="${appointment.id}">0000-0000</span></div>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div>
+                <div class="section">
+                    <div class="field">
+                        <label>Пацієнт</label>
+                        <div class="value" th:text="${appointment.patientName}"></div>
+                    </div>
+
+                    <div class="field">
+                        <label>Лікар, що видав направлення</label>
+                        <div class="value" th:if="${appointment.referralId} != null">
+                            <div class="doctor-card">
+                                <div class="avatar">
+                                    <img th:if="${appointment.referralDoctorPhoto != null}"
+                                         th:src="${appointment.referralDoctorPhoto}"
+                                         alt="Фото лікаря"
+                                         style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px;"/>
+
+                                    <span th:if="${appointment.referralDoctorPhoto == null}">AA</span>
+                                </div>
+                                <div>
+                                    <div th:text="${appointment.referralDoctorName}"></div>
+                                    <div class="meta d_type" th:text="${appointment.referralDoctorType}"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="value" th:if="${appointment.referralId} == null">— без направлення (семейний
+                            лікар)
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Ціль</label>
+                        <div class="value"
+                             th:text="${appointment.examinationName != null ? appointment.examinationName : (appointment.doctorType != null ? 'Консультація з ' + appointment.doctorType : 'Невідомо')}">
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Лікар</label>
+
+                        <div class="value" th:if="${appointment.doctorId} != null">
+                            <div class="doctor-card">
+
+                                <div class="avatar">
+                                    <img th:if="${appointment.doctorPhoto != null}"
+                                         th:src="${appointment.doctorPhoto}"
+                                         alt="Фото лікаря"
+                                         style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px;"/>
+
+                                    <span th:if="${appointment.doctorPhoto == null}"></span>
+                                </div>
+
+                                <div>
+                                    <div th:text="${appointment.doctorName}"></div>
+                                    <div class="meta d_type" th:text="${appointment.doctorType}"></div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Лікарня</label>
+                        <div class="value" th:if="${appointment.hospitalId} != null"
+                             th:text="${appointment.hospitalName}">
+                        </div>
+                        <div class="value" th:if="${appointment.hospitalId} == null">—</div>
+                    </div>
+
+                    <th:block th:if="${userRole == 'DOCTOR' or userRole == 'LAB_ASSISTANT'}">
+
+                        <div class="field">
+                            <label>Діагноз</label>
+                            <textarea id="diagnosis" class="diagnosis" th:attr="readonly=${userRole == 'PATIENT'}"
+                                      th:text="${appointment.diagnosis}"></textarea>
+                        </div>
+
+                        <div class="field">
+                            <label>Медичні файли</label>
+                            <div id="dropzone" class="dropzone" tabindex="0">
+                                Перетягніть файли сюди або натисніть, щоб обрати
+                                <input id="fileInput" type="file" multiple style="display:none"/>
+                            </div>
+                            <div class="files-list" id="filesList">
+                                <div class="file-item" th:each="f : ${appointment.medicalFiles}">
+                                    <div th:text="${f.name}">result.pdf</div>
+                                    <a th:href="${f.link}" target="_blank" class="meta">Переглянути</a>
+                                </div>
+                            </div>
+                        </div>
+
+                    </th:block>
+                </div>
+            </div>
+
+            <div>
+                <div class="section">
+                    <div class="field">
+                        <label>Статус запису</label>
+                        <div class="value" th:text="${appointment.status}">SCHEDULED</div>
+                    </div>
+
+                    <div class="field">
+                        <label>Дата та час</label>
+                        <div class="value"><span th:text="${appointment.date}">2025-11-30</span> • <span
+                                th:text="${appointment.time}">10:00</span></div>
+                    </div>
+
+                    <div class="field">
+                        <label>Номер направлення</label>
+                        <div class="value">
+                            <div><span th:text="${appointment.referralId}">—</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="actions">
+            <button id="cancelBtn" class="btn ghost">Скасувати запис</button>
+            <button id="finishBtn" class="btn primary">Завершити запис</button>
+        </div>
+    </div>
+</div>
+<!-- <script th:src="@{/js/appointment.js}"></script> -->
+</body>
+</html>

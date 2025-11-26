@@ -6,7 +6,6 @@ import kma.health.app.kma_health.dto.HospitalSearchDto;
 import kma.health.app.kma_health.entity.Feedback;
 import kma.health.app.kma_health.entity.Hospital;
 import kma.health.app.kma_health.enums.FeedbackTargetType;
-import kma.health.app.kma_health.logging.TimedInterruptible;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -18,9 +17,7 @@ import java.util.List;
 public class HospitalSearchService {
 
     private final EntityManager em;
-    private final FeedbackService feedbackService;
 
-    //@TimedInterruptible(timeout = 150)
     public List<Hospital> searchHospitals(HospitalSearchDto dto, double userLat, double userLon)
             throws InterruptedException {
 

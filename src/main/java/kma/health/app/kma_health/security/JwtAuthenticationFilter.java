@@ -29,28 +29,37 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
-        String header = request.getHeader("Authorization");
-        if (header == null || !header.startsWith("Bearer ")) {
+        String jwtToken = null;
+
+        if (request.getCookies() != null) {
+            for (jakarta.servlet.http.Cookie cookie : request.getCookies()) {
+                if ("JWT".equals(cookie.getName())) {
+                    jwtToken = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        if (jwtToken == null) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        String token = header.substring(7);
-
-        if (!jwtUtils.validateToken(token)) {
+        if (!jwtUtils.validateToken(jwtToken)) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        UserRole role = jwtUtils.getRoleFromToken(token);
+        UserRole role = jwtUtils.getRoleFromToken(jwtToken);
         var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
 
         var auth = new UsernamePasswordAuthenticationToken(
-                jwtUtils.getSubjectFromToken(token),
+                jwtUtils.getSubjectFromToken(jwtToken),
                 null,
                 authorities
         );
         SecurityContextHolder.getContext().setAuthentication(auth);
+
         filterChain.doFilter(request, response);
     }
 }

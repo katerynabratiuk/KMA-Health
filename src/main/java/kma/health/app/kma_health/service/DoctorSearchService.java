@@ -5,7 +5,6 @@ import kma.health.app.kma_health.dto.DoctorSearchDto;
 import kma.health.app.kma_health.entity.Doctor;
 import kma.health.app.kma_health.entity.Feedback;
 import kma.health.app.kma_health.entity.Hospital;
-import kma.health.app.kma_health.logging.TimedInterruptible;
 import kma.health.app.kma_health.repository.DoctorRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,17 +25,8 @@ public class DoctorSearchService {
 
     private final EntityManager em;
 
-    @Autowired
-    private FeedbackService feedbackService;
-    @Autowired
-    private DoctorRepository doctorRepository;
+    private final DoctorRepository doctorRepository;
 
-    @Autowired
-    public void setRatingService(FeedbackService feedbackService) {
-        this.feedbackService = feedbackService;
-    }
-
-    //@TimedInterruptible(timeout = 600000)
     public List<Doctor> searchDoctors(DoctorSearchDto dto, double userLat, double userLon)
             throws InterruptedException {
 
