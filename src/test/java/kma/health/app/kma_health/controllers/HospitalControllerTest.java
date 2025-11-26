@@ -3,11 +3,13 @@ package kma.health.app.kma_health.controllers;
 import kma.health.app.kma_health.controller.api.HospitalController;
 import kma.health.app.kma_health.dto.HospitalDto;
 import kma.health.app.kma_health.security.JwtUtils;
+import kma.health.app.kma_health.security.SecurityConfig;
 import kma.health.app.kma_health.service.HospitalService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.context.annotation.Import;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -23,7 +25,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(HospitalController.class)
-@AutoConfigureMockMvc(addFilters = false)
+@AutoConfigureMockMvc
+@Import(SecurityConfig.class)
 public class HospitalControllerTest {
 
     @Autowired
