@@ -9,6 +9,7 @@ import kma.health.app.kma_health.entity.Hospital;
 import kma.health.app.kma_health.exception.CoordinatesNotFoundException;
 import kma.health.app.kma_health.repository.HospitalRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
@@ -87,6 +88,7 @@ public class HospitalService {
                 .toList();
     }
 
+    @Cacheable("hospitals")
     public HospitalDto getHospital(Long id) {
         var h = hospitalRepository.getReferenceById(id);
         return HospitalDto.fromEntity(h);
