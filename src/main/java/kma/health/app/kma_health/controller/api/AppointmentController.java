@@ -128,7 +128,7 @@ public class AppointmentController {
         return ResponseEntity.ok().build();
     }
 
-    @PreAuthorize("hasAnyRole('PATIENT','DOCTOR')")
+    @PreAuthorize("hasAnyRole('PATIENT','DOCTOR', 'LAB_ASSISTANT')")
     @GetMapping("/{appointmentId}")
     public ResponseEntity<AppointmentFullViewDto> getAppointment(
             @AuthenticationPrincipal UUID userId,

@@ -21,7 +21,23 @@
                 <div class="section">
                     <div class="field">
                         <label>Пацієнт</label>
-                        <div class="value" th:text="${appointment.patientName}"></div>
+                        <div class="value">
+                            <div class="doctor-card">
+                                <div class="avatar">
+                                    <img th:if="${appointment.patientPhoto != null}"
+                                         th:src="${appointment.patientPhoto}"
+                                         alt="Фото пацієнта"
+                                         style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px;"/>
+
+                                    <span th:if="${appointment.patientPhoto == null}"></span>
+                                </div>
+
+                                <div>
+                                    <div th:text="${appointment.patientName}"></div>
+                                </div>
+
+                            </div>
+                        </div>
                     </div>
 
                     <div class="field">
@@ -54,10 +70,10 @@
                         </div>
                     </div>
 
-                    <div class="field">
+                    <div class="field" th:if="${appointment.doctorId} != null">
                         <label>Лікар</label>
 
-                        <div class="value" th:if="${appointment.doctorId} != null">
+                        <div class="value">
                             <div class="doctor-card">
 
                                 <div class="avatar">
@@ -86,7 +102,7 @@
                         <div class="value" th:if="${appointment.hospitalId} == null">—</div>
                     </div>
 
-                    <th:block th:if="${userRole == 'DOCTOR' or userRole == 'LAB_ASSISTANT'}">
+                    <th:block th:if="${(userRole == 'DOCTOR' or userRole == 'LAB_ASSISTANT') and (appointment.status.name() == 'OPEN')}">
 
                         <div class="field">
                             <label>Діагноз</label>
@@ -134,12 +150,16 @@
                 </div>
             </div>
         </div>
-        <div class="actions">
+        <div class="actions"
+             th:if="${(userRole == 'DOCTOR' or userRole == 'LAB_ASSISTANT') and (appointment.status.name() == 'OPEN') or (userRole == 'PATIENT' and appointment.status.name() == 'SCHEDULED')}">
             <button id="cancelBtn" class="btn ghost">Скасувати запис</button>
-            <button id="finishBtn" class="btn primary">Завершити запис</button>
+            <button id="finishBtn" class="btn primary"
+                    th:if="${userRole == 'DOCTOR' or userRole == 'LAB_ASSISTANT'}">
+                Завершити запис
+            </button>
         </div>
     </div>
 </div>
-<!-- <script th:src="@{/js/appointment.js}"></script> -->
+<script th:src="@{/js/appointment.js}"></script>
 </body>
 </html>

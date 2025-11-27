@@ -1,6 +1,9 @@
 package kma.health.app.kma_health.dto;
 
 import kma.health.app.kma_health.entity.Appointment;
+import kma.health.app.kma_health.entity.Doctor;
+import kma.health.app.kma_health.entity.Patient;
+import kma.health.app.kma_health.entity.Referral;
 import kma.health.app.kma_health.enums.AppointmentStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -33,6 +36,7 @@ public class AppointmentFullViewDto {
 
     private UUID patientId;
     private String patientName;
+    private String patientPhoto;
 
     private String diagnosis;
     private AppointmentStatus status;
@@ -45,29 +49,50 @@ public class AppointmentFullViewDto {
 
     private Set<MedicalFileDto> medicalFiles;
 
-    public AppointmentFullViewDto(Appointment appointment)
-    {
+    public AppointmentFullViewDto(Appointment appointment) {
         this.id = appointment.getId();
         this.date = appointment.getDate();
         this.time = appointment.getTime();
-        this.doctorId = appointment.getDoctor().getId();
-        this.patientId = appointment.getReferral().getPatient().getId();
-        this.doctorType = appointment.getDoctor().getDoctorType().getTypeName();
-        this.doctorName = appointment.getDoctor().getFullName();
-        this.doctorPhoto = appointment.getDoctor().getProfilePictureUrl();
-        this.referralDoctorName = appointment.getReferral().getDoctor().getFullName();
-        this.referralDoctorType = appointment.getReferral().getDoctor().getDoctorType().getTypeName();
-        this.referralDoctorPhoto = appointment.getReferral().getDoctor().getProfilePictureUrl();
-        this.patientName = appointment.getReferral().getPatient().getFullName();
         this.diagnosis = appointment.getDiagnosis();
         this.status = appointment.getStatus();
-        this.hospitalId = appointment.getDoctor().getHospital().getId();
-        this.hospitalName = appointment.getDoctor().getHospital().getName();
-        this.examinationName = appointment.getReferral().getExamination() != null ? appointment.getReferral().getExamination().getExamName() : null;
-        this.referralId = appointment.getReferral().getId();
         this.medicalFiles = (appointment.getMedicalFiles() == null) ? Set.of()
                 : appointment.getMedicalFiles().stream()
                 .map(MedicalFileDto::new)
                 .collect(Collectors.toSet());
+
+        Doctor doctor = appointment.getDoctor();
+        Referral referral = appointment.getReferral();
+        Doctor referralDoctor = (referral != null && referral.getDoctor() != null) ? referral.getDoctor() : null;
+        Patient patient = (referral != null && referral.getPatient() != null) ? referral.getPatient() : null;
+
+
+        this.doctorId = (doctor != null) ? doctor.getId() : null;
+        this.doctorName = (doctor != null) ? doctor.getFullName() : null;
+        this.doctorPhoto = (doctor != null) ? doctor.getProfilePictureUrl() : null;
+        this.doctorType = (doctor != null && doctor.getDoctorType() != null)
+                ? doctor.getDoctorType().getTypeName()
+                : null;
+
+        this.hospitalId = appointment.getHospital() != null
+                ? appointment.getHospital().getId()
+                : null;
+        this.hospitalName = appointment.getHospital() != null
+                ? appointment.getHospital().getName()
+                : null;
+
+        this.referralId = (referral != null) ? referral.getId() : null;
+        this.patientId = (patient != null) ? patient.getId() : null;
+        this.patientName = (patient != null) ? patient.getFullName() : null;
+        this.patientPhoto = (patient != null) ? patient.getProfilePictureUrl() : null;
+
+        this.examinationName = (referral != null && referral.getExamination() != null)
+                ? referral.getExamination().getExamName()
+                : null;
+
+        this.referralDoctorName = (referralDoctor != null) ? referralDoctor.getFullName() : null;
+        this.referralDoctorPhoto = (referralDoctor != null) ? referralDoctor.getProfilePictureUrl() : null;
+        this.referralDoctorType = (referralDoctor != null && referralDoctor.getDoctorType() != null)
+                ? referralDoctor.getDoctorType().getTypeName()
+                : null;
     }
 }
