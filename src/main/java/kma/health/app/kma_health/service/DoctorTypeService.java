@@ -34,13 +34,12 @@ public class DoctorTypeService {
         doctorTypeRepository.delete(doctorType.get());
     }
 
-    @Cacheable("doctorTypesName")
-    public List<DoctorType> getAllDoctorTypes(){
+    @Cacheable("doctorTypes")
+    public List<DoctorType> getAllDoctorTypes() {
         return doctorTypeRepository.findAll();
     }
 
-
-    @Cacheable("doctorTypes")
+    @Cacheable("doctorTypesNames")
     public List<String> getAllDoctorTypeNames() {
         return doctorTypeRepository.findAll()
                 .stream()
