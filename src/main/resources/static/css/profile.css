@@ -1,0 +1,372 @@
+:root {
+    --kma-health-blue: #15479D;
+    --kma-health-dark-blue: #062159;
+    --kma-health-light-blue: #e8ecf4;
+    --text-color: #333;
+    --border-color: #ddd;
+    --shadow-light: rgba(0, 0, 0, 0.05);
+}
+
+body {
+    background-color: var(--kma-health-light-blue);
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    color: var(--text-color);
+}
+
+header {
+    width: 100%;
+}
+
+#home-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--kma-health-blue);
+    color: white;
+    padding: 10px 20px;
+}
+
+#home-title {
+    margin: 0;
+    font-size: 24px;
+    font-weight: bold;
+    text-decoration: none;
+    color: inherit;
+}
+
+#profile-section {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    gap: 20px;
+}
+
+.profile-card {
+    background-color: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    width: 100%;
+    max-width: 900px;
+    padding: 30px;
+    box-shadow: 0 4px 10px var(--shadow-light);
+}
+
+.profile-main-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.profile-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    width: 200px;
+    padding-right: 20px;
+    border-right: 1px solid #f1f1f1;
+}
+
+.profile-photo {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 10px;
+    border: 3px solid var(--kma-health-blue);
+}
+
+.profile-role {
+    font-size: 0.9em;
+    color: var(--kma-health-blue);
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.profile-name {
+    margin: 5px 0;
+    font-size: 1.5em;
+    text-align: center;
+    color: var(--kma-health-dark-blue);
+}
+
+.profile-type {
+    font-size: 0.9em;
+    color: #777;
+    text-align: center;
+    margin: 0;
+}
+
+.profile-description {
+    font-size: 0.9em;
+    color: #777;
+    text-align: center;
+    margin: 0;
+}
+
+.profile-info {
+    flex: 1;
+    margin: 0 30px;
+}
+
+.info-title {
+    color: var(--kma-health-blue);
+    margin-top: 0;
+    font-size: 1.2em;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 5px;
+    margin-bottom: 15px;
+}
+
+.profile-info-grid {
+    display: grid;
+    grid-template-columns: 150px 1fr;
+    gap: 10px 20px;
+    padding-left: 5px;
+}
+
+.info-item {
+    display: contents;
+    font-size: 15px;
+    padding-bottom: 2px;
+}
+
+.label {
+    font-weight: 600;
+    color: var(--kma-health-dark-blue);
+    justify-self: end;
+    white-space: nowrap;
+}
+
+.value {
+    color: var(--text-color);
+    font-weight: 400;
+    padding: 2px 0;
+    flex-grow: 1;
+}
+
+.unspecified {
+    color: #cc0000;
+    font-style: italic;
+}
+
+.profile-right {
+    width: 250px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding-left: 20px;
+}
+
+.editable-field {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+}
+
+.editable-field .edit-input {
+    flex-grow: 1;
+    min-width: 100px;
+    padding: 5px;
+    border: 1px solid var(--kma-health-blue);
+    border-radius: 4px;
+    font-size: 15px;
+}
+
+.edit-icon, .save-icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.1em;
+    padding: 0;
+    transition: color 0.2s;
+    width: 25px;
+    text-align: center;
+}
+
+.edit-icon:hover {
+    color: var(--kma-health-blue);
+}
+
+.save-icon {
+    color: green;
+}
+
+.save-icon:hover {
+    color: darkgreen;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.appointments-card {
+    display: block;
+}
+
+.appointments-list {
+    margin-top: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.appointment-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 15px;
+    padding: 10px 12px;
+    background-color: #f7f9fc;
+    border-radius: 6px;
+    border-left: 4px solid var(--kma-health-blue);
+}
+
+.reminder-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 0;
+    margin-left: 10px;
+    transition: transform 0.2s;
+}
+
+.reminder-button:hover {
+    transform: scale(1.1);
+    color: var(--kma-health-blue);
+}
+
+.profile-button {
+    text-align: center;
+    display: block;
+    border-radius: 6px;
+    padding: 10px 15px;
+    cursor: pointer;
+    font-weight: bold;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+    font-size: 15px;
+    line-height: normal;
+}
+
+.primary-button {
+    background-color: var(--kma-health-blue);
+    color: white;
+    border: 1px solid var(--kma-health-blue);
+}
+
+.primary-button:hover {
+    background-color: var(--kma-health-dark-blue);
+}
+
+.secondary-button {
+    background-color: white;
+    color: var(--kma-health-blue);
+    border: 1px solid var(--kma-health-blue);
+}
+
+.secondary-button:hover {
+    background-color: var(--kma-health-light-blue);
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.modal-content h3 {
+    margin-top: 0;
+    color: var(--kma-health-blue);
+}
+
+.modal-content select {
+    width: 100%;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+
+.modal-content .profile-button {
+    width: 100%;
+    margin: 5px 0 0 0;
+}
+
+@media (max-width: 768px) {
+
+    .profile-card {
+        padding: 20px;
+    }
+
+    .profile-main-info {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .profile-left {
+        width: 100%;
+        padding: 0;
+        border-right: none;
+        border-bottom: 1px solid #f1f1f1;
+        padding-bottom: 20px;
+        margin-bottom: 20px;
+    }
+
+    .profile-info {
+        width: 100%;
+        margin: 0 0 20px 0;
+    }
+
+    .profile-info-grid {
+        grid-template-columns: 1fr;
+        gap: 5px 0;
+    }
+
+    .label {
+        justify-self: start;
+        border-bottom: 1px dotted #ccc;
+        padding-bottom: 2px;
+        width: 100%;
+        margin-top: 10px;
+        white-space: normal;
+    }
+
+    .value {
+        padding-left: 0;
+        margin-left: 0;
+    }
+
+    .profile-right {
+        width: 100%;
+        padding: 0;
+        gap: 10px;
+    }
+
+    .appointments-card {
+        padding: 20px;
+    }
+}

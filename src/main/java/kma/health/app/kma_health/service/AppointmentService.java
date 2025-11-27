@@ -87,12 +87,17 @@ public class AppointmentService {
 
         UUID doctorId = appointment.getDoctor() != null ? appointment.getDoctor().getId() : null;
         UUID patientId = appointment.getReferral().getPatient().getId();
+        UUID labAssistantId = appointment.getLabAssistant() != null ? appointment.getLabAssistant().getId() : null;
 
         boolean isDoctor = userId.equals(doctorId);
         boolean isPatient = userId.equals(patientId);
+        boolean isLabAssistant = userId.equals(labAssistantId);
 
-        if (!isDoctor && !isPatient)
+        if (!isDoctor && !isPatient && !isLabAssistant)
             throw new AccessDeniedException("Appointment does not belong to user " + userId);
+
+        if ((isDoctor || isLabAssistant) && appointment.getStatus().equals(AppointmentStatus.SCHEDULED))
+            throw new AccessDeniedException("Appointment is not open");
 
         return appointmentRepository.findById(id)
                 .map(AppointmentFullViewDto::new)

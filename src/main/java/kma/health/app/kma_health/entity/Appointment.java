@@ -30,6 +30,8 @@ public class Appointment {
     private LocalTime time;
 
     @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
     private AppointmentStatus status;
 
     @ManyToOne

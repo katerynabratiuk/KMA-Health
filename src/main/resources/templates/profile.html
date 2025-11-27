@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Профіль користувача</title>
+    <link rel="stylesheet" th:href="@{/css/profile.css}">
+    <link rel="stylesheet" th:href="@{/css/home.css}">
+</head>
+<body>
+<header>
+    <div id="home-header">
+        <a href="/ui/public/" id="home-title" class="button-link">KMA Health</a>
+    </div>
+</header>
+
+<section id="profile-section">
+
+    <div class="profile-card profile-main-info">
+
+        <div class="profile-left">
+            <img th:src="${user.profilePictureUrl != null ? user.profilePictureUrl : '/images/default-avatar.png'}"
+                 alt="Фото профілю" class="profile-photo">
+
+            <span class="profile-role" th:text="${userRole}">Role</span>
+            <h2 class="profile-name" th:text="${user.fullName}">Повне ім'я</h2>
+
+            <p th:if="${userRole == 'DOCTOR'}" class="profile-description"
+               th:text="${user.description != null ? user.description : 'Опис відсутній'}">
+                Опис лікаря.
+            </p>
+        </div>
+
+        <div class="profile-info">
+            <h3 class="info-title">Особисті дані</h3>
+
+            <div class="profile-info-grid">
+
+                <div class="info-item">
+                    <span class="label">Дата народження:</span>
+                    <span class="value" th:text="${user.dateOfBirth}"></span>
+                </div>
+
+                <div class="info-item" data-field-name="email" data-field-type="email">
+                    <span class="label">Email:</span>
+                    <div class="editable-field">
+                        <span class="value" th:text="${user.email}">example@com.hihi</span>
+                        <input class="edit-input hidden" type="email" th:value="${user.email}">
+                        <button class="edit-icon" type="button">📝</button>
+                        <button class="save-icon hidden" type="button">💾</button>
+                    </div>
+                </div>
+
+                <div class="info-item" data-field-name="phoneNumber" data-field-type="tel">
+                    <span class="label">Телефон:</span>
+                    <div class="editable-field">
+                        <span class="value" th:text="${user.phoneNumber}">+380501234567</span>
+                        <input class="edit-input hidden" type="tel" th:value="${user.phoneNumber}" pattern="\+380[0-9]{9}">
+                        <button class="edit-icon" type="button">📝</button>
+                        <button class="save-icon hidden" type="button">💾</button>
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <span class="label">Номер паспорта:</span>
+                    <span class="value" th:text="${user.passportNumber}"></span>
+                </div>
+
+                <th:block th:if="${userRole == 'DOCTOR' or userRole == 'LAB_ASSISTANT'}">
+                    <div class="info-item">
+                        <span class="label">Лікарня:</span>
+                        <span class="value" th:text="${user.hospitalName}"></span>
+                    </div>
+                </th:block>
+
+                <th:block th:if="${userRole == 'DOCTOR'}">
+                    <div class="info-item">
+                        <span class="label">Спеціалізація:</span>
+                        <span class="value" th:text="${user.doctorType}"></span>
+                    </div>
+                </th:block>
+
+                <th:block th:if="${userRole == 'PATIENT'}">
+                    <div class="info-item">
+                        <span class="label">Сімейний лікар:</span>
+                        <span class="value">
+                <span th:if="${user.familyDoctorName}" th:text="${user.familyDoctorName}"></span>
+                <span th:unless="${user.familyDoctorName}" class="unspecified">— Декларація відсутня</span>
+            </span>
+                    </div>
+                </th:block>
+
+            </div>
+
+        </div>
+
+        <div class="profile-right">
+
+            <a th:if="${userRole == 'DOCTOR' or userRole == 'LAB_ASSISTANT'}"
+               th:href="@{/ui/calendar}" class="profile-button secondary-button">
+                Розклад (день/тиждень)
+            </a>
+
+            <a th:if="${userRole == 'PATIENT'}"
+               th:href="@{/ui/referrals/active}" class="profile-button secondary-button">
+                Активні направлення
+            </a>
+
+            <a th:if="${userRole == 'PATIENT'}"
+               th:href="@{/ui/history}" class="profile-button secondary-button">
+                Історія хвороби
+            </a>
+
+        </div>
+    </div>
+
+    <div th:if="${userRole == 'PATIENT'}" class="profile-card appointments-card">
+
+        <h3 class="info-title">Заплановані записи</h3>
+
+        <div class="appointments-list">
+            <div th:each="appt : ${plannedAppointments}" class="appointment-item">
+
+        <span th:if="${appt.doctorName != null}">
+            <span th:text="|${appt.date} о ${appt.time} - ${appt.doctorName}|"></span>
+            <span th:if="${appt.doctorSpecialization}"
+                  th:text="| (${appt.doctorSpecialization})|">
+            </span>
+        </span>
+
+                <span th:unless="${appt.doctorName != null}">
+            <span th:text="|${appt.date} о ${appt.time} - ${appt.examinationName}|"></span>
+        </span>
+
+                <button class="reminder-button" data-appointment-id="${appt.id}">
+                    🔔
+                </button>
+            </div>
+            <p th:if="${#lists.isEmpty(plannedAppointments)}">Немає запланованих записів.</p>
+        </div>
+
+    </div>
+
+</section>
+
+<div id="reminder-modal" class="modal hidden">
+    <form class="modal-content">
+        <h3>Встановити нагадування</h3>
+        <label for="reminderTime">Надіслати за:</label>
+        <select id="reminderTime" name="reminderTime">
+            <option value="10">10 хвилин</option>
+            <option value="30">30 хвилин</option>
+            <option value="60">1 годину</option>
+            <option value="1440">1 день</option>
+        </select>
+        <button type="submit" class="profile-button primary-button">Зберегти</button>
+        <button type="button" id="close-modal" class="profile-button secondary-button">Скасувати</button>
+    </form>
+</div>
+
+<script th:src="@{/js/profile.js}"></script>
+</body>
+</html>

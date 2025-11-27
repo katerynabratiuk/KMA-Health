@@ -21,13 +21,17 @@ public class AppointmentShortViewDto {
     private String doctorName;
     private UUID doctorId;
     private Long hospitalId;
+    private String examinationName;
 
     public AppointmentShortViewDto(Appointment appointment) {
         this.id = appointment.getId();
         this.date = appointment.getDate();
         this.time = appointment.getTime();
-        this.doctorId = appointment.getDoctor().getId();
-        this.hospitalId = appointment.getHospital().getId();
-        this.doctorName = appointment.getDoctor().getFullName();
+        this.doctorId = (appointment.getDoctor() != null) ? appointment.getDoctor().getId() : null;
+        this.hospitalId = (appointment.getHospital() != null) ? appointment.getHospital().getId() : null;
+        this.doctorName = (appointment.getDoctor() != null) ? appointment.getDoctor().getFullName() : null;
+        this.examinationName = (appointment.getReferral().getExamination() != null)
+                ? appointment.getReferral().getExamination().getExamName()
+                : null;
     }
 }

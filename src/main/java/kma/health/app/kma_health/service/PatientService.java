@@ -5,6 +5,7 @@ import kma.health.app.kma_health.dto.AppointmentFullViewDto;
 import kma.health.app.kma_health.dto.PatientContactsDto;
 import kma.health.app.kma_health.dto.ReferralDto;
 import kma.health.app.kma_health.entity.*;
+import kma.health.app.kma_health.enums.AppointmentStatus;
 import kma.health.app.kma_health.enums.UserRole;
 import kma.health.app.kma_health.exception.PatientHistoryAccessException;
 import kma.health.app.kma_health.repository.AppointmentRepository;
@@ -38,6 +39,18 @@ public class PatientService {
     public Declaration getDeclaration(UUID patientId) {
         return declarationRepository.findById(patientId)
                 .orElseThrow(() -> new EntityNotFoundException("Declaration not found"));
+    }
+
+    public Doctor getFamilyDoctor(UUID patientId) {
+        Declaration declaration = getDeclaration(patientId);
+        return declaration.getDoctor();
+    }
+
+    public List<Appointment> getScheduledAppointments(UUID patientId) {
+        return appointmentRepository.findByReferralPatientIdAndStatus(
+                patientId,
+                AppointmentStatus.SCHEDULED
+        );
     }
 
     public PatientContactsDto getPatientContacts(UUID patientId) {
