@@ -1,6 +1,6 @@
 package kma.health.app.kma_health.controller.api;
 
-import kma.health.app.kma_health.config.KmaHealthCacheManager;
+import org.springframework.cache.CacheManager;
 import lombok.AllArgsConstructor;
 import org.springframework.cache.Cache;
 import org.springframework.http.ResponseEntity;
@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 @AllArgsConstructor
 public class CacheController {
 
-    KmaHealthCacheManager cacheManager;
+    CacheManager cacheManager;
 
     @PreAuthorize("hasRole('DOCTOR')")
     @DeleteMapping("/{cacheName}")
