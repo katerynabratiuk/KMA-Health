@@ -106,7 +106,8 @@
             </a>
 
             <a th:if="${userRole == 'PATIENT'}"
-               th:href="@{/ui/history}" class="profile-button secondary-button">
+               th:href="@{/ui/history/{patientId}(patientId=${user.getProfileId()})}"
+               class="profile-button secondary-button">
                 Історія хвороби
             </a>
 
