@@ -12,8 +12,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 
-@Configuration
-@EnableCaching
 public class KmaHealthCacheManager implements CacheManager {
     private final int DEFAULT_EXPIRE_MINUTES = 60;
     private final int MAX_CACHE_SIZE = 60;
