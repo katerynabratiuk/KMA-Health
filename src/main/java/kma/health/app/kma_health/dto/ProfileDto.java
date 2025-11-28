@@ -8,9 +8,11 @@ import lombok.Data;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.List;
+import java.util.UUID;
 
 @Data
 public class ProfileDto {
+    private UUID profileId;
     private String fullName;
     private LocalDate dateOfBirth;
     private String email;
@@ -28,6 +30,7 @@ public class ProfileDto {
     private List<AppointmentShortViewDto> plannedAppointments;
 
     public ProfileDto(Doctor doctor) {
+        this.profileId = doctor.getId();
         this.fullName = doctor.getFullName();
         this.dateOfBirth = doctor.getBirthDate();
         this.email = doctor.getEmail();
@@ -41,6 +44,7 @@ public class ProfileDto {
     }
 
     public ProfileDto(Patient patient) {
+        this.profileId = patient.getId();
         this.fullName = patient.getFullName();
         this.dateOfBirth = patient.getBirthDate();
         this.email = patient.getEmail();
@@ -57,6 +61,7 @@ public class ProfileDto {
     }
 
     public ProfileDto(LabAssistant labAssistant) {
+        this.profileId = labAssistant.getId();
         this.fullName = labAssistant.getFullName();
         this.dateOfBirth = labAssistant.getBirthDate();
         this.email = labAssistant.getEmail();

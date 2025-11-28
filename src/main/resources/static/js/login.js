@@ -8,49 +8,49 @@ document.addEventListener('DOMContentLoaded', function() {
     const generalError = document.getElementById('general-error');
     const successMessage = document.getElementById('success-message');
     const loginButton = document.querySelector('.login-button');
-    
+
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('registered')) {
         successMessage.style.display = 'block';
         successMessage.textContent = 'Реєстрація успішна! Тепер ви можете увійти.';
     }
-    
+
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
-        
+
         usernameError.style.display = 'none';
         passwordError.style.display = 'none';
         generalError.style.display = 'none';
         successMessage.style.display = 'none';
-        
+
         let isValid = true;
-        
+
         if (!usernameInput.value.trim()) {
             usernameError.textContent = 'Будь ласка, введіть email';
             usernameError.style.display = 'block';
             isValid = false;
         }
-        
+
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (usernameInput.value && !emailRegex.test(usernameInput.value)) {
             usernameError.textContent = 'Будь ласка, введіть коректний email';
             usernameError.style.display = 'block';
             isValid = false;
         }
-        
+
         if (!passwordInput.value) {
             passwordError.textContent = 'Будь ласка, введіть пароль';
             passwordError.style.display = 'block';
             isValid = false;
         }
-        
+
         if (!isValid) {
             return;
         }
-        
+
         loginButton.disabled = true;
         loginButton.textContent = 'Вхід...';
-        
+
         try {
             const loginData = {
                 identifier: usernameInput.value,
@@ -58,25 +58,26 @@ document.addEventListener('DOMContentLoaded', function() {
                 method: 'EMAIL',
                 role: roleSelect.value
             };
-            
+
             const response = await fetch('/api/auth/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(loginData)
+                body: JSON.stringify(loginData),
+                credentials: 'include'
             });
-            
+
             if (response.ok) {
-                const token = await response.text();
-                localStorage.setItem('authToken', token);
                 localStorage.setItem('userRole', roleSelect.value);
-                
+
                 successMessage.textContent = 'Успішний вхід! Перенаправлення...';
                 successMessage.style.display = 'block';
-                
+
+                const redirectPath = '/ui/profile';
+
                 setTimeout(() => {
-                    window.location.href = '/ui/public/';
+                    window.location.href = redirectPath;
                 }, 1000);
             } else {
                 let errorMessage = 'Невірний email або пароль';
@@ -86,7 +87,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         errorMessage = errorData.message;
                     }
                 } catch (e) {}
-                
+
                 generalError.textContent = errorMessage;
                 generalError.style.display = 'block';
             }
@@ -99,7 +100,7 @@ document.addEventListener('DOMContentLoaded', function() {
             loginButton.textContent = 'Увійти';
         }
     });
-    
+
     const rememberCheckbox = document.getElementById('remember');
     if (rememberCheckbox && localStorage.getItem('rememberLogin')) {
         const savedUsername = localStorage.getItem('savedUsername');
@@ -108,7 +109,7 @@ document.addEventListener('DOMContentLoaded', function() {
             rememberCheckbox.checked = true;
         }
     }
-    
+
     if (rememberCheckbox) {
         rememberCheckbox.addEventListener('change', function() {
             if (this.checked) {
