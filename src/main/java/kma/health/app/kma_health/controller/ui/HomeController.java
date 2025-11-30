@@ -1,8 +1,10 @@
 package kma.health.app.kma_health.controller.ui;
 
 import kma.health.app.kma_health.dto.DoctorSearchDto;
+import kma.health.app.kma_health.dto.HospitalDto;
 import kma.health.app.kma_health.dto.HospitalSearchDto;
 import kma.health.app.kma_health.dto.SearchFormDto;
+import kma.health.app.kma_health.entity.Hospital;
 import kma.health.app.kma_health.service.DoctorSearchService;
 import kma.health.app.kma_health.service.DoctorTypeService;
 import kma.health.app.kma_health.service.HospitalSearchService;
@@ -11,6 +13,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
@@ -21,17 +25,25 @@ public class HomeController {
     private final HospitalService hospitalService;
     private final DoctorTypeService doctorTypeService;
 
-    @GetMapping({"/"})
-    public String home(Model model) {
+    @GetMapping({ "/" })
+    public String home(Model model) throws InterruptedException {
         SearchFormDto formDto = new SearchFormDto();
-        formDto.setSearchType("doctor");
+        formDto.setSearchType("clinic");
         formDto.setSort("rating-asc");
         formDto.setUserLat(0);
         formDto.setUserLon(0);
 
+        // load hospitals by default
+        HospitalSearchDto hospitalDto = new HospitalSearchDto();
+        hospitalDto.setCity(null);
+        hospitalDto.setRequest("");
+        hospitalDto.setSortBy(new DoctorSearchDto.SortBy("rating", "asc"));
+
+        List<Hospital> hospitals = hospitalSearchService.searchHospitals(hospitalDto, 0, 0);
+        model.addAttribute("hospitals", hospitals);
+
         model.addAttribute("formDto", formDto);
         model.addAttribute("doctors", null);
-        model.addAttribute("hospitals", null);
         model.addAttribute("searchPerformed", false);
 
         model.addAttribute("cities", hospitalService.getAllCities());
@@ -63,7 +75,8 @@ public class HomeController {
 
         if ("clinic".equalsIgnoreCase(formDto.getSearchType())) {
             try {
-                var hospitals = hospitalSearchService.searchHospitals(hospitalDto, formDto.getUserLat(), formDto.getUserLon());
+                var hospitals = hospitalSearchService.searchHospitals(hospitalDto, formDto.getUserLat(),
+                        formDto.getUserLon());
                 model.addAttribute("hospitals", hospitals);
                 model.addAttribute("doctors", null);
             } catch (Exception e) {

@@ -71,7 +71,7 @@
         </div>
     </div>
 
-    <div th:if="${formDto.searchType == 'clinic'}" class="search-result-container">
+    <div th:if="${formDto.searchType == 'clinic' || formDto.searchType == null}" class="search-result-container">
         <div th:each="hospital : ${hospitals}" class="doctor-card">
             <div class="doctor-left">
                 <img th:src="@{/images/hospital-default.png}" alt="Hospital Photo" class="doctor-photo">
