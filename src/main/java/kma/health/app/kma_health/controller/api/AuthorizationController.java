@@ -28,12 +28,20 @@ public class AuthorizationController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request,
-                                   HttpServletResponse response) {
-        String token = switch (request.getMethod()) {
-            case EMAIL -> authService.loginByEmail(request.getIdentifier(), request.getPassword(), request.getRole());
-            case PHONE -> authService.loginByPhone(request.getIdentifier(), request.getPassword(), request.getRole());
-            case PASSPORT -> authService.loginByPassport(request.getIdentifier(), request.getPassword(), request.getRole());
-        };
+            HttpServletResponse response) {
+        String token;
+        if (request.getMethod() == null) {
+            token = authService.loginAny(request.getIdentifier(), request.getPassword(), request.getRole());
+        } else {
+            token = switch (request.getMethod()) {
+                case EMAIL ->
+                    authService.loginByEmail(request.getIdentifier(), request.getPassword(), request.getRole());
+                case PHONE ->
+                    authService.loginByPhone(request.getIdentifier(), request.getPassword(), request.getRole());
+                case PASSPORT ->
+                    authService.loginByPassport(request.getIdentifier(), request.getPassword(), request.getRole());
+            };
+        }
 
         String userRole = request.getRole().name();
 
@@ -58,8 +66,7 @@ public class AuthorizationController {
 
         return ResponseEntity.ok(Map.of(
                 "role", request.getRole(),
-                "message", "Successfully logged in"
-        ));
+                "message", "Successfully logged in"));
     }
 
     @PostMapping("/register")
@@ -70,7 +77,7 @@ public class AuthorizationController {
     @PreAuthorize("isAuthenticated()")
     @PatchMapping("/profile")
     public ResponseEntity<String> updateProfile(@AuthenticationPrincipal UUID userId,
-                                                @RequestBody Map<String, String> updates) {
+            @RequestBody Map<String, String> updates) {
         authService.updateProfile(userId, updates);
         return ResponseEntity.ok("Profile updated successfully");
     }
@@ -82,4 +89,3 @@ public class AuthorizationController {
         return ResponseEntity.ok("Profile deleted successfully");
     }
 }
-

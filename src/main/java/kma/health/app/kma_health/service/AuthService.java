@@ -29,8 +29,7 @@ public class AuthService {
     public AuthService(
             Map<UserRole, AuthUserRepository<? extends AuthUser>> repositories,
             PasswordEncoder passwordEncoder,
-            JwtUtils jwtUtils
-    ) {
+            JwtUtils jwtUtils) {
         this.passwordEncoder = passwordEncoder;
         this.jwtUtils = jwtUtils;
         this.repositories = repositories;
@@ -42,8 +41,8 @@ public class AuthService {
     }
 
     private String login(Function<AuthUserRepository<?>, Optional<? extends AuthUser>> finder,
-                         String password,
-                         UserRole role) {
+            String password,
+            UserRole role) {
         AuthUserRepository<? extends AuthUser> repo = getRepositoryByRole(role);
         MDC.put("userRole", role.toString());
 
@@ -62,7 +61,8 @@ public class AuthService {
             if (!passwordEncoder.matches(password, user.getPassword())) {
                 MDC.put("status", "FAILED");
                 MDC.put("reason", "Invalid password");
-                log.warn(SECURITY, "Failed login attempt for user ID: {} (Role: {}). Invalid password.", user.getId(), role);
+                log.warn(SECURITY, "Failed login attempt for user ID: {} (Role: {}). Invalid password.", user.getId(),
+                        role);
                 throw new InvalidCredentialsException("Invalid credentials");
             }
 
@@ -94,6 +94,19 @@ public class AuthService {
         String token = login(r -> r.findByPassportNumber(passport), password, role);
         System.out.println("Id " + MDC.get("userId"));
         return token;
+    }
+
+    @RateLimited(maxCalls = 5, timeWindowSeconds = 60)
+    public String loginAny(String identifier, String password, UserRole role) {
+        try {
+            return loginByEmail(identifier, password, role);
+        } catch (Exception e) {
+            try {
+                return loginByPhone(identifier, password, role);
+            } catch (Exception ex) {
+                return loginByPassport(identifier, password, role);
+            }
+        }
     }
 
     @SuppressWarnings("unchecked")

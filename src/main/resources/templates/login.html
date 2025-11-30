@@ -19,8 +19,17 @@
         
         <form id="login-form">
             <div class="input-group">
-                <label for="username">Email</label>
-                <input type="email" 
+                <label for="loginMethod">Метод входу</label>
+                <select id="loginMethod" name="loginMethod" class="role-select">
+                    <option value="EMAIL">Email</option>
+                    <option value="PHONE">Номер телефону</option>
+                    <option value="PASSPORT">Номер паспорту</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label for="username">Ідентифікатор</label>
+                <input type="text" 
                        id="username" 
                        name="username" 
                        placeholder="example@email.com"

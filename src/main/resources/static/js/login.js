@@ -1,8 +1,9 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('login-form');
     const usernameInput = document.getElementById('username');
     const passwordInput = document.getElementById('password');
     const roleSelect = document.getElementById('role');
+    const loginMethodSelect = document.getElementById('loginMethod');
     const usernameError = document.getElementById('username-error');
     const passwordError = document.getElementById('password-error');
     const generalError = document.getElementById('general-error');
@@ -15,7 +16,30 @@ document.addEventListener('DOMContentLoaded', function() {
         successMessage.textContent = 'Реєстрація успішна! Тепер ви можете увійти.';
     }
 
-    form.addEventListener('submit', async function(e) {
+    // Update placeholder based on selected method
+    function updatePlaceholder() {
+        if (!loginMethodSelect) return;
+
+        const method = loginMethodSelect.value;
+        switch (method) {
+            case 'EMAIL':
+                usernameInput.placeholder = 'example@email.com';
+                break;
+            case 'PHONE':
+                usernameInput.placeholder = '+380XXXXXXXXX';
+                break;
+            case 'PASSPORT':
+                usernameInput.placeholder = '123456789';
+                break;
+        }
+    }
+
+    if (loginMethodSelect) {
+        loginMethodSelect.addEventListener('change', updatePlaceholder);
+        updatePlaceholder(); // Initialize
+    }
+
+    form.addEventListener('submit', async function (e) {
         e.preventDefault();
 
         usernameError.style.display = 'none';
@@ -26,14 +50,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let isValid = true;
 
         if (!usernameInput.value.trim()) {
-            usernameError.textContent = 'Будь ласка, введіть email';
-            usernameError.style.display = 'block';
-            isValid = false;
-        }
-
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (usernameInput.value && !emailRegex.test(usernameInput.value)) {
-            usernameError.textContent = 'Будь ласка, введіть коректний email';
+            usernameError.textContent = 'Будь ласка, введіть ідентифікатор';
             usernameError.style.display = 'block';
             isValid = false;
         }
@@ -55,7 +72,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const loginData = {
                 identifier: usernameInput.value,
                 password: passwordInput.value,
-                method: 'EMAIL',
+                method: loginMethodSelect ? loginMethodSelect.value : 'EMAIL',
                 role: roleSelect.value
             };
 
@@ -80,13 +97,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     window.location.href = redirectPath;
                 }, 1000);
             } else {
-                let errorMessage = 'Невірний email або пароль';
+                let errorMessage = 'Невірний логін або пароль';
                 try {
                     const errorData = await response.json();
                     if (errorData.message) {
                         errorMessage = errorData.message;
                     }
-                } catch (e) {}
+                } catch (e) { }
 
                 generalError.textContent = errorMessage;
                 generalError.style.display = 'block';
@@ -111,7 +128,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     if (rememberCheckbox) {
-        rememberCheckbox.addEventListener('change', function() {
+        rememberCheckbox.addEventListener('change', function () {
             if (this.checked) {
                 localStorage.setItem('rememberLogin', 'true');
                 localStorage.setItem('savedUsername', usernameInput.value);
