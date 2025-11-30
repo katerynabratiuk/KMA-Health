@@ -1,6 +1,6 @@
 package kma.health.app.kma_health.logging;
 
-import kma.health.app.kma_health.dto.RegisterRequest;
+import kma.health.app.kma_health.dto.DoctorRegisterRequest;
 import kma.health.app.kma_health.service.SlackNotificationService;
 import lombok.RequiredArgsConstructor;
 import org.aspectj.lang.JoinPoint;
@@ -23,9 +23,9 @@ public class InvalidRegisterKeyAspect {
             return;
 
         Object[] args = joinPoint.getArgs();
-        RegisterRequest request = null;
+        DoctorRegisterRequest request = null;
         for (Object arg : args) {
-            if (arg instanceof RegisterRequest rr) {
+            if (arg instanceof DoctorRegisterRequest rr) {
                 request = rr;
                 break;
             }
