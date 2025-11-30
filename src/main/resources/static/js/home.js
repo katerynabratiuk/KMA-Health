@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
     const authToken = localStorage.getItem('authToken');
     const userRole = localStorage.getItem('userRole');
-    
+
     const loginRegisterButton = document.getElementById("login-register-button");
     let roleUkrainian;
     if (authToken && loginRegisterButton) {
@@ -34,11 +34,12 @@ document.addEventListener("DOMContentLoaded", function () {
         `;
         loginRegisterButton.parentElement.appendChild(userActionsDiv);
     }
-    
+
     const searchType = document.getElementById("search-type");
     const searchInput = document.getElementById("search-input");
     const advancedSearchBtn = document.getElementById("advanced-search-button");
     const advancedSearchContainer = document.getElementById("advanced-search-container");
+    const form = document.getElementById("search-container");
 
     function updatePlaceholder() {
         if (searchType.value === "clinic") {
@@ -167,9 +168,10 @@ document.addEventListener("DOMContentLoaded", function () {
         if (isVisible) {
             renderAdvancedForm();
         }
+        // Automatically submit the form to load all results for the selected type
+        form.submit();
     });
 
-    const form = document.getElementById("search-container");
     let userLatInput = document.getElementById("userLat");
     let userLonInput = document.getElementById("userLon");
 
@@ -206,7 +208,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const appointmentButtons = document.querySelectorAll('.appointment-button');
     appointmentButtons.forEach(button => {
-        button.addEventListener('click', function() {
+        button.addEventListener('click', function () {
             if (!authToken) {
                 alert('Будь ласка, увійдіть в систему для запису на прийом');
                 window.location.href = '/ui/public/login';
