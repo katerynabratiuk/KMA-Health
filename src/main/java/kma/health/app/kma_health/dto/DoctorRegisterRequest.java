@@ -18,19 +18,19 @@ public class DoctorRegisterRequest {
     @NotNull(message = "Номер паспорту є обов'язковим полем")
     @Size(min = 9, max = 9, message = "Розмір номеру паспорту - 9 цифр")
     @Pattern(regexp = "[0-9]{9}", message = "Номер паспорту може складатись лише з цифр")
-    @UniqueCredential(field = "passportNumber", message = "Користувач з таким номером паспорту вже існує")
+    @UniqueCredential(role="doctor" ,field = "passportNumber", message = "Користувач з таким номером паспорту вже існує")
     private String passportNumber;
 
     @NotNull(message = "Пошта є обов'язковим полем")
     @Email(message = "Неправильний формат пошти")
-    @UniqueCredential(field = "email", message = "Користувач з такою поштою вже існує")
+    @UniqueCredential(role="doctor", field = "email", message = "Користувач з такою поштою вже існує")
     private String email;
 
     @NotNull(message = "Номер паспорту є обов'язковим полем")
     private String password;
 
     @NotNull(message = "Номер телефону є обов'язковим полем")
-    @UniqueCredential(field = "phoneNumber", message = "Користувач з таким номером телефону вже існує")
+    @UniqueCredential(role="doctor", field = "phoneNumber", message = "Користувач з таким номером телефону вже існує")
     private String phoneNumber;
 
     @NotNull(message = "ПІБ є обов'язковим полем")

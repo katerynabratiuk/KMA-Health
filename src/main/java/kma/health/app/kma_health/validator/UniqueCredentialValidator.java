@@ -2,6 +2,7 @@ package kma.health.app.kma_health.validator;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
+import kma.health.app.kma_health.enums.UserRole;
 import kma.health.app.kma_health.repository.DoctorRepository;
 import kma.health.app.kma_health.repository.LabAssistantRepository;
 import kma.health.app.kma_health.repository.PatientRepository;
@@ -17,10 +18,12 @@ public class UniqueCredentialValidator implements ConstraintValidator<UniqueCred
     private final LabAssistantRepository labAssistantRepository;
 
     private String field;
+    private UserRole role;
 
     @Override
     public void initialize(UniqueCredential constraintAnnotation) {
         this.field = constraintAnnotation.field();
+        this.role = UserRole.fromString(constraintAnnotation.role());
     }
 
     @Override
@@ -38,20 +41,26 @@ public class UniqueCredentialValidator implements ConstraintValidator<UniqueCred
     }
 
     private boolean existsByEmail(String email) {
-        return patientRepository.findByEmail(email).isPresent()
-                || doctorRepository.findByEmail(email).isPresent()
-                || labAssistantRepository.findByEmail(email).isPresent();
+        return switch (role) {
+            case UserRole.PATIENT -> patientRepository.findByEmail(email).isPresent();
+            case UserRole.DOCTOR -> doctorRepository.findByEmail(email).isPresent();
+            case UserRole.LAB_ASSISTANT -> labAssistantRepository.findByEmail(email).isPresent();
+        };
     }
 
     private boolean existsByPassportNumber(String passportNumber) {
-        return patientRepository.findByPassportNumber(passportNumber).isPresent()
-                || doctorRepository.findByPassportNumber(passportNumber).isPresent()
-                || labAssistantRepository.findByPassportNumber(passportNumber).isPresent();
+        return switch (role) {
+            case UserRole.PATIENT -> patientRepository.findByPassportNumber(passportNumber).isPresent();
+            case UserRole.DOCTOR -> doctorRepository.findByPassportNumber(passportNumber).isPresent();
+            case UserRole.LAB_ASSISTANT -> labAssistantRepository.findByPassportNumber(passportNumber).isPresent();
+        };
     }
 
     private boolean existsByPhoneNumber(String phoneNumber) {
-        return patientRepository.findByPhoneNumber(phoneNumber).isPresent()
-                || doctorRepository.findByPhoneNumber(phoneNumber).isPresent()
-                || labAssistantRepository.findByPhoneNumber(phoneNumber).isPresent();
+        return switch (role) {
+            case UserRole.PATIENT -> patientRepository.findByPhoneNumber(phoneNumber).isPresent();
+            case UserRole.DOCTOR -> doctorRepository.findByPhoneNumber(phoneNumber).isPresent();
+            case UserRole.LAB_ASSISTANT -> labAssistantRepository.findByPhoneNumber(phoneNumber).isPresent();
+        };
     }
 }
