@@ -2,6 +2,8 @@ package kma.health.app.kma_health.dto;
 
 import jakarta.validation.constraints.*;
 import kma.health.app.kma_health.enums.UserRole;
+import kma.health.app.kma_health.validator.Adult;
+import kma.health.app.kma_health.validator.BirthBeforeWork;
 import kma.health.app.kma_health.validator.UniqueCredential;
 import lombok.*;
 
@@ -12,6 +14,7 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @Builder
+@BirthBeforeWork
 public class DoctorRegisterRequest {
     private UserRole role;
 
@@ -38,6 +41,7 @@ public class DoctorRegisterRequest {
 
     @NotNull(message = "Дата народження є обов'язковим полем")
     @Past(message = "Невалідна дата народження")
+    @Adult(message="Ви повинні бути старшим 18 років.")
     private LocalDate birthDate;
 
     @NotNull(message = "Дата початку роботи є обов'язковим полем")

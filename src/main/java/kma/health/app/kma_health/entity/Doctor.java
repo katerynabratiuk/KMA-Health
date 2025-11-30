@@ -4,6 +4,7 @@ import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import kma.health.app.kma_health.enums.UserRole;
+import kma.health.app.kma_health.validator.Adult;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -45,7 +46,7 @@ public class Doctor implements AuthUser {
 
     private String profilePictureUrl;
 
-    @PastOrPresent
+    @Adult
     private LocalDate birthDate;
 
     @PastOrPresent
