@@ -6,9 +6,13 @@
     <link rel="stylesheet" th:href="@{/css/register.css}">
 </head>
 <body>
-<form th:object="${registerRequest}"
+<form th:object="${doctorRegisterRequest}"
       th:action="@{/ui/public/register/doctor}"
       method="post">
+
+    <div th:if="${globalError}" class="alert alert-error">
+        <p th:text="${globalError}"></p>
+    </div>
 
     <div>
         <label for="fullName">Повне ім'я</label>
@@ -93,11 +97,6 @@
         <p th:if="${#fields.hasErrors('registerKey')}" th:errorclass="error" th:errors="*{registerKey}"></p>
     </div>
 
-    <div th:if="${#fields.hasAnyErrors()}">
-        <ul>
-            <li th:each="err : ${#fields.allErrors()}" th:text="${err}" />
-        </ul>
-    </div>
 
     <button type="submit">Створити</button>
 </form>

@@ -1,6 +1,7 @@
 package kma.health.app.kma_health.service;
 
-import kma.health.app.kma_health.dto.RegisterRequest;
+import kma.health.app.kma_health.dto.DoctorRegisterRequest;
+import kma.health.app.kma_health.dto.PatientRegisterRequest;
 import kma.health.app.kma_health.entity.*;
 import kma.health.app.kma_health.enums.UserRole;
 import kma.health.app.kma_health.logging.NotifyInvalidKey;
@@ -24,13 +25,12 @@ public class RegistrationService {
     private final HospitalRepository hospitalRepository;
     private final PasswordEncoder passwordEncoder;
     private final RandomProfileImageService randomProfileImageService;
-
     private static final Logger log = LoggerFactory.getLogger(RegistrationService.class);
     private static final Marker SECURITY = MarkerFactory.getMarker("SECURITY");
     private final SecretKeyProvider keyProvider;
 
     @NotifyInvalidKey
-    public String register(RegisterRequest request) {
+    public String register(DoctorRegisterRequest request) {
         try {
             switch (request.getRole()) {
                 case PATIENT -> {
@@ -50,12 +50,10 @@ public class RegistrationService {
                         doctor.setDescription(request.getDescription());
                         doctor.setDoctorType(
                                 doctorTypeRepository.findById(request.getDoctorTypeId())
-                                        .orElseThrow(() -> new RuntimeException("Doctor type not found"))
-                        );
+                                        .orElseThrow(() -> new RuntimeException("Doctor type not found")));
                         doctor.setHospital(
                                 hospitalRepository.findById(request.getHospitalId())
-                                        .orElseThrow(() -> new RuntimeException("Hospital not found"))
-                        );
+                                        .orElseThrow(() -> new RuntimeException("Hospital not found")));
                         doctor.setStartedWorking(request.getStartedWorking());
                         doctorRepository.save(doctor);
                         log.info("Doctor registered successfully");
@@ -65,8 +63,7 @@ public class RegistrationService {
                         fillCommonFields(labAssistant, request);
                         labAssistant.setHospital(
                                 hospitalRepository.findById(request.getLabHospitalId())
-                                        .orElseThrow(() -> new RuntimeException("Hospital not found"))
-                        );
+                                        .orElseThrow(() -> new RuntimeException("Hospital not found")));
                         labAssistantRepository.save(labAssistant);
                         log.info("Lab Assistant registered successfully");
                         return "Lab Assistant registered successfully";
@@ -75,27 +72,41 @@ public class RegistrationService {
                 default -> throw new IllegalArgumentException("Unsupported role");
             }
         } catch (TransactionSystemException tse) {
-        Throwable root = tse.getMostSpecificCause();
-        if (root instanceof ConstraintViolationException cve) {
-            cve.getConstraintViolations().forEach(v ->
-                    log.warn("BeanValidation: {} invalid value='{}' -> {}",
-                            v.getPropertyPath(), v.getInvalidValue(), v.getMessage())
-            );
+            Throwable root = tse.getMostSpecificCause();
+            if (root instanceof ConstraintViolationException cve) {
+                cve.getConstraintViolations().forEach(v -> log.warn("BeanValidation: {} invalid value='{}' -> {}",
+                        v.getPropertyPath(), v.getInvalidValue(), v.getMessage()));
+            }
+            throw tse;
         }
-        throw tse;
-    }
 
         catch (RuntimeException e) {
             if (e.getMessage().contains("Invalid register key")) {
-                log.warn(SECURITY, "Registration failed for email {} (role {}). Reason: invalid key.", request.getEmail(), request.getRole());
+                log.warn(SECURITY, "Registration failed for email {} (role {}). Reason: invalid key.",
+                        request.getEmail(), request.getRole());
             } else {
-                log.warn("Registration failed for email {} (role {}). Reason: {}", request.getEmail(), request.getRole(), e.getMessage());
+                log.warn("Registration failed for email {} (role {}). Reason: {}", request.getEmail(),
+                        request.getRole(), e.getMessage());
             }
             throw e;
         }
     }
 
-    private void fillCommonFields(AuthUser user, RegisterRequest request) {
+    public String register(PatientRegisterRequest request) {
+        Patient patient = new Patient();
+        patient.setPassportNumber(request.getPassportNumber());
+        patient.setEmail(request.getEmail());
+        patient.setPassword(passwordEncoder.encode(request.getPassword()));
+        patient.setPhoneNumber(request.getPhoneNumber());
+        patient.setFullName(request.getFullName());
+        patient.setBirthDate(request.getBirthDate());
+        patient.setProfilePictureUrl(randomProfileImageService.getRandomProfilePicture());
+        patientRepository.save(patient);
+        log.info("Patient registered successfully");
+        return "Patient registered successfully";
+    }
+
+    private void fillCommonFields(AuthUser user, DoctorRegisterRequest request) {
         user.setPassportNumber(request.getPassportNumber());
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
@@ -111,4 +122,3 @@ public class RegistrationService {
             throw new RuntimeException("Invalid register key");
     }
 }
-

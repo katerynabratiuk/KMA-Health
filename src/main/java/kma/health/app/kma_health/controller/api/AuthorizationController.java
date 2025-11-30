@@ -3,7 +3,7 @@ package kma.health.app.kma_health.controller.api;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import kma.health.app.kma_health.dto.LoginRequest;
-import kma.health.app.kma_health.dto.RegisterRequest;
+import kma.health.app.kma_health.dto.DoctorRegisterRequest;
 import kma.health.app.kma_health.service.AuthService;
 import kma.health.app.kma_health.service.RegistrationService;
 import lombok.AllArgsConstructor;
@@ -63,7 +63,7 @@ public class AuthorizationController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<String> register(@RequestBody DoctorRegisterRequest request) {
         return ResponseEntity.ok(registrationService.register(request));
     }
 

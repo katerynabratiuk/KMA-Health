@@ -1,7 +1,8 @@
 package kma.health.app.kma_health.controller.ui;
 
 import jakarta.validation.Valid;
-import kma.health.app.kma_health.dto.RegisterRequest;
+import kma.health.app.kma_health.dto.DoctorRegisterRequest;
+import kma.health.app.kma_health.dto.PatientRegisterRequest;
 import kma.health.app.kma_health.enums.UserRole;
 import kma.health.app.kma_health.service.DoctorTypeService;
 import kma.health.app.kma_health.service.HospitalService;
@@ -39,20 +40,20 @@ public class RegisterController {
 
     @GetMapping("/register/doctor")
     public String doctorRegister(Model model) {
-        if (!model.containsAttribute("registerRequest")) {
-            model.addAttribute("registerRequest", new RegisterRequest());
+        if (!model.containsAttribute("doctorRegisterRequest")) {
+            model.addAttribute("doctorRegisterRequest", new DoctorRegisterRequest());
         }
         return "register-doctor";
     }
 
     @PostMapping("/register/doctor")
     public String doctorRegisterPost(
-            @Valid @ModelAttribute("registerRequest") RegisterRequest registerRequest,
+            @Valid @ModelAttribute("doctorRegisterRequest") DoctorRegisterRequest registerRequest,
             BindingResult bindingResult,
             RedirectAttributes ra,
-            Model model
-    ) {
+            Model model) {
         if (bindingResult.hasErrors()) {
+            model.addAttribute("doctorRegisterRequest", registerRequest);
             return "register-doctor";
         }
         try {
@@ -63,24 +64,23 @@ public class RegisterController {
             return "register-doctor";
         }
         ra.addFlashAttribute("success", "Лікаря створено. Увійдіть, будь ласка.");
-        return "redirect:/ui/public/"; // або "redirect:/ui/public/home"
+        return "redirect:/ui/public/login";
     }
 
     @GetMapping("/register/patient")
     public String patientRegister(Model model) {
         if (!model.containsAttribute("registerRequest")) {
-            model.addAttribute("registerRequest", new RegisterRequest());
+            model.addAttribute("registerRequest", new PatientRegisterRequest());
         }
         return "register-patient";
     }
 
     @PostMapping("/register/patient")
     public String patientRegisterPost(
-            @Valid @ModelAttribute("registerRequest") RegisterRequest registerRequest,
+            @Valid @ModelAttribute("registerRequest") PatientRegisterRequest registerRequest,
             BindingResult bindingResult,
             RedirectAttributes ra,
-            Model model
-    ) {
+            Model model) {
         if (bindingResult.hasErrors()) {
             return "register-patient";
         }
@@ -91,6 +91,7 @@ public class RegisterController {
             model.addAttribute("globalError", e.getMessage());
             return "register-patient";
         }
-        return "redirect:/ui/public/";
+        ra.addFlashAttribute("success", "Пацієнта створено. Увійдіть, будь ласка.");
+        return "redirect:/ui/public/login";
     }
 }

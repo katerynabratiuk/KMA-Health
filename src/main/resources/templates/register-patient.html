@@ -9,6 +9,9 @@
 <form th:object="${registerRequest}"
       th:action="@{/ui/public/register/patient}"
       method="post">
+    <div th:if="${globalError}" class="alert alert-error">
+        <p th:text="${globalError}"></p>
+    </div>
     <div>
         <label for="fullName">Повне ім'я</label>
         <input id="fullName" type="text" th:field="*{fullName}">
@@ -39,6 +42,7 @@
         <input id="passportNumber" type="text" th:field="*{passportNumber}">
         <p th:if="${#fields.hasErrors('passportNumber')}" th:errors="*{passportNumber}"></p>
     </div>
+
     <button type="submit">Створити</button>
 </form>
 </body>
