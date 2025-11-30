@@ -82,6 +82,12 @@
     </div>
 
     <div>
+        <label for="birthDate">Дата початку роботи</label>
+        <input id="startedWorking" type="date" th:field="*{startedWorking}">
+        <p th:if="${#fields.hasErrors('startedWorking')}" th:errorclass="error" th:errors="*{startedWorking}"></p>
+    </div>
+
+    <div>
         <label for="registerKey">Код реєстрації</label>
         <input id="registerKey" type="text" th:field="*{registerKey}">
         <p th:if="${#fields.hasErrors('registerKey')}" th:errorclass="error" th:errors="*{registerKey}"></p>

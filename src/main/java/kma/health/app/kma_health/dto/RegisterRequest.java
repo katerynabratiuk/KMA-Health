@@ -38,6 +38,7 @@ public class RegisterRequest {
     @NotNull(message="Дата народження є обов'язковим полем")
     private LocalDate birthDate;
 
+    @NotNull(message="Дата початку роботи є обов'язковим полем")
     private LocalDate startedWorking;
 
     private String type;
