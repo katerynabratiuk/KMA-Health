@@ -116,11 +116,14 @@ public class AppointmentService {
             throw new AccessDeniedException("One user cannot create an appointment for another user");
 
         validateAppointmentTarget(appointmentDto);
-        checkIfAppointmentExists(appointmentDto.getDate(), appointmentDto.getTime());
-        if (appointmentDto.getDoctorId() != null)
-            validateDoctorAndPatientAge(appointmentDto.getDoctorId(), appointmentDto.getPatientId());
-        Appointment appointment = buildAppointment(appointmentDto);
+        checkIfAppointmentExists(appointmentDto.getReferralId());
 
+        if (appointmentDto.getDoctorId() != null) {
+            checkIfAppointmentExists(appointmentDto.getDate(), appointmentDto.getTime());
+            validateDoctorAndPatientAge(appointmentDto.getDoctorId(), appointmentDto.getPatientId());
+        }
+
+        Appointment appointment = buildAppointment(appointmentDto);
         appointmentRepository.save(appointment);
     }
 
@@ -169,6 +172,7 @@ public class AppointmentService {
             appointment.setMedicalFiles(medicalFiles);
         }
         appointmentRepository.save(appointment);
+        referralRepository.delete(appointment.getReferral());
     }
 
     public void cancelAppointment(UUID doctorId, UUID patientId, UUID appointmentId) throws AccessDeniedException {
@@ -294,6 +298,11 @@ public class AppointmentService {
         if (appointmentRepository.existsByDateAndTime(date, time))
             throw new AppointmentTargetConflictException
                     ("Appointment for date " + date + "and time " + time + " already exists");
+    }
+
+    private void checkIfAppointmentExists(UUID referralId) {
+        if (appointmentRepository.existsById(referralId))
+            throw new AppointmentTargetConflictException("Appointment for " + referralId + " already exists");
     }
 
     public void validateDoctorAndPatientAge(UUID doctorID, UUID patientID) {

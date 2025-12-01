@@ -32,5 +32,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, UUID> 
     List<Appointment> findByReferralPatientIdAndStatus(UUID patientId, AppointmentStatus status);
 
     boolean existsByDateAndTime(LocalDate date, LocalTime time);
+
+    boolean existsByReferralId(UUID referralId);
 }
 
