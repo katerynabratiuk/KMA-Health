@@ -1,5 +1,8 @@
 package kma.health.app.kma_health.dto;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import kma.health.app.kma_health.entity.Doctor;
 import kma.health.app.kma_health.entity.Feedback;
 import kma.health.app.kma_health.entity.Hospital;
@@ -20,6 +23,9 @@ public class FeedbackCreateUpdateDto {
 
     private LocalDate date;
 
+    @NotNull
+    @Min(0)
+    @Max(5)
     private Short score;
 
     private String comment;

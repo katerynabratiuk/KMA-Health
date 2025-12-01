@@ -52,13 +52,13 @@ public class ReferralService {
         referralRepository.save(referral);
     }
 
-    public void createReferralForFamilyDoctor(Patient patient, LocalDate appointmentDate) {
+    public Referral createReferralForFamilyDoctor(Patient patient, LocalDate appointmentDate) {
         Referral referral = new Referral();
         referral.setDoctorType(doctorTypeRepository.findByTypeName("Family doctor")
                 .orElseThrow(() -> new RuntimeException("Doctor type Family doctor not found")));
         referral.setPatient(patient);
         referral.setValidUntil(appointmentDate.plusDays(1));
-        referralRepository.save(referral);
+        return referralRepository.save(referral);
     }
 
     private Referral createReferralBoilerplate(Doctor doctor, Patient patient) {

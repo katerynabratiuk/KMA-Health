@@ -41,6 +41,7 @@ public class AppointmentService {
     private final LabAssistantRepository labAssistantRepository;
     private final DoctorTypeRepository doctorTypeRepository;
     private final HospitalService hospitalService;
+    private final ReferralService referralService;
 
     @Value("${root.file.path}")
     private String filePath;
@@ -111,20 +112,43 @@ public class AppointmentService {
     }
 
     @Transactional
-    public void createAppointment(AppointmentCreateUpdateDto appointmentDto, UUID userId) throws AccessDeniedException {
-        if (!userId.equals(appointmentDto.getPatientId()))
-            throw new AccessDeniedException("One user cannot create an appointment for another user");
+    public void createAppointment(AppointmentCreateUpdateDto dto, UUID userId) throws AccessDeniedException {
+        if (!userId.equals(dto.getPatientId()))
+            throw new AccessDeniedException("One patient cannot create an appointment for another patient");
 
-        validateAppointmentTarget(appointmentDto);
-        checkIfAppointmentExists(appointmentDto.getReferralId());
+        validateAppointmentTarget(dto);
 
-        if (appointmentDto.getDoctorId() != null) {
-            checkIfAppointmentExists(appointmentDto.getDate(), appointmentDto.getTime());
-            validateDoctorAndPatientAge(appointmentDto.getDoctorId(), appointmentDto.getPatientId());
-        }
+        if (dto.getDoctorId() != null)
+            processDoctorAppointment(dto);
 
-        Appointment appointment = buildAppointment(appointmentDto);
+        checkIfAppointmentExists(dto.getReferralId());
+
+        Appointment appointment = buildAppointment(dto);
         appointmentRepository.save(appointment);
+    }
+
+    private void processDoctorAppointment(AppointmentCreateUpdateDto dto) {
+        checkIfAppointmentExists(dto.getDate(), dto.getTime());
+        handleFamilyDoctorReferral(dto);
+        validateDoctorAndPatientAge(dto.getDoctorId(), dto.getPatientId());
+    }
+
+    private void handleFamilyDoctorReferral(AppointmentCreateUpdateDto dto) {
+        doctorRepository.findById(dto.getDoctorId()).ifPresent(doctor -> {
+            if (isFamilyDoctor(doctor)) {
+                if (patientRepository.findById(dto.getPatientId()).isEmpty())
+                    throw new EntityNotFoundException("Patient not found");
+
+                UUID referralId = referralService
+                        .createReferralForFamilyDoctor(patientRepository.findById(dto.getPatientId()).get(), dto.getDate())
+                        .getId();
+                dto.setReferralId(referralId);
+            }
+        });
+    }
+
+    private boolean isFamilyDoctor(Doctor doctor) {
+        return "Family doctor".equals(doctor.getDoctorType().getTypeName());
     }
 
     @Transactional
