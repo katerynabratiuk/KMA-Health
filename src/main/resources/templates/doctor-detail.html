@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="|${doctor.fullName} - KMA Health|">Doctor Profile - KMA Health</title>
+    <link rel="stylesheet" th:href="@{/css/doctor-detail.css}">
+    <link rel="stylesheet" th:href="@{/css/home.css}">
+    <link rel="icon" type="image/x-icon" th:href="@{/images/icon/favicon.ico}">
+</head>
+<body>
+    <header th:replace="~{fragments/layout :: header-auth(@{/ui/profile})}"></header>
+
+    <main class="doctor-detail-container">
+        <!-- Doctor Profile Card -->
+        <section class="doctor-profile-card">
+            <div class="doctor-header">
+                <div class="doctor-photo-section">
+                    <img th:if="${doctor.profilePictureUrl != null}" 
+                         th:src="${doctor.profilePictureUrl}" 
+                         alt="Doctor Photo" 
+                         class="doctor-photo-large">
+                    <img th:unless="${doctor.profilePictureUrl != null}" 
+                         th:src="@{/images/default-avatar.png}" 
+                         alt="Doctor Photo" 
+                         class="doctor-photo-large">
+                    
+                    <div class="doctor-rating-large" th:if="${doctor.feedback != null and !#lists.isEmpty(doctor.feedback)}">
+                        <span class="rating-value-large" 
+                              th:text="${doctor.rating != null ? #numbers.formatDecimal(doctor.rating, 1, 1) : '—'}">4.8</span>
+                        <div class="stars">
+                            <img th:src="@{/images/star.png}" alt="Star" class="rating-star">
+                        </div>
+                        <span class="reviews-count"
+                              th:text="|(${#lists.size(doctor.feedback)} відгуків)|">
+                            (24 відгуків)
+                        </span>
+                    </div>
+                    <div class="doctor-rating-placeholder" th:unless="${doctor.feedback != null and !#lists.isEmpty(doctor.feedback)}">
+                        <span class="no-rating-text">Немає рейтингу</span>
+                        <span class="no-rating-subtext">Будьте першим, хто залишить відгук</span>
+                    </div>
+                </div>
+
+                <div class="doctor-main-info">
+                    <div class="doctor-specialty-badge" th:text="${doctor.doctorType}">Кардіолог</div>
+                    <h1 class="doctor-name" th:text="|${doctor.fullName}|"></h1>
+                    
+                    <div class="doctor-meta">
+                        <div class="meta-item">
+                            <strong>Лікарня:</strong>
+                            <span th:text="${doctor.hospital.name}">Київська міська лікарня №5</span>
+                        </div>
+                        <div class="meta-item">
+                            <strong>Адреса:</strong>
+                            <span th:text="${doctor.hospital.address}">вул. Хрещатик, 25, Київ</span>
+                        </div>
+                        <div class="meta-item">
+                            <strong>Досвід:</strong>
+                            <span th:text="${doctor.yearsOfExperience + ' років'}">15 років</span>
+                        </div>
+                        <div class="meta-item" th:if="${doctor.type == 'child'}">
+                            <strong>Дитячий лікар</strong>
+                        </div>
+                    </div>
+
+                    <div class="doctor-contact-info">
+                        <a th:href="'mailto:' + ${doctor.email}" class="contact-link">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                <polyline points="22,6 12,13 2,6"></polyline>
+                            </svg>
+                            <span th:text="${doctor.email}">doctor@example.com</span>
+                        </a>
+                        <a th:href="'tel:' + ${doctor.phoneNumber}" class="contact-link">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                            </svg>
+                            <span th:text="${doctor.phoneNumber}">+380501234567</span>
+                        </a>
+                    </div>
+
+                    <p class="doctor-description-full" 
+                       th:text="${doctor.description != null ? doctor.description : 'Опис відсутній'}">
+                        Досвідчений лікар з багаторічною практикою. Спеціалізується на лікуванні серцево-судинних захворювань.
+                    </p>
+
+                    <div class="action-buttons">
+                        <button class="btn-primary" onclick="scrollToAppointment()">
+                            Записатися на прийом
+                        </button>
+                        <a th:href="@{/ui/doctor/{id}/feedback(id=${doctor.id})}" class="btn-secondary">
+                            Залишити відгук
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Appointment Form Section -->
+        <section class="info-section" id="appointment-section">
+            <h2 class="section-title">Записатися на прийом</h2>
+            <div class="appointment-form-container">
+                <form id="appointmentForm" class="appointment-form">
+                    <input type="hidden" id="doctorId" name="doctorId" th:value="${doctor.id}">
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="doctorName">Лікар</label>
+                            <input type="text" 
+                                   id="doctorName" 
+                                   th:value="${doctor.fullName}" 
+                                   class="form-input"
+                                   readonly>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="appointmentDate">Оберіть дату <span class="required">*</span></label>
+                        <input type="date" 
+                               id="appointmentDate" 
+                               name="appointmentDate" 
+                               class="form-input"
+                               required>
+                        <span class="error-message" id="dateError"></span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Оберіть зручний час <span class="required">*</span></label>
+                        
+                        <div class="duration-tabs">
+                            <button type="button" class="duration-tab active" data-duration="30">
+                                30 хвилин
+                            </button>
+                            <button type="button" class="duration-tab" data-duration="60">
+                                1 година
+                            </button>
+                        </div>
+                        
+                        <div class="time-slots-legend">
+                            <div class="legend-item">
+                                <span class="legend-indicator available"></span>
+                                <span class="legend-text">Вільно</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-indicator selected"></span>
+                                <span class="legend-text">Обрано</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-indicator unavailable"></span>
+                                <span class="legend-text">Зайнято</span>
+                            </div>
+                        </div>
+                        <div id="timeSlotsContainer" class="time-slots-container">
+                            <div class="no-slots-message">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <polyline points="12 6 12 12 16 14"></polyline>
+                                </svg>
+                                <p>Спочатку оберіть дату прийому</p>
+                            </div>
+                        </div>
+                        <span class="error-message" id="timeError"></span>
+                        <input type="hidden" id="selectedTimeSlot" name="selectedTimeSlot">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="reason">Причина відвідування <span class="required">*</span></label>
+                        <textarea id="reason" 
+                                  name="reason" 
+                                  class="form-textarea" 
+                                  rows="4"
+                                  placeholder="Опишіть причину вашого візиту..."
+                                  required></textarea>
+                        <span class="error-message" id="reasonError"></span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="symptoms">Симптоми (необов'язково)</label>
+                        <textarea id="symptoms" 
+                                  name="symptoms" 
+                                  class="form-textarea" 
+                                  rows="3"
+                                  placeholder="Опишіть ваші симптоми..."></textarea>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary btn-submit">
+                            Підтвердити запис
+                        </button>
+                        <button type="button" class="btn-secondary" onclick="resetForm()">
+                            Скасувати
+                        </button>
+                    </div>
+                    
+                    <div id="appointmentMessage" class="appointment-message" style="display: none;"></div>
+                </form>
+            </div>
+        </section>
+
+        <!-- Reviews Section -->
+        <section class="reviews-section" th:if="${doctor.feedback != null and !#lists.isEmpty(doctor.feedback)}">
+            <h2 class="section-title">Відгуки пацієнтів</h2>
+            <div class="reviews-container">
+                <div class="review-card" th:each="feedback : ${doctor.feedback}">
+                    <div class="review-header">
+                        <div class="review-author">
+                            <div class="author-avatar">
+                                <span th:text="${#strings.substring(feedback.patient.fullName, 0, 1)}">П</span>
+                            </div>
+                            <div>
+                                <div class="author-name" th:text="${feedback.patient.fullName}">Пацієнт Іван</div>
+                                <div class="review-date" th:text="${feedback.createdAt}">2024-11-15</div>
+                            </div>
+                        </div>
+                        <div class="review-rating">
+                            <span class="rating-number" th:text="${feedback.score}">5</span>
+                            <img th:src="@{/images/star.png}" alt="Star" class="star-small">
+                        </div>
+                    </div>
+                    <p class="review-text" th:text="${feedback.comment}">
+                        Чудовий лікар! Дуже уважний та професійний. Рекомендую!
+                    </p>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <script th:src="@{/js/doctor-detail.js}"></script>
+</body>
+</html>
