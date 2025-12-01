@@ -101,7 +101,7 @@
             </a>
 
             <a th:if="${userRole == 'PATIENT'}"
-               th:href="@{/ui/referrals/active}" class="profile-button secondary-button">
+               th:href="@{/ui/referrals/{id}(id=${user.profileId})}" class="profile-button secondary-button">
                 Активні направлення
             </a>
 

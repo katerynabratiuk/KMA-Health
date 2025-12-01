@@ -333,14 +333,9 @@ public class AppointmentService {
     public boolean haveOpenAppointment(UUID doctorId, UUID patientId) {
         List<Appointment> appointments = appointmentRepository
                 .findByDoctor_IdAndReferral_Patient_Id(doctorId, patientId);
-
         return appointments.stream()
-                .anyMatch(app -> {
-                    LocalDateTime start = LocalDateTime.of(app.getDate(), app.getTime());
-                    LocalDateTime end = start.plusMinutes(20);
-                    LocalDateTime now = LocalDateTime.now();
-                    return !start.isAfter(now) && !end.isBefore(now);
-                });
+                .anyMatch(app -> app.getStatus() != null &&
+                             app.getStatus().equals(AppointmentStatus.OPEN));
     }
 
     @Scheduled(fixedRate = 60_000)

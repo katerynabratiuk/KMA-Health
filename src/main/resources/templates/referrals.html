@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Активні направлення</title>
+    <link rel="stylesheet" th:href="@{/css/profile.css}">
+    <link rel="stylesheet" th:href="@{/css/home.css}">
+    <link rel="stylesheet" th:href="@{/css/referrals.css}">
+</head>
+<body>
+<header>
+    <div id="home-header">
+        <a href="/ui/public/" id="home-title" class="button-link">KMA Health</a>
+    </div>
+</header>
+
+<section id="profile-section">
+
+    <div class="profile-card">
+        <h2 class="info-title">
+            Активні направлення
+        </h2>
+
+        <div th:if="${userRole == 'DOCTOR'}" class="referral-action-block">
+            <button id="toggle-form-btn" class="profile-button primary-button">
+                Створити нове направлення
+            </button>
+
+            <div id="referral-form" class="hidden referral-creation-form">
+                <h3>Створення направлення</h3>
+                <form>
+                    <input type="hidden" id="targetPatient" name="targetPatient" th:value="${patientId}">
+
+                    <div class="form-group">
+                        <label for="targetType">Тип направлення:</label>
+                        <select id="targetType" name="targetType">
+                            <option value="doctor">До лікаря</option>
+                            <option value="examination">На обстеження</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="targetDetails">Деталі (Назва обстеження / Тип лікаря):</label>
+                        <input type="text" id="targetDetails" name="targetDetails" required placeholder="Напр. Офтальмолог або Аналіз крові">
+                    </div>
+
+                    <button type="submit" class="profile-button primary-button">Видати направлення</button>
+                </form>
+            </div>
+        </div>
+
+        <div th:if="${#lists.isEmpty(referrals)}" class="referral-item no-referrals">
+            <p style="text-align: center; color: #777;">Наразі активних направлень немає.</p>
+        </div>
+
+        <div class="referrals-list">
+            <div th:each="ref : ${referrals}" class="referral-item">
+                <h3 class="referral-target-main">
+                    <th:block th:if="${ref.examination != null}">
+                        <span class="type-label examination-label">Обстеження:</span>
+                        <span th:text="${ref.examination.name}"></span>
+                        <span th:if="${ref.examination.unit != null}" th:text="| (${ref.examination.unit})|" class="unit-label"></span>
+                    </th:block>
+
+                    <th:block th:unless="${ref.examination != null}">
+                        <span class="type-label doctor-label">До лікаря:</span>
+                        <span th:text="${ref.doctorType.typeName}"></span>
+                    </th:block>
+                </h3>
+
+                <p class="referrer-details">
+                    Видано: <span th:text="${ref.doctorFullName}"></span>
+                </p>
+
+                <div class="referral-meta">
+                    <span class="valid-until">Дійсне до: <strong th:text="${ref.validUntil}"></strong></span>
+                    <span class="referral-id">ID: <span th:text="${ref.id}">UUID</span></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const toggleBtn = document.getElementById('toggle-form-btn');
+        const form = document.getElementById('referral-form');
+
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', function() {
+                form.classList.toggle('hidden');
+                if (form.classList.contains('hidden')) {
+                    toggleBtn.textContent = 'Створити нове направлення';
+                } else {
+                    toggleBtn.textContent = 'Згорнути форму';
+                }
+            });
+        }
+    });
+</script>
+
+</body>
+</html>

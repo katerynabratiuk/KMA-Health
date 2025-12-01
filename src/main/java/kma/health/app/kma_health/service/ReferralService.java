@@ -1,6 +1,7 @@
 package kma.health.app.kma_health.service;
 
 import jakarta.persistence.EntityNotFoundException;
+import kma.health.app.kma_health.dto.ReferralDto;
 import kma.health.app.kma_health.entity.*;
 import kma.health.app.kma_health.exception.InvalidFamilyDoctorReferralMethodException;
 import kma.health.app.kma_health.exception.MissingOpenAppointmentException;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @Service
@@ -74,5 +76,15 @@ public class ReferralService {
 
     public List<Referral> getAllReferrals(UUID patientId) {
         return referralRepository.findByPatientId(patientId);
+    }
+
+    public List<ReferralDto> getActiveReferrals(UUID patientId) {
+        List<Referral> activeReferrals = referralRepository.findByPatientIdAndValidUntilGreaterThanEqual(
+                patientId,
+                LocalDate.now()
+        );
+        return activeReferrals.stream()
+                .map(ReferralDto::fromEntity)
+                .collect(Collectors.toList());
     }
 }

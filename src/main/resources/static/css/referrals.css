@@ -1,0 +1,209 @@
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+:root {
+    --kma-health-blue: #15479D;
+    --kma-health-dark-blue: #062159;
+    --kma-health-light-blue: #e8ecf4;
+    --text-color: #333;
+    --border-color: #ddd;
+    --shadow-light: rgba(0, 0, 0, 0.05);
+    --gray-bg: #f8f9fa;
+}
+
+.profile-card .info-title {
+    font-size: 1.5em;
+    color: var(--kma-health-dark-blue, #0056b3);
+    text-align: center;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 3px solid var(--kma-health-light-blue, #e9f0ff);
+    letter-spacing: 0.5px;
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.05);
+}
+
+.referrals-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.referral-item {
+    background-color: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 10px var(--shadow-light);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.referral-item:hover {
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.referral-item.no-referrals {
+    padding: 30px;
+    background-color: var(--gray-bg);
+}
+
+.referral-target-main {
+    font-size: 1.2em;
+    font-weight: 700;
+    color: var(--kma-health-dark-blue);
+    margin: 0 0 10px 0;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--kma-health-light-blue);
+    display: flex;
+    align-items: center;
+}
+
+.type-label {
+    font-size: 0.8em;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 4px;
+    margin-right: 10px;
+    color: #fff;
+}
+
+.examination-label {
+    background-color: var(--kma-health-blue);
+}
+
+.doctor-label {
+    background-color: var(--kma-health-blue);
+}
+
+.unit-label {
+    font-size: 0.8em;
+    font-weight: 400;
+    color: #666;
+    margin-left: 5px;
+}
+
+.referrer-details {
+    font-size: 0.95em;
+    color: #666;
+    margin: 0;
+}
+.referrer-details span {
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.referral-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85em;
+    color: #999;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--kma-health-light-blue);
+}
+.referral-meta strong {
+    color: var(--text-color);
+    font-weight: 600;
+}
+.referral-id span {
+    font-family: monospace;
+    font-size: 1.1em;
+    color: #b0b0b0;
+}
+
+.referral-action-block {
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+.referral-creation-form {
+    background-color: var(--kma-health-light-blue);
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 15px;
+    text-align: left;
+}
+.referral-creation-form h3 {
+    margin-top: 0;
+    color: var(--kma-health-dark-blue);
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+.form-group {
+    margin-bottom: 15px;
+}
+.form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: var(--text-color);
+}
+
+.form-group input, .form-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 1em;
+    background-color: #fff;
+    color: var(--text-color);
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.form-group input:focus, .form-group select:focus {
+    border-color: var(--kma-health-blue);
+    box-shadow: 0 0 0 3px rgba(21, 71, 157, 0.2);
+    outline: none;
+}
+
+
+.referral-creation-form .profile-button.primary-button {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--kma-health-blue);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 1.1em;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.1s;
+}
+
+.referral-creation-form .profile-button.primary-button:hover {
+    background-color: var(--kma-health-dark-blue);
+    transform: translateY(-1px);
+}
+
+.referral-creation-form .profile-button.primary-button:active {
+    transform: translateY(0);
+}
+
+.hidden {
+    display: none !important;
+}
+
+@media (max-width: 600px) {
+    .referral-item {
+        padding: 15px;
+    }
+    .referral-target-main {
+        font-size: 1.2em;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .type-label {
+        margin-bottom: 5px;
+    }
+    .referral-meta {
+        flex-direction: column;
+        gap: 5px;
+    }
+}
