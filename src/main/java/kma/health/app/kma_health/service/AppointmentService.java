@@ -116,6 +116,7 @@ public class AppointmentService {
             throw new AccessDeniedException("One user cannot create an appointment for another user");
 
         validateAppointmentTarget(appointmentDto);
+        checkIfAppointmentExists(appointmentDto.getDate(), appointmentDto.getTime());
         if (appointmentDto.getDoctorId() != null)
             validateDoctorAndPatientAge(appointmentDto.getDoctorId(), appointmentDto.getPatientId());
         Appointment appointment = buildAppointment(appointmentDto);
@@ -289,6 +290,12 @@ public class AppointmentService {
         }
     }
 
+    private void checkIfAppointmentExists(LocalDate date, LocalTime time) {
+        if (appointmentRepository.existsByDateAndTime(date, time))
+            throw new AppointmentTargetConflictException
+                    ("Appointment for date " + date + "and time " + time + " already exists");
+    }
+
     public void validateDoctorAndPatientAge(UUID doctorID, UUID patientID) {
         if (doctorID == null) return;
 
@@ -335,7 +342,7 @@ public class AppointmentService {
                 .findByDoctor_IdAndReferral_Patient_Id(doctorId, patientId);
         return appointments.stream()
                 .anyMatch(app -> app.getStatus() != null &&
-                             app.getStatus().equals(AppointmentStatus.OPEN));
+                                 app.getStatus().equals(AppointmentStatus.OPEN));
     }
 
     @Scheduled(fixedRate = 60_000)
