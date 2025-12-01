@@ -3,8 +3,10 @@ package kma.health.app.kma_health.service;
 import jakarta.persistence.EntityNotFoundException;
 import kma.health.app.kma_health.dto.ReferralDto;
 import kma.health.app.kma_health.entity.*;
+import kma.health.app.kma_health.enums.AppointmentStatus;
 import kma.health.app.kma_health.exception.InvalidFamilyDoctorReferralMethodException;
 import kma.health.app.kma_health.exception.MissingOpenAppointmentException;
+import kma.health.app.kma_health.repository.AppointmentRepository;
 import kma.health.app.kma_health.repository.DoctorTypeRepository;
 import kma.health.app.kma_health.repository.ReferralRepository;
 import lombok.AllArgsConstructor;
@@ -21,11 +23,11 @@ public class ReferralService {
 
     private final ReferralRepository referralRepository;
     private final DoctorTypeRepository doctorTypeRepository;
-    private final AppointmentService appointmentService;
     private final ExaminationService examinationService;
+    private final AppointmentRepository appointmentRepository;
 
     public void createReferral(Doctor doctor, Patient patient, String doctorTypeName) {
-        if (!appointmentService.haveOpenAppointment(doctor.getId(), patient.getId()))
+        if (!haveOpenAppointment(doctor.getId(), patient.getId()))
             throw new MissingOpenAppointmentException("Cannot create a referral with no open appointments");
 
         Referral referral = createReferralBoilerplate(doctor, patient);
@@ -39,14 +41,14 @@ public class ReferralService {
     }
 
     public void createReferral(Doctor doctor, Patient patient, Long examinationId) {
-        if (!appointmentService.haveOpenAppointment(doctor.getId(), patient.getId()))
+        if (!haveOpenAppointment(doctor.getId(), patient.getId()))
             throw new MissingOpenAppointmentException("Cannot create a referral with no open appointments");
 
         Referral referral = createReferralBoilerplate(doctor, patient);
         try {
             referral.setExamination(examinationService.findExaminationById(examinationId));
         } catch (Exception e) {
-          throw new EntityNotFoundException("Cannot create a referral with examination " + examinationId);
+            throw new EntityNotFoundException("Cannot create a referral with examination " + examinationId);
         }
 
         referralRepository.save(referral);
@@ -87,4 +89,13 @@ public class ReferralService {
                 .map(ReferralDto::fromEntity)
                 .collect(Collectors.toList());
     }
+
+    private boolean haveOpenAppointment(UUID doctorId, UUID patientId) {
+        List<Appointment> appointments = appointmentRepository
+                .findByDoctor_IdAndReferral_Patient_Id(doctorId, patientId);
+        return appointments.stream()
+                .anyMatch(app -> app.getStatus() != null &&
+                        app.getStatus().equals(AppointmentStatus.OPEN));
+    }
 }
+

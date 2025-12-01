@@ -104,6 +104,7 @@ public class AppointmentServiceImportTest {
             return Mockito.mock(HospitalService.class);
         }
 
+
         @Bean
         public AppointmentService appointmentService(
                 AppointmentRepository appointmentRepository,
@@ -114,8 +115,8 @@ public class AppointmentServiceImportTest {
                 MedicalFileRepository medicalFileRepository,
                 LabAssistantRepository labAssistantRepository,
                 DoctorTypeRepository doctorTypeRepository,
-                HospitalService hospitalService
-        ) {
+                HospitalService hospitalService,
+                ReferralService referralService) {
             return new AppointmentService(
                     appointmentRepository,
                     patientRepository,
@@ -125,9 +126,8 @@ public class AppointmentServiceImportTest {
                     medicalFileRepository,
                     labAssistantRepository,
                     doctorTypeRepository,
-                    hospitalService
-            );
+                    hospitalService,
+                    referralService);
         }
     }
 }
-
