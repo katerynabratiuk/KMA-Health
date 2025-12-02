@@ -52,10 +52,13 @@ public class SecurityConfig {
                         .requestMatchers("/api/patient/**").hasRole("PATIENT")
                         .requestMatchers("/api/doctor/**").hasRole("DOCTOR")
                         .requestMatchers("/api/lab/**").hasRole("LAB_ASSISTANT")
+                        .requestMatchers("/api/batch/**").hasAnyRole("DOCTOR", "LAB_ASSISTANT", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/hospital").permitAll()
 
-                        // UI routes for authenticated users
+                        // UI routes - specific before general
+                        .requestMatchers("/ui/appointments", "/ui/appointments/**").hasAnyRole("PATIENT")
                         .requestMatchers("/ui/profile/**").authenticated()
+
 
                         .anyRequest().authenticated())
 
