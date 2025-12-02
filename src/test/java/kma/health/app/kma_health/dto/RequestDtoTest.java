@@ -1,5 +1,6 @@
 package kma.health.app.kma_health.dto;
 
+import kma.health.app.kma_health.enums.HospitalType;
 import kma.health.app.kma_health.enums.UserRole;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.multipart.MultipartFile;
@@ -150,6 +151,253 @@ class RequestDtoTest {
         assertEquals(doctorId, dto.getDoctorId());
         assertEquals(1L, dto.getHospitalId());
         assertEquals(referralId, dto.getReferralId());
+    }
+
+    // ExaminationDto tests
+    @Test
+    void testExaminationDto_AllArgsConstructor() {
+        ExaminationDto dto = new ExaminationDto("Blood Test", "ml");
+
+        assertEquals("Blood Test", dto.getName());
+        assertEquals("ml", dto.getUnit());
+    }
+
+    @Test
+    void testExaminationDto_SettersGetters() {
+        ExaminationDto dto = new ExaminationDto("Test", "unit");
+
+        dto.setName("X-Ray");
+        dto.setUnit("image");
+
+        assertEquals("X-Ray", dto.getName());
+        assertEquals("image", dto.getUnit());
+    }
+
+    // SearchFormDto tests
+    @Test
+    void testSearchFormDto_DefaultValues() {
+        SearchFormDto dto = new SearchFormDto();
+
+        assertEquals("doctor", dto.getSearchType());
+        assertEquals("rating-asc", dto.getSort());
+        assertEquals(0, dto.getUserLat());
+        assertEquals(0, dto.getUserLon());
+    }
+
+    @Test
+    void testSearchFormDto_SettersGetters() {
+        SearchFormDto dto = new SearchFormDto();
+
+        dto.setSearchType("hospital");
+        dto.setQuery("Test");
+        dto.setDoctorType("Cardiologist");
+        dto.setCity("Kyiv");
+        dto.setSort("distance-dsc");
+        dto.setUserLat(50.45);
+        dto.setUserLon(30.52);
+
+        assertEquals("hospital", dto.getSearchType());
+        assertEquals("Test", dto.getQuery());
+        assertEquals("Cardiologist", dto.getDoctorType());
+        assertEquals("Kyiv", dto.getCity());
+        assertEquals("distance-dsc", dto.getSort());
+        assertEquals(50.45, dto.getUserLat());
+        assertEquals(30.52, dto.getUserLon());
+    }
+
+    // PatientContactsDto tests
+    @Test
+    void testPatientContactsDto_DefaultConstructor() {
+        PatientContactsDto dto = new PatientContactsDto();
+        assertNotNull(dto);
+    }
+
+    @Test
+    void testPatientContactsDto_AllArgsConstructor() {
+        LocalDate birthDate = LocalDate.of(1990, 1, 1);
+        PatientContactsDto dto = new PatientContactsDto(
+                "John Doe",
+                "+380991234567",
+                "john@example.com",
+                "Dr. Family",
+                birthDate
+        );
+
+        assertNotNull(dto);
+    }
+
+    @Test
+    void testPatientContactsDto_Setters() {
+        PatientContactsDto dto = new PatientContactsDto();
+
+        dto.setFullName("Jane Doe");
+        dto.setPhone("+380997654321");
+        dto.setEmail("jane@example.com");
+        dto.setFamilyDoctorName("Dr. Smith");
+        dto.setBirthDate(LocalDate.of(1985, 5, 15));
+
+        // Only setters are available (no getters defined)
+        assertNotNull(dto);
+    }
+
+    // CreateReferralRequest tests - it only has getters
+    @Test
+    void testCreateReferralRequest_Getters() {
+        CreateReferralRequest request = new CreateReferralRequest();
+
+        // Verify getters exist and return null for uninitialized fields
+        assertNull(request.getPatientId());
+        assertNull(request.getDoctorTypeName());
+        assertNull(request.getExaminationId());
+    }
+
+    // DoctorRegisterRequest builder test
+    @Test
+    void testDoctorRegisterRequest_Builder() {
+        DoctorRegisterRequest request = DoctorRegisterRequest.builder()
+                .role(UserRole.DOCTOR)
+                .fullName("Dr. Builder")
+                .email("builder@example.com")
+                .password("password123")
+                .phoneNumber("+380991234567")
+                .passportNumber("123456789")
+                .birthDate(LocalDate.of(1980, 1, 1))
+                .startedWorking(LocalDate.of(2010, 1, 1))
+                .type("adult")
+                .description("Test")
+                .doctorTypeId(1L)
+                .hospitalId(1L)
+                .registerKey("key")
+                .build();
+
+        assertEquals("Dr. Builder", request.getFullName());
+        assertEquals(UserRole.DOCTOR, request.getRole());
+    }
+
+    // MedicalFileUploadDto AllArgsConstructor
+    @Test
+    void testMedicalFileUploadDto_AllArgsConstructor() {
+        java.util.UUID id = java.util.UUID.randomUUID();
+        MultipartFile mockFile = mock(MultipartFile.class);
+
+        MedicalFileUploadDto dto = new MedicalFileUploadDto(
+                id,
+                "document",
+                "test.pdf",
+                "pdf",
+                mockFile
+        );
+
+        assertEquals(id, dto.getId());
+        assertEquals("document", dto.getFileType());
+        assertEquals("test.pdf", dto.getName());
+        assertEquals("pdf", dto.getExtension());
+        assertEquals(mockFile, dto.getFile());
+    }
+
+    // EditHospitalRequest tests
+    @Test
+    void testEditHospitalRequest_DefaultConstructor() {
+        EditHospitalRequest request = new EditHospitalRequest();
+        assertNotNull(request);
+    }
+
+    @Test
+    void testEditHospitalRequest_AllArgsConstructor() {
+        EditHospitalRequest request = new EditHospitalRequest(
+                1L,
+                "Test Hospital",
+                "Test Address",
+                "Kyiv"
+        );
+
+        assertEquals(1L, request.getId());
+        assertEquals("Test Hospital", request.getName());
+        assertEquals("Test Address", request.getAddress());
+        assertEquals("Kyiv", request.getCity());
+    }
+
+    @Test
+    void testEditHospitalRequest_SettersGetters() {
+        EditHospitalRequest request = new EditHospitalRequest();
+
+        request.setId(2L);
+        request.setName("New Hospital");
+        request.setAddress("New Address");
+        request.setCity("Lviv");
+
+        assertEquals(2L, request.getId());
+        assertEquals("New Hospital", request.getName());
+        assertEquals("New Address", request.getAddress());
+        assertEquals("Lviv", request.getCity());
+    }
+
+    // HospitalSearchDto extended tests
+    @Test
+    void testHospitalSearchDto_DefaultValues() {
+        HospitalSearchDto dto = new HospitalSearchDto();
+
+        assertNotNull(dto.getSortBy());
+        assertEquals("rating", dto.getSortBy().getParam());
+        assertEquals("asc", dto.getSortBy().getDirection());
+    }
+
+    @Test
+    void testHospitalSearchDto_AllFields() {
+        HospitalSearchDto dto = new HospitalSearchDto();
+
+        dto.setRequest("City Hospital");
+        dto.setCity("Kyiv");
+        dto.setHospitalType(HospitalType.PUBLIC);
+        dto.setSortBy(new DoctorSearchDto.SortBy("distance", "dsc"));
+
+        assertEquals("City Hospital", dto.getRequest());
+        assertEquals("Kyiv", dto.getCity());
+        assertEquals(HospitalType.PUBLIC, dto.getHospitalType());
+        assertEquals("distance", dto.getSortBy().getParam());
+        assertEquals("dsc", dto.getSortBy().getDirection());
+    }
+
+    @Test
+    void testHospitalSearchDto_PrivateHospitalType() {
+        HospitalSearchDto dto = new HospitalSearchDto();
+        dto.setHospitalType(HospitalType.PRIVATE);
+
+        assertEquals(HospitalType.PRIVATE, dto.getHospitalType());
+    }
+
+    // DoctorTypeDto extended tests
+    @Test
+    void testDoctorTypeDto_AllArgsConstructor() {
+        DoctorTypeDto dto = new DoctorTypeDto("Surgeon");
+
+        assertEquals("Surgeon", dto.getTypeName());
+    }
+
+    // DoctorSearchDto.SortBy tests
+    @Test
+    void testSortBy_AllArgsConstructor() {
+        DoctorSearchDto.SortBy sortBy = new DoctorSearchDto.SortBy("name", "asc");
+
+        assertEquals("name", sortBy.getParam());
+        assertEquals("asc", sortBy.getDirection());
+    }
+
+    @Test
+    void testSortBy_SettersGetters() {
+        DoctorSearchDto.SortBy sortBy = new DoctorSearchDto.SortBy("rating", "asc");
+
+        sortBy.setParam("distance");
+        sortBy.setDirection("dsc");
+
+        assertEquals("distance", sortBy.getParam());
+        assertEquals("dsc", sortBy.getDirection());
+    }
+
+    @Test
+    void testSortBy_DefaultConstructor() {
+        DoctorSearchDto.SortBy sortBy = new DoctorSearchDto.SortBy();
+        assertNotNull(sortBy);
     }
 }
 

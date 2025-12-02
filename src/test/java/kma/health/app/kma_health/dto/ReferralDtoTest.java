@@ -101,5 +101,91 @@ public class ReferralDtoTest {
         ReferralDto dto = new ReferralDto();
         assertNotNull(dto);
     }
+
+    @Test
+    public void testFromEntity_WithNullDoctor() {
+        UUID referralId = UUID.randomUUID();
+
+        DoctorType doctorType = new DoctorType();
+        doctorType.setTypeName("Cardiologist");
+
+        Referral referral = new Referral();
+        referral.setId(referralId);
+        referral.setValidUntil(LocalDate.now().plusDays(30));
+        referral.setDoctor(null);  // Null doctor
+        referral.setDoctorType(doctorType);
+
+        ReferralDto dto = ReferralDto.fromEntity(referral);
+
+        assertEquals(referralId, dto.getId());
+        assertNull(dto.getDoctorId());
+        assertNull(dto.getDoctorFullName());
+        assertEquals("Cardiologist", dto.getDoctorType());
+    }
+
+    @Test
+    public void testFromEntity_WithNullDoctorType() {
+        UUID referralId = UUID.randomUUID();
+        UUID doctorId = UUID.randomUUID();
+
+        Doctor doctor = new Doctor();
+        doctor.setId(doctorId);
+        doctor.setFullName("Dr. Smith");
+
+        Referral referral = new Referral();
+        referral.setId(referralId);
+        referral.setValidUntil(LocalDate.now().plusDays(30));
+        referral.setDoctor(doctor);
+        referral.setDoctorType(null);  // Null doctor type
+
+        ReferralDto dto = ReferralDto.fromEntity(referral);
+
+        assertEquals(referralId, dto.getId());
+        assertEquals(doctorId, dto.getDoctorId());
+        assertEquals("Dr. Smith", dto.getDoctorFullName());
+        assertNull(dto.getDoctorType());
+    }
+
+    @Test
+    public void testFromEntity_WithNullDoctorAndNullDoctorType() {
+        UUID referralId = UUID.randomUUID();
+
+        Referral referral = new Referral();
+        referral.setId(referralId);
+        referral.setValidUntil(LocalDate.now().plusDays(30));
+        referral.setDoctor(null);
+        referral.setDoctorType(null);
+
+        ReferralDto dto = ReferralDto.fromEntity(referral);
+
+        assertEquals(referralId, dto.getId());
+        assertNull(dto.getDoctorId());
+        assertNull(dto.getDoctorFullName());
+        assertNull(dto.getDoctorType());
+    }
+
+    @Test
+    public void testFromEntity_WithNullExamination() {
+        UUID referralId = UUID.randomUUID();
+        UUID doctorId = UUID.randomUUID();
+
+        Doctor doctor = new Doctor();
+        doctor.setId(doctorId);
+        doctor.setFullName("Dr. Smith");
+
+        DoctorType doctorType = new DoctorType();
+        doctorType.setTypeName("Therapist");
+
+        Referral referral = new Referral();
+        referral.setId(referralId);
+        referral.setValidUntil(LocalDate.now().plusDays(30));
+        referral.setDoctor(doctor);
+        referral.setDoctorType(doctorType);
+        referral.setExamination(null);
+
+        ReferralDto dto = ReferralDto.fromEntity(referral);
+
+        assertNull(dto.getExamination());
+    }
 }
 

@@ -140,5 +140,162 @@ public class FeedbackDtoTest {
         assertEquals((short) 5, entity.getScore());
         assertEquals("Great", entity.getComment());
     }
+
+    // Additional tests for missing branches
+    @Test
+    void testFeedbackCreateUpdateDto_FromEntity_WithHospital() {
+        Patient patient = new Patient();
+        patient.setId(UUID.randomUUID());
+
+        Hospital hospital = new Hospital();
+        hospital.setId(1L);
+
+        Feedback feedback = new Feedback();
+        feedback.setScore((short) 4);
+        feedback.setComment("Nice hospital");
+        feedback.setPatient(patient);
+        feedback.setDoctor(null);  // No doctor
+        feedback.setHospital(hospital);
+
+        FeedbackCreateUpdateDto dto = FeedbackCreateUpdateDto.fromEntity(feedback);
+
+        assertEquals((short) 4, dto.getScore());
+        assertEquals("Nice hospital", dto.getComment());
+        assertNull(dto.getDoctor_id());
+        assertEquals(1L, dto.getHospital_id());
+    }
+
+    @Test
+    void testFeedbackCreateUpdateDto_FromEntity_WithNeitherDoctorNorHospital() {
+        Patient patient = new Patient();
+        patient.setId(UUID.randomUUID());
+
+        Feedback feedback = new Feedback();
+        feedback.setScore((short) 3);
+        feedback.setComment("Test");
+        feedback.setPatient(patient);
+        feedback.setDoctor(null);
+        feedback.setHospital(null);
+
+        FeedbackCreateUpdateDto dto = FeedbackCreateUpdateDto.fromEntity(feedback);
+
+        assertEquals((short) 3, dto.getScore());
+        assertNull(dto.getDoctor_id());
+        assertNull(dto.getHospital_id());
+    }
+
+    @Test
+    void testFeedbackCreateUpdateDto_ToEntity_WithHospital() {
+        FeedbackCreateUpdateDto dto = new FeedbackCreateUpdateDto();
+        dto.setScore((short) 4);
+        dto.setComment("Good hospital");
+        dto.setDoctor_id(null);  // No doctor
+        dto.setHospital_id(1L);
+        dto.setPatient_id(UUID.randomUUID());
+
+        Feedback entity = FeedbackCreateUpdateDto.toEntity(dto);
+
+        assertEquals((short) 4, entity.getScore());
+        assertNull(entity.getDoctor());
+        assertNotNull(entity.getHospital());
+        assertEquals(1L, entity.getHospital().getId());
+    }
+
+    @Test
+    void testFeedbackCreateUpdateDto_ToEntity_WithNeitherDoctorNorHospital() {
+        FeedbackCreateUpdateDto dto = new FeedbackCreateUpdateDto();
+        dto.setScore((short) 3);
+        dto.setComment("Test");
+        dto.setDoctor_id(null);
+        dto.setHospital_id(null);
+        dto.setPatient_id(UUID.randomUUID());
+
+        Feedback entity = FeedbackCreateUpdateDto.toEntity(dto);
+
+        assertEquals((short) 3, entity.getScore());
+        assertNull(entity.getDoctor());
+        assertNull(entity.getHospital());
+    }
+
+    @Test
+    void testFeedbackViewDto_FromEntity_WithNeitherDoctorNorHospital() {
+        Patient patient = new Patient();
+        patient.setId(UUID.randomUUID());
+
+        Feedback feedback = new Feedback();
+        feedback.setScore((short) 3);
+        feedback.setComment("Test");
+        feedback.setPatient(patient);
+        feedback.setDoctor(null);
+        feedback.setHospital(null);
+
+        FeedbackViewDto dto = FeedbackViewDto.fromEntity(feedback);
+
+        assertEquals((short) 3, dto.getScore());
+        assertNull(dto.getDoctor_id());
+        assertNull(dto.getHospital_id());
+    }
+
+    @Test
+    void testFeedbackViewDto_ToEntity_WithNeitherDoctorNorHospital() {
+        FeedbackViewDto dto = new FeedbackViewDto();
+        dto.setScore((short) 3);
+        dto.setComment("Test");
+        dto.setDoctor_id(null);
+        dto.setHospital_id(null);
+        dto.setPatient_id(UUID.randomUUID());
+
+        Feedback entity = FeedbackViewDto.toEntity(dto);
+
+        assertEquals((short) 3, entity.getScore());
+        assertNull(entity.getDoctor());
+        assertNull(entity.getHospital());
+    }
+
+    @Test
+    void testFeedbackCreateUpdateDto_AllArgsConstructor() {
+        LocalDate date = LocalDate.now();
+        UUID doctorId = UUID.randomUUID();
+        UUID patientId = UUID.randomUUID();
+
+        FeedbackCreateUpdateDto dto = new FeedbackCreateUpdateDto(
+                date,
+                (short) 5,
+                "Great",
+                1L,
+                doctorId,
+                patientId
+        );
+
+        assertEquals(date, dto.getDate());
+        assertEquals((short) 5, dto.getScore());
+        assertEquals("Great", dto.getComment());
+        assertEquals(1L, dto.getHospital_id());
+        assertEquals(doctorId, dto.getDoctor_id());
+        assertEquals(patientId, dto.getPatient_id());
+    }
+
+    @Test
+    void testFeedbackViewDto_AllArgsConstructor() {
+        LocalDate date = LocalDate.now();
+        UUID doctorId = UUID.randomUUID();
+        UUID patientId = UUID.randomUUID();
+
+        FeedbackViewDto dto = new FeedbackViewDto(
+                date,
+                (short) 4,
+                "Good",
+                2L,
+                doctorId,
+                patientId
+        );
+
+        assertEquals(date, dto.getDate());
+        assertEquals((short) 4, dto.getScore());
+        assertEquals("Good", dto.getComment());
+        assertEquals(2L, dto.getHospital_id());
+        assertEquals(doctorId, dto.getDoctor_id());
+        assertEquals(patientId, dto.getPatient_id());
+    }
 }
 

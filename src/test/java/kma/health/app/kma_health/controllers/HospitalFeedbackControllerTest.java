@@ -76,5 +76,23 @@ class HospitalFeedbackControllerTest {
                         .content("{\"score\":5,\"comment\":\"Great hospital\"}"))
                 .andExpect(status().isForbidden());
     }
+
+    @Test
+    @WithMockUser(roles = "PATIENT")
+    void testGetAllFeedbacks_Success() throws Exception {
+        when(feedbackService.getHospitalFeedbacks(1L)).thenReturn(Collections.emptyList());
+
+        mockMvc.perform(get("/api/hospitals/1/feedback"))
+                .andExpect(status().isOk())
+                .andExpect(content().json("[]"));
+    }
+
+    @Test
+    @WithMockUser(roles = "DOCTOR")
+    void testDeleteHospitalFeedback_Forbidden() throws Exception {
+        mockMvc.perform(delete("/api/hospitals/1/feedback/1")
+                        .with(csrf()))
+                .andExpect(status().isForbidden());
+    }
 }
 

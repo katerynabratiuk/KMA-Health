@@ -888,4 +888,332 @@ public class AppointmentServiceTest {
 
         assertEquals(AppointmentStatus.FINISHED, appointment.getStatus());
     }
+
+    @Test
+    public void testGetPublicAppointmentsForDoctor() {
+        UUID doctorId = UUID.randomUUID();
+        LocalDate date = LocalDate.now();
+
+        Patient patient = new Patient();
+        patient.setId(UUID.randomUUID());
+
+        Referral referral = new Referral();
+        referral.setPatient(patient);
+
+        Doctor doctor = new Doctor();
+        doctor.setId(doctorId);
+
+        Appointment appointment = new Appointment();
+        appointment.setId(UUID.randomUUID());
+        appointment.setDoctor(doctor);
+        appointment.setReferral(referral);
+        appointment.setDate(date);
+        appointment.setTime(LocalTime.of(10, 0));
+
+        when(appointmentRepository.findByDoctor_IdAndDateBetween(doctorId, date, date))
+                .thenReturn(Collections.singletonList(appointment));
+
+        var result = appointmentService.getPublicAppointmentsForDoctor(doctorId, date);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+    }
+
+    @Test
+    public void testGetFullAppointment_WithNullDoctor() throws AccessDeniedException {
+        UUID appointmentId = UUID.randomUUID();
+        UUID patientId = UUID.randomUUID();
+
+        Patient patient = new Patient();
+        patient.setId(patientId);
+
+        DoctorType doctorType = new DoctorType();
+        doctorType.setTypeName("Family doctor");
+
+        Referral referral = new Referral();
+        referral.setPatient(patient);
+        referral.setDoctorType(doctorType);
+
+        Hospital hospital = new Hospital();
+        hospital.setId(1L);
+        hospital.setName("Test Hospital");
+
+        Appointment appointment = new Appointment();
+        appointment.setId(appointmentId);
+        appointment.setReferral(referral);
+        appointment.setDoctor(null);
+        appointment.setHospital(hospital);
+        appointment.setDate(LocalDate.now());
+        appointment.setStatus(AppointmentStatus.SCHEDULED);
+
+        when(appointmentRepository.findById(appointmentId)).thenReturn(Optional.of(appointment));
+
+        AppointmentFullViewDto result = appointmentService.getFullAppointment(appointmentId, patientId);
+
+        assertNotNull(result);
+        assertNull(result.getDoctorId());
+    }
+
+    @Test
+    public void testGetFullAppointment_AsLabAssistant_Scheduled_ShouldThrow() {
+        UUID appointmentId = UUID.randomUUID();
+        UUID labAssistantId = UUID.randomUUID();
+
+        Patient patient = new Patient();
+        patient.setId(UUID.randomUUID());
+
+        Referral referral = new Referral();
+        referral.setPatient(patient);
+
+        LabAssistant labAssistant = new LabAssistant();
+        labAssistant.setId(labAssistantId);
+
+        Appointment appointment = new Appointment();
+        appointment.setId(appointmentId);
+        appointment.setReferral(referral);
+        appointment.setLabAssistant(labAssistant);
+        appointment.setStatus(AppointmentStatus.SCHEDULED);
+
+        when(appointmentRepository.findById(appointmentId)).thenReturn(Optional.of(appointment));
+
+        assertThrows(AccessDeniedException.class, () -> {
+            appointmentService.getFullAppointment(appointmentId, labAssistantId);
+        });
+    }
+
+    @Test
+    public void testCancelAppointment_AsLabAssistant_Success() throws AccessDeniedException {
+        UUID appointmentId = UUID.randomUUID();
+        UUID labAssistantId = UUID.randomUUID();
+
+        Patient patient = new Patient();
+        patient.setId(UUID.randomUUID());
+
+        Referral referral = new Referral();
+        referral.setPatient(patient);
+
+        Hospital hospital = new Hospital();
+        hospital.setId(1L);
+
+        LabAssistant labAssistant = new LabAssistant();
+        labAssistant.setId(labAssistantId);
+
+        Appointment appointment = new Appointment();
+        appointment.setId(appointmentId);
+        appointment.setReferral(referral);
+        appointment.setHospital(hospital);
+        appointment.setLabAssistant(labAssistant);
+        appointment.setStatus(AppointmentStatus.OPEN);
+
+        when(appointmentRepository.findById(appointmentId)).thenReturn(Optional.of(appointment));
+
+        appointmentService.cancelAppointment(labAssistantId, null, appointmentId);
+
+        verify(appointmentRepository).delete(appointment);
+    }
+
+    @Test
+    public void testCancelAppointment_AsLabAssistant_NotOpen_ShouldThrow() {
+        UUID appointmentId = UUID.randomUUID();
+        UUID labAssistantId = UUID.randomUUID();
+
+        Patient patient = new Patient();
+        Referral referral = new Referral();
+        referral.setPatient(patient);
+
+        LabAssistant labAssistant = new LabAssistant();
+        labAssistant.setId(labAssistantId);
+
+        Appointment appointment = new Appointment();
+        appointment.setId(appointmentId);
+        appointment.setReferral(referral);
+        appointment.setLabAssistant(labAssistant);
+        appointment.setStatus(AppointmentStatus.SCHEDULED);
+
+        when(appointmentRepository.findById(appointmentId)).thenReturn(Optional.of(appointment));
+
+        assertThrows(AccessDeniedException.class, () -> {
+            appointmentService.cancelAppointment(labAssistantId, null, appointmentId);
+        });
+    }
+
+    @Test
+    public void testCancelAppointment_AsLabAssistant_WrongLabAssistant_ShouldThrow() {
+        UUID appointmentId = UUID.randomUUID();
+        UUID labAssistantId = UUID.randomUUID();
+        UUID wrongLabAssistantId = UUID.randomUUID();
+
+        Patient patient = new Patient();
+        Referral referral = new Referral();
+        referral.setPatient(patient);
+
+        LabAssistant labAssistant = new LabAssistant();
+        labAssistant.setId(labAssistantId);
+
+        Appointment appointment = new Appointment();
+        appointment.setId(appointmentId);
+        appointment.setReferral(referral);
+        appointment.setLabAssistant(labAssistant);
+        appointment.setStatus(AppointmentStatus.OPEN);
+
+        when(appointmentRepository.findById(appointmentId)).thenReturn(Optional.of(appointment));
+
+        assertThrows(AccessDeniedException.class, () -> {
+            appointmentService.cancelAppointment(wrongLabAssistantId, null, appointmentId);
+        });
+    }
+
+    @Test
+    public void testCancelAppointment_NoDoctorOrLabAssistant_AsPatient() throws AccessDeniedException {
+        UUID appointmentId = UUID.randomUUID();
+        UUID patientId = UUID.randomUUID();
+
+        Patient patient = new Patient();
+        patient.setId(patientId);
+
+        Referral referral = new Referral();
+        referral.setPatient(patient);
+
+        Appointment appointment = new Appointment();
+        appointment.setId(appointmentId);
+        appointment.setReferral(referral);
+        appointment.setDoctor(null);
+        appointment.setLabAssistant(null);
+        appointment.setStatus(AppointmentStatus.SCHEDULED);
+
+        when(appointmentRepository.findById(appointmentId)).thenReturn(Optional.of(appointment));
+
+        appointmentService.cancelAppointment(null, patientId, appointmentId);
+
+        verify(appointmentRepository).delete(appointment);
+    }
+
+    @Test
+    public void testFinishAppointment_WithEmptyMedicalFiles() throws IOException {
+        UUID appointmentId = UUID.randomUUID();
+        UUID doctorId = UUID.randomUUID();
+
+        Patient patient = new Patient();
+        patient.setId(UUID.randomUUID());
+
+        Referral referral = new Referral();
+        referral.setPatient(patient);
+
+        Doctor doctor = new Doctor();
+        doctor.setId(doctorId);
+
+        Appointment appointment = new Appointment();
+        appointment.setId(appointmentId);
+        appointment.setReferral(referral);
+        appointment.setDoctor(doctor);
+        appointment.setStatus(AppointmentStatus.OPEN);
+
+        when(appointmentRepository.findById(appointmentId)).thenReturn(Optional.of(appointment));
+        when(appointmentRepository.save(any())).thenReturn(appointment);
+
+        // Pass empty list instead of null
+        appointmentService.finishAppointment(doctorId, appointmentId, "Test diagnosis", Collections.emptyList());
+
+        assertEquals(AppointmentStatus.FINISHED, appointment.getStatus());
+        assertEquals("Test diagnosis", appointment.getDiagnosis());
+    }
+
+    @Test
+    public void testGetFullAppointment_AsDoctor_Open() throws AccessDeniedException {
+        UUID appointmentId = UUID.randomUUID();
+        UUID doctorId = UUID.randomUUID();
+
+        Patient patient = new Patient();
+        patient.setId(UUID.randomUUID());
+
+        DoctorType doctorType = new DoctorType();
+        doctorType.setTypeName("Cardiologist");
+
+        Referral referral = new Referral();
+        referral.setPatient(patient);
+        referral.setDoctorType(doctorType);
+
+        Doctor doctor = new Doctor();
+        doctor.setId(doctorId);
+        doctor.setFullName("Dr. Test");
+        doctor.setDoctorType(doctorType);
+
+        Appointment appointment = new Appointment();
+        appointment.setId(appointmentId);
+        appointment.setReferral(referral);
+        appointment.setDoctor(doctor);
+        appointment.setDate(LocalDate.now());
+        appointment.setStatus(AppointmentStatus.OPEN);
+
+        when(appointmentRepository.findById(appointmentId)).thenReturn(Optional.of(appointment));
+
+        AppointmentFullViewDto result = appointmentService.getFullAppointment(appointmentId, doctorId);
+
+        assertNotNull(result);
+        assertEquals(doctorId, result.getDoctorId());
+    }
+
+    @Test
+    public void testGetFullAppointment_WithNullLabAssistant() throws AccessDeniedException {
+        UUID appointmentId = UUID.randomUUID();
+        UUID patientId = UUID.randomUUID();
+
+        Patient patient = new Patient();
+        patient.setId(patientId);
+
+        DoctorType doctorType = new DoctorType();
+        doctorType.setTypeName("Family doctor");
+
+        Referral referral = new Referral();
+        referral.setPatient(patient);
+        referral.setDoctorType(doctorType);
+
+        Appointment appointment = new Appointment();
+        appointment.setId(appointmentId);
+        appointment.setReferral(referral);
+        appointment.setDoctor(null);
+        appointment.setLabAssistant(null);
+        appointment.setDate(LocalDate.now());
+        appointment.setStatus(AppointmentStatus.SCHEDULED);
+
+        when(appointmentRepository.findById(appointmentId)).thenReturn(Optional.of(appointment));
+
+        AppointmentFullViewDto result = appointmentService.getFullAppointment(appointmentId, patientId);
+
+        assertNotNull(result);
+    }
+
+    @Test
+    public void testHaveOpenAppointment_WithFinishedStatus() {
+        UUID doctorId = UUID.randomUUID();
+        UUID patientId = UUID.randomUUID();
+
+        Appointment finishedAppointment = new Appointment();
+        finishedAppointment.setStatus(AppointmentStatus.FINISHED);
+
+        when(appointmentRepository.findByDoctor_IdAndReferral_Patient_Id(doctorId, patientId))
+                .thenReturn(Collections.singletonList(finishedAppointment));
+
+        assertFalse(appointmentService.haveOpenAppointment(doctorId, patientId));
+    }
+
+    @Test
+    public void testHaveOpenAppointment_WithMultipleAppointments() {
+        UUID doctorId = UUID.randomUUID();
+        UUID patientId = UUID.randomUUID();
+
+        Appointment scheduledAppointment = new Appointment();
+        scheduledAppointment.setStatus(AppointmentStatus.SCHEDULED);
+
+        Appointment finishedAppointment = new Appointment();
+        finishedAppointment.setStatus(AppointmentStatus.FINISHED);
+
+        Appointment openAppointment = new Appointment();
+        openAppointment.setStatus(AppointmentStatus.OPEN);
+
+        when(appointmentRepository.findByDoctor_IdAndReferral_Patient_Id(doctorId, patientId))
+                .thenReturn(Arrays.asList(scheduledAppointment, finishedAppointment, openAppointment));
+
+        assertTrue(appointmentService.haveOpenAppointment(doctorId, patientId));
+    }
 }

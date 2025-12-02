@@ -243,5 +243,202 @@ public class HospitalSearchServiceTest {
         hospital.setFeedback(new ArrayList<>());
         return hospital;
     }
+
+    @Test
+    void testSearchHospitals_WithNullRatingInSorting() throws InterruptedException {
+        HospitalSearchDto dto = new HospitalSearchDto();
+        dto.setSortBy(new DoctorSearchDto.SortBy("rating", "asc"));
+
+        setupCriteriaMocks();
+
+        Hospital hospital1 = new Hospital();
+        hospital1.setId(1L);
+        hospital1.setLatitude(50.0);
+        hospital1.setLongitude(30.0);
+        hospital1.setRating(null);
+        hospital1.setFeedback(new ArrayList<>());
+
+        Hospital hospital2 = new Hospital();
+        hospital2.setId(2L);
+        hospital2.setLatitude(51.0);
+        hospital2.setLongitude(31.0);
+        hospital2.setRating(4.5);
+        hospital2.setFeedback(new ArrayList<>());
+
+        when(typedQuery.getResultList()).thenReturn(new ArrayList<>(List.of(hospital1, hospital2)));
+
+        List<Hospital> result = hospitalSearchService.searchHospitals(dto, 50.45, 30.52);
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+    }
+
+    @Test
+    void testSearchHospitals_WithFeedbackFiltering() throws InterruptedException {
+        HospitalSearchDto dto = new HospitalSearchDto();
+        dto.setSortBy(new DoctorSearchDto.SortBy("rating", "asc"));
+
+        setupCriteriaMocks();
+
+        Feedback hospitalFeedback = new Feedback();
+        hospitalFeedback.setScore((short) 4);
+        hospitalFeedback.setTargetType(FeedbackTargetType.HOSPITAL);
+
+        Feedback doctorFeedback = new Feedback();
+        doctorFeedback.setScore((short) 2);
+        doctorFeedback.setTargetType(FeedbackTargetType.DOCTOR);
+
+        Hospital hospital = new Hospital();
+        hospital.setId(1L);
+        hospital.setLatitude(50.0);
+        hospital.setLongitude(30.0);
+        hospital.setFeedback(List.of(hospitalFeedback, doctorFeedback));
+
+        when(typedQuery.getResultList()).thenReturn(new ArrayList<>(List.of(hospital)));
+
+        List<Hospital> result = hospitalSearchService.searchHospitals(dto, 50.45, 30.52);
+
+        assertNotNull(result);
+        assertEquals(4.0, result.get(0).getRating());
+    }
+
+    @Test
+    void testSearchHospitals_WithFeedbackHavingNullScore() throws InterruptedException {
+        HospitalSearchDto dto = new HospitalSearchDto();
+        dto.setSortBy(new DoctorSearchDto.SortBy("rating", "asc"));
+
+        setupCriteriaMocks();
+
+        Feedback feedbackWithScore = new Feedback();
+        feedbackWithScore.setScore((short) 4);
+        feedbackWithScore.setTargetType(FeedbackTargetType.HOSPITAL);
+
+        Feedback feedbackWithNullScore = new Feedback();
+        feedbackWithNullScore.setScore(null);
+        feedbackWithNullScore.setTargetType(FeedbackTargetType.HOSPITAL);
+
+        Hospital hospital = new Hospital();
+        hospital.setId(1L);
+        hospital.setLatitude(50.0);
+        hospital.setLongitude(30.0);
+        hospital.setFeedback(List.of(feedbackWithScore, feedbackWithNullScore));
+
+        when(typedQuery.getResultList()).thenReturn(new ArrayList<>(List.of(hospital)));
+
+        List<Hospital> result = hospitalSearchService.searchHospitals(dto, 50.45, 30.52);
+
+        assertNotNull(result);
+        assertEquals(4.0, result.get(0).getRating());
+    }
+
+    @Test
+    void testSearchHospitals_WithOnlyRequestFilter() throws InterruptedException {
+        HospitalSearchDto dto = new HospitalSearchDto();
+        dto.setRequest("City Hospital");
+        dto.setCity(null);
+        dto.setHospitalType(null);
+        dto.setSortBy(new DoctorSearchDto.SortBy("rating", "asc"));
+
+        setupCriteriaMocks();
+
+        Hospital hospital = createMockHospital();
+        when(typedQuery.getResultList()).thenReturn(new ArrayList<>(List.of(hospital)));
+
+        List<Hospital> result = hospitalSearchService.searchHospitals(dto, 50.45, 30.52);
+
+        assertNotNull(result);
+    }
+
+    @Test
+    void testSearchHospitals_WithEmptyRequest() throws InterruptedException {
+        HospitalSearchDto dto = new HospitalSearchDto();
+        dto.setRequest("");
+        dto.setCity("");
+        dto.setSortBy(new DoctorSearchDto.SortBy("rating", "asc"));
+
+        setupCriteriaMocks();
+
+        Hospital hospital = createMockHospital();
+        when(typedQuery.getResultList()).thenReturn(new ArrayList<>(List.of(hospital)));
+
+        List<Hospital> result = hospitalSearchService.searchHospitals(dto, 50.45, 30.52);
+
+        assertNotNull(result);
+    }
+
+    @Test
+    void testSearchHospitals_WithOnlyCityFilter() throws InterruptedException {
+        HospitalSearchDto dto = new HospitalSearchDto();
+        dto.setCity("Kyiv");
+        dto.setSortBy(new DoctorSearchDto.SortBy("rating", "asc"));
+
+        setupCriteriaMocks();
+
+        Hospital hospital = createMockHospital();
+        when(typedQuery.getResultList()).thenReturn(new ArrayList<>(List.of(hospital)));
+
+        List<Hospital> result = hospitalSearchService.searchHospitals(dto, 50.45, 30.52);
+
+        assertNotNull(result);
+    }
+
+    @Test
+    void testSearchHospitals_WithOnlyHospitalTypeFilter() throws InterruptedException {
+        HospitalSearchDto dto = new HospitalSearchDto();
+        dto.setHospitalType(HospitalType.PRIVATE);
+        dto.setSortBy(new DoctorSearchDto.SortBy("rating", "asc"));
+
+        setupCriteriaMocks();
+
+        Hospital hospital = createMockHospital();
+        when(typedQuery.getResultList()).thenReturn(new ArrayList<>(List.of(hospital)));
+
+        List<Hospital> result = hospitalSearchService.searchHospitals(dto, 50.45, 30.52);
+
+        assertNotNull(result);
+    }
+
+    @Test
+    void testSearchHospitals_NoFeedbackSetsZeroRating() throws InterruptedException {
+        HospitalSearchDto dto = new HospitalSearchDto();
+        dto.setSortBy(new DoctorSearchDto.SortBy("rating", "asc"));
+
+        setupCriteriaMocks();
+
+        Hospital hospital1 = new Hospital();
+        hospital1.setId(1L);
+        hospital1.setLatitude(50.0);
+        hospital1.setLongitude(30.0);
+        hospital1.setFeedback(null);
+
+        Hospital hospital2 = new Hospital();
+        hospital2.setId(2L);
+        hospital2.setLatitude(51.0);
+        hospital2.setLongitude(31.0);
+        hospital2.setFeedback(new ArrayList<>());
+
+        when(typedQuery.getResultList()).thenReturn(new ArrayList<>(List.of(hospital1, hospital2)));
+
+        List<Hospital> result = hospitalSearchService.searchHospitals(dto, 50.45, 30.52);
+
+        assertEquals(0.0, result.get(0).getRating());
+        assertEquals(0.0, result.get(1).getRating());
+    }
+
+    @Test
+    void testSearchHospitals_RatingSortDescending() throws InterruptedException {
+        HospitalSearchDto dto = new HospitalSearchDto();
+        dto.setSortBy(new DoctorSearchDto.SortBy("rating", "dsc"));
+
+        setupCriteriaMocks();
+
+        Hospital hospital1 = createMockHospitalWithRating(3.0);
+        Hospital hospital2 = createMockHospitalWithRating(5.0);
+        when(typedQuery.getResultList()).thenReturn(new ArrayList<>(List.of(hospital1, hospital2)));
+
+        List<Hospital> result = hospitalSearchService.searchHospitals(dto, 50.45, 30.52);
+
+        assertNotNull(result);
+    }
 }
 

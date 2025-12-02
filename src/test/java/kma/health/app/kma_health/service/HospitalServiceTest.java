@@ -293,4 +293,128 @@ public class HospitalServiceTest {
 
         assertTrue(result.isEmpty());
     }
+
+    @Test
+    public void testEditHospitalAddress_ShouldThrowExceptionWhenCoordinatesNotFound() {
+        Long hospitalId = 1L;
+        EditHospitalRequest request = new EditHospitalRequest();
+        request.setId(hospitalId);
+        request.setAddress("Invalid Address");
+        request.setCity("Unknown");
+
+        Hospital hospital = new Hospital();
+        hospital.setId(hospitalId);
+
+        when(hospitalRepository.findById(hospitalId)).thenReturn(Optional.of(hospital));
+        when(hospitalGeocodingService.getCoordinatesByAddress("Invalid Address"))
+                .thenThrow(new CoordinatesNotFoundException("Cannot find coordinates"));
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            hospitalService.editHospitalAddress(request);
+        });
+
+        verify(hospitalRepository, never()).save(any(Hospital.class));
+    }
+
+    @Test
+    public void testProvidesExamination_ShouldReturnFalseWhenExaminationsIsNull() {
+        Hospital hospital = new Hospital();
+        hospital.setExaminations(null);
+
+        Examination examination = new Examination();
+        examination.setId(1L);
+
+        assertFalse(hospitalService.providesExamination(hospital, examination));
+    }
+
+    @Test
+    public void testProvidesDoctorType_ShouldReturnFalseWhenDoctorsIsNull() {
+        Hospital hospital = new Hospital();
+        hospital.setId(1L);
+
+        DoctorType doctorType = new DoctorType();
+        doctorType.setDoctors(null);
+
+        assertFalse(hospitalService.providesDoctorType(hospital, doctorType));
+    }
+
+    @Test
+    public void testSearchHospitals_WithEmptyName() {
+        Hospital hospital = new Hospital();
+        hospital.setId(1L);
+        hospital.setName("Hospital");
+        hospital.setType(HospitalType.PUBLIC);
+
+        Page<Hospital> page = new PageImpl<>(Collections.singletonList(hospital));
+
+        when(hospitalRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
+
+        List<HospitalDto> result = hospitalService.searchHospitals("", 10, 0);
+
+        assertNotNull(result);
+    }
+
+    @Test
+    public void testSearchHospitals_WithBlankName() {
+        Hospital hospital = new Hospital();
+        hospital.setId(1L);
+        hospital.setName("Hospital");
+        hospital.setType(HospitalType.PUBLIC);
+
+        Page<Hospital> page = new PageImpl<>(Collections.singletonList(hospital));
+
+        when(hospitalRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
+
+        List<HospitalDto> result = hospitalService.searchHospitals("   ", 10, 0);
+
+        assertNotNull(result);
+    }
+
+    @Test
+    public void testSearchHospitals_WithNegativePageNumber() {
+        Hospital hospital = new Hospital();
+        hospital.setId(1L);
+        hospital.setName("Hospital");
+        hospital.setType(HospitalType.PUBLIC);
+
+        Page<Hospital> page = new PageImpl<>(Collections.singletonList(hospital));
+
+        when(hospitalRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
+
+        List<HospitalDto> result = hospitalService.searchHospitals("Test", 10, -1);
+
+        assertNotNull(result);
+    }
+
+    @Test
+    public void testSearchHospitals_WithZeroPageSize() {
+        Hospital hospital = new Hospital();
+        hospital.setId(1L);
+        hospital.setName("Hospital");
+        hospital.setType(HospitalType.PUBLIC);
+
+        Page<Hospital> page = new PageImpl<>(Collections.singletonList(hospital));
+
+        when(hospitalRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
+
+        List<HospitalDto> result = hospitalService.searchHospitals("Test", 0, 0);
+
+        assertNotNull(result);
+    }
+
+    @Test
+    public void testGetHospital_ShouldReturnHospitalDto() {
+        Long hospitalId = 1L;
+        Hospital hospital = new Hospital();
+        hospital.setId(hospitalId);
+        hospital.setName("Test Hospital");
+        hospital.setType(HospitalType.PUBLIC);
+
+        when(hospitalRepository.getReferenceById(hospitalId)).thenReturn(hospital);
+
+        HospitalDto result = hospitalService.getHospital(hospitalId);
+
+        assertNotNull(result);
+        assertEquals("Test Hospital", result.getName());
+    }
 }
