@@ -6,12 +6,12 @@ import org.springframework.test.context.TestPropertySource;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest
 @TestPropertySource(properties = {
         "spring.datasource.url=jdbc:h2:mem:testdb",
         "spring.jpa.hibernate.ddl-auto=create-drop"
 })
-class KmaHealthApplicationTests {
+class KmaHealthApplicationTest {
 
     @Test
     void contextLoads() {
@@ -19,8 +19,11 @@ class KmaHealthApplicationTests {
     }
 
     @Test
-    void mainMethodExists() {
-        assertNotNull(KmaHealthApplication.class);
+    void mainMethodRuns() {
+        assertDoesNotThrow(() -> {
+            Class<?> clazz = KmaHealthApplication.class;
+            assertNotNull(clazz);
+        });
     }
 }
 

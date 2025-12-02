@@ -104,6 +104,10 @@ public class AppointmentServiceImportTest {
             return Mockito.mock(HospitalService.class);
         }
 
+        @Bean
+        public ReferralService referralService() {
+            return Mockito.mock(ReferralService.class);
+        }
 
         @Bean
         public AppointmentService appointmentService(
