@@ -16,19 +16,20 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.nio.file.AccessDeniedException;
+import java.util.List;
 import java.util.UUID;
 
 @Controller
 @RequiredArgsConstructor
-@RequestMapping("/ui/auth/")
+@RequestMapping("/ui/appointments")
 public class UIAppointmentController {
 
     private final AppointmentService appointmentService;
 
     @GetMapping("/{appointmentId}")
     public String appointment(@PathVariable UUID appointmentId,
-                              @AuthenticationPrincipal UUID userId,
-                              Model model) {
+            @AuthenticationPrincipal UUID userId,
+            Model model) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         String userRole = authentication.getAuthorities().stream()
@@ -54,5 +55,26 @@ public class UIAppointmentController {
         } catch (EntityNotFoundException | AppointmentNotFoundException e) {
             return "error/404";
         }
+    }
+
+    @GetMapping()
+    public String getPatientAppointments(@AuthenticationPrincipal UUID userId,
+            Model model) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        String userRole = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .filter(a -> a.startsWith("ROLE_"))
+                .map(a -> a.substring(5))
+                .findFirst()
+                .orElse("ANONYMOUS");
+
+        List<AppointmentFullViewDto> appointments = appointmentService.getAppointmentsForPatient(userId);
+
+        model.addAttribute("appointments", appointments);
+        model.addAttribute("userRole", userRole);
+        model.addAttribute("userId", userId);
+
+        return "appointments";
     }
 }

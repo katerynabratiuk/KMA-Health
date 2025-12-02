@@ -22,10 +22,13 @@
 
 body {
     margin: 0;
-    background: var(--bg);
+    background: #e8ecf4;
     color: var(--text);
     font-size: 16px;
     line-height: 1.5;
+}
+
+.appointment-page-content {
     padding: 32px;
 }
 

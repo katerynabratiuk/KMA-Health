@@ -5,6 +5,8 @@
     <title>Профіль користувача</title>
     <link rel="stylesheet" th:href="@{/css/profile.css}">
     <link rel="stylesheet" th:href="@{/css/home.css}">
+    <script th:src="@{/js/enum-translator.js}"></script>
+    <script th:src="@{/js/apply-translations.js}"></script>
 </head>
 <body>
 <header th:replace="~{fragments/layout :: header-auth(${userRole})}"></header>
@@ -17,7 +19,7 @@
             <img th:src="${user.profilePictureUrl != null ? user.profilePictureUrl : '/images/default-avatar.png'}"
                  alt="Фото профілю" class="profile-photo">
 
-            <span class="profile-role" th:text="${userRole}">Role</span>
+            <span class="profile-role" th:attr="data-role=${userRole}" th:text="${userRole}">Role</span>
             <h2 class="profile-name" th:text="${user.fullName}">Повне ім'я</h2>
 
             <p th:if="${userRole == 'DOCTOR'}" class="profile-description"
@@ -115,19 +117,24 @@
         <h3 class="info-title">Заплановані записи</h3>
 
         <div class="appointments-list">
-            <div th:each="appt : ${plannedAppointments}" class="appointment-item">
+            <a th:each="appt : ${plannedAppointments}" 
+               th:href="@{/ui/appointments/{id}(id=${appt.id})}"
+               class="appointment-item"
+               style="text-decoration: none; color: inherit; display: flex; justify-content: space-between; align-items: center; padding: 12px; border-radius: 8px; transition: background-color 0.2s;">
 
-        <span th:if="${appt.doctorName != null}">
+        <span th:if="${appt.doctorName != null}" style="flex: 1;">
             <span th:text="|${appt.date} о ${appt.time} - ${appt.doctorName}|"></span>
             <span th:if="${appt.examinationName}"
                   th:text="| (${appt.examinationName})|">
             </span>
         </span>
 
-                <span th:unless="${appt.doctorName != null}">
+                <span th:unless="${appt.doctorName != null}" style="flex: 1;">
             <span th:text="|${appt.date} о ${appt.time} - ${appt.examinationName}|"></span>
         </span>
-            </div>
+                
+                <span style="background: #e6f7ff; color: #4facfe; padding: 6px 12px; border-radius: 6px; font-size: 14px; font-weight: 500; white-space: nowrap;">Більше →</span>
+            </a>
             <p th:if="${#lists.isEmpty(plannedAppointments)}">Немає запланованих записів.</p>
         </div>
 
