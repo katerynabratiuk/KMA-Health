@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Мої записи</title>
+    <link rel="stylesheet" th:href="@{/css/home.css}">
+    <link rel="icon" type="image/x-icon" th:href="@{/images/icon/favicon.ico}">
+    <link rel="stylesheet" th:href="@{/css/appointments.css}">
+    <script th:src="@{/js/enum-translator.js}"></script>
+    <script th:src="@{/js/apply-translations.js}"></script>
+</head>
+<body>
+<header th:replace="~{fragments/layout :: header-auth(${userRole})}"></header>
+
+<div class="appointments-container">
+    <h1 class="page-title">Мої записи</h1>
+
+    <!-- Filter buttons -->
+    <div class="filter-section">
+        <button class="filter-btn active" onclick="filterAppointments('all')">Всі</button>
+        <button class="filter-btn" onclick="filterAppointments('SCHEDULED')">Заплановані</button>
+        <button class="filter-btn" onclick="filterAppointments('MISSED')">Пропущені</button>
+        <button class="filter-btn" onclick="filterAppointments('FINISHED')">Завершені</button>
+        <button class="filter-btn" onclick="filterAppointments('CANCELLED')">Скасовані</button>
+    </div>
+
+    <!-- Appointments list -->
+    <div class="appointments-list" th:if="${appointments != null && !appointments.isEmpty()}">
+        <a th:each="appointment : ${appointments}" 
+           th:href="@{/ui/appointments/{id}(id=${appointment.id})}"
+           class="appointment-card"
+           th:attr="data-filter-status=${appointment.status}"
+           style="text-decoration: none; color: inherit;">
+            
+            <div class="appointment-header">
+                <!-- Doctor appointment -->
+                <div class="appointment-doctor" th:if="${appointment.doctorName != null}">
+                    <div class="doctor-icon">
+                        <img src="/images/stethoscope.svg" alt="Doctor">
+                    </div>
+                    <div class="doctor-info">
+                        <h3 th:text="${appointment.doctorName}">Ім'я лікаря</h3>
+                        <div class="doctor-specialty" th:text="${appointment.doctorType}">Спеціальність</div>
+                    </div>
+                </div>
+                
+                <!-- Lab/Hospital appointment -->
+                <div class="appointment-doctor" th:if="${appointment.doctorName == null}">
+                    <div class="lab-icon">
+                        <img src="/images/lab.png" alt="Laboratory">
+                    </div>
+                    <div class="doctor-info">
+                        <h3 th:text="${appointment.examinationName != null ? appointment.examinationName : 'Лабораторне обстеження'}">Лабораторне обстеження</h3>
+                        <div class="doctor-specialty" th:text="${appointment.hospitalName}">Назва лікарні</div>
+                    </div>
+                </div>
+                
+                <span class="appointment-status" 
+                      th:classappend="${'status-' + appointment.status}"
+                      th:attr="data-status=${appointment.status}"
+                      th:text="${appointment.status}">
+                    Статус
+                </span>
+            </div>
+
+            <div class="appointment-details">
+                <div class="detail-item">
+                    <div>
+                        <div class="detail-label">Дата</div>
+                        <div class="detail-value" th:text="${#temporals.format(appointment.date, 'dd.MM.yyyy')}">01.01.2024</div>
+                    </div>
+                </div>
+                <div class="detail-item" th:if="${appointment.doctorName == null}">
+                    <div>
+                        <div class="detail-label">Лікарня</div>
+                        <div class="detail-value" th:text="${appointment.hospitalName}">Назва лікарні</div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <!-- Empty state -->
+    <div class="empty-state" th:if="${appointments == null || appointments.isEmpty()}">
+        <div class="empty-icon">📅</div>
+        <h2 class="empty-title">У вас ще немає записів</h2>
+        <p class="empty-text">Знайдіть лікаря та запишіться на приймання</p>
+        <a th:href="@{/ui/public/home}" class="btn-primary">Знайти лікаря</a>
+    </div>
+</div>
+
+<script>
+    function filterAppointments(status) {
+        // Update active button
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        event.target.classList.add('active');
+
+        // Filter appointments
+        const cards = document.querySelectorAll('.appointment-card');
+        cards.forEach(card => {
+            if (status === 'all' || card.getAttribute('data-filter-status') === status) {
+                card.style.display = '';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+</script>
+</body>
+</html>
