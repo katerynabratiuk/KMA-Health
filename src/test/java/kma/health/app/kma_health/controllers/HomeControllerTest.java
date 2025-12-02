@@ -255,4 +255,77 @@ class HomeControllerTest {
         assertEquals("home", result);
         verify(model).addAttribute("searchPerformed", true);
     }
+
+    @Test
+    void testHome_AuthenticatedWithNoRolePrefix() throws Exception {
+        // User authenticated but authorities don't start with ROLE_
+        var auth = new UsernamePasswordAuthenticationToken(
+                "user",
+                null,
+                List.of(new SimpleGrantedAuthority("CUSTOM_AUTHORITY"))
+        );
+        SecurityContextHolder.getContext().setAuthentication(auth);
+
+        when(hospitalSearchService.searchHospitals(any(HospitalSearchDto.class), anyDouble(), anyDouble()))
+                .thenReturn(Collections.emptyList());
+        when(hospitalService.getAllCities()).thenReturn(Collections.emptyList());
+        when(doctorTypeService.getAllDoctorTypeNames()).thenReturn(Collections.emptyList());
+
+        String result = controller.home(model);
+
+        assertEquals("home", result);
+        verify(model).addAttribute(eq("userRole"), isNull());
+    }
+
+    @Test
+    void testHome_AuthenticatedWithEmptyAuthorities() throws Exception {
+        var auth = new UsernamePasswordAuthenticationToken(
+                "user",
+                null,
+                Collections.emptyList()
+        );
+        SecurityContextHolder.getContext().setAuthentication(auth);
+
+        when(hospitalSearchService.searchHospitals(any(HospitalSearchDto.class), anyDouble(), anyDouble()))
+                .thenReturn(Collections.emptyList());
+        when(hospitalService.getAllCities()).thenReturn(Collections.emptyList());
+        when(doctorTypeService.getAllDoctorTypeNames()).thenReturn(Collections.emptyList());
+
+        String result = controller.home(model);
+
+        assertEquals("home", result);
+        verify(model).addAttribute(eq("userRole"), isNull());
+    }
+
+    @Test
+    void testProcessSearch_SortWithEmptyDirection() throws Exception {
+        SearchFormDto formDto = new SearchFormDto();
+        formDto.setSearchType("clinic");
+        formDto.setSort("rating-");
+
+        when(hospitalSearchService.searchHospitals(any(HospitalSearchDto.class), anyDouble(), anyDouble()))
+                .thenReturn(Collections.emptyList());
+        when(hospitalService.getAllCities()).thenReturn(Collections.emptyList());
+        when(doctorTypeService.getAllDoctorTypeNames()).thenReturn(Collections.emptyList());
+
+        String result = controller.processSearch(formDto, model);
+
+        assertEquals("home", result);
+    }
+
+    @Test
+    void testProcessSearch_SortWithMultipleDashes() throws Exception {
+        SearchFormDto formDto = new SearchFormDto();
+        formDto.setSearchType("doctor");
+        formDto.setSort("rating-asc-extra");
+
+        when(doctorSearchService.searchDoctors(any(DoctorSearchDto.class), anyDouble(), anyDouble()))
+                .thenReturn(Collections.emptyList());
+        when(hospitalService.getAllCities()).thenReturn(Collections.emptyList());
+        when(doctorTypeService.getAllDoctorTypeNames()).thenReturn(Collections.emptyList());
+
+        String result = controller.processSearch(formDto, model);
+
+        assertEquals("home", result);
+    }
 }

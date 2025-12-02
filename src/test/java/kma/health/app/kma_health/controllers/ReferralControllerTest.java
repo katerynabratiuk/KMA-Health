@@ -16,11 +16,13 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.Collections;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -132,6 +134,50 @@ class ReferralControllerTest {
                         .contentType("application/json")
                         .content("{\"patientId\":\"" + UUID.randomUUID() + "\",\"doctorTypeName\":\"Cardiologist\"}"))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "PATIENT")
+    void testPatientCanGetActiveReferrals() throws Exception {
+        when(referralService.getActiveReferrals(any())).thenReturn(Collections.emptyList());
+
+        mockMvc.perform(get("/api/referral/active"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(roles = "DOCTOR")
+    void testDoctorCannotGetActiveReferrals() throws Exception {
+        mockMvc.perform(get("/api/referral/active"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithAnonymousUser
+    void testAnonymousUserCannotGetActiveReferrals() throws Exception {
+        mockMvc.perform(get("/api/referral/active"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "DOCTOR")
+    void testDoctorCanCreateReferralWithEmptyDoctorTypeName() throws Exception {
+        UUID patientId = UUID.randomUUID();
+
+        DoctorDetailDto doctor = new DoctorDetailDto();
+        doctor.setId(UUID.randomUUID());
+
+        Patient patient = new Patient();
+        patient.setId(patientId);
+
+        when(doctorSearchService.getDoctorById(any())).thenReturn(doctor);
+        when(patientService.getPatientById(any(UUID.class))).thenReturn(patient);
+
+        mockMvc.perform(post("/api/referral")
+                        .with(csrf())
+                        .contentType("application/json")
+                        .content("{\"patientId\":\"" + patientId + "\",\"doctorTypeName\":\"\",\"examinationId\":1}"))
+                .andExpect(status().isCreated());
     }
 }
 

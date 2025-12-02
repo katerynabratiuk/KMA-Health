@@ -1,5 +1,6 @@
 package kma.health.app.kma_health.service;
 
+import jakarta.persistence.EntityNotFoundException;
 import kma.health.app.kma_health.dto.AppointmentCreateUpdateDto;
 import kma.health.app.kma_health.dto.AppointmentFullViewDto;
 import kma.health.app.kma_health.dto.AppointmentShortViewDto;
@@ -1215,5 +1216,671 @@ public class AppointmentServiceTest {
                 .thenReturn(Arrays.asList(scheduledAppointment, finishedAppointment, openAppointment));
 
         assertTrue(appointmentService.haveOpenAppointment(doctorId, patientId));
+    }
+
+    @Test
+    public void testCreateAppointment_WithFamilyDoctorReferral() throws AccessDeniedException {
+        UUID userId = UUID.randomUUID();
+        UUID doctorId = UUID.randomUUID();
+        UUID referralId = UUID.randomUUID();
+
+        DoctorType familyType = new DoctorType();
+        familyType.setTypeName("Family doctor");
+
+        Patient patient = new Patient();
+        patient.setId(userId);
+        patient.setBirthDate(LocalDate.now().minusYears(25));
+
+        Doctor doctor = new Doctor();
+        doctor.setId(doctorId);
+        doctor.setDoctorType(familyType);
+        doctor.setType("adult");
+
+        Referral referral = new Referral();
+        referral.setId(referralId);
+        referral.setPatient(patient);
+        referral.setDoctorType(familyType);
+
+        AppointmentCreateUpdateDto dto = new AppointmentCreateUpdateDto();
+        dto.setPatientId(userId);
+        dto.setDoctorId(doctorId);
+        dto.setDate(LocalDate.now().plusDays(1));
+        dto.setTime(LocalTime.of(10, 0));
+        dto.setReferralId(null);
+
+        when(doctorRepository.findById(doctorId)).thenReturn(Optional.of(doctor));
+        when(patientRepository.findById(userId)).thenReturn(Optional.of(patient));
+        when(referralService.createReferralForFamilyDoctor(patient, dto.getDate())).thenReturn(referral);
+        when(referralRepository.findById(referralId)).thenReturn(Optional.of(referral));
+        when(appointmentRepository.existsByDateAndTime(dto.getDate(), dto.getTime())).thenReturn(false);
+        when(appointmentRepository.existsById(referralId)).thenReturn(false);
+        when(appointmentRepository.save(any())).thenReturn(new Appointment());
+
+        appointmentService.createAppointment(dto, userId);
+
+        verify(appointmentRepository).save(any(Appointment.class));
+    }
+
+    @Test
+    public void testCreateAppointment_DoctorTypeNotFamily() throws AccessDeniedException {
+        UUID userId = UUID.randomUUID();
+        UUID doctorId = UUID.randomUUID();
+        UUID referralId = UUID.randomUUID();
+
+        DoctorType cardiologistType = new DoctorType();
+        cardiologistType.setTypeName("Cardiologist");
+
+        Patient patient = new Patient();
+        patient.setId(userId);
+        patient.setBirthDate(LocalDate.now().minusYears(25));
+
+        Doctor doctor = new Doctor();
+        doctor.setId(doctorId);
+        doctor.setDoctorType(cardiologistType);
+        doctor.setType("adult");
+
+        Referral referral = new Referral();
+        referral.setId(referralId);
+        referral.setPatient(patient);
+        referral.setDoctorType(cardiologistType);
+
+        AppointmentCreateUpdateDto dto = new AppointmentCreateUpdateDto();
+        dto.setPatientId(userId);
+        dto.setDoctorId(doctorId);
+        dto.setReferralId(referralId);
+        dto.setDate(LocalDate.now().plusDays(1));
+        dto.setTime(LocalTime.of(10, 0));
+
+        when(doctorRepository.findById(doctorId)).thenReturn(Optional.of(doctor));
+        when(patientRepository.findById(userId)).thenReturn(Optional.of(patient));
+        when(referralRepository.findById(referralId)).thenReturn(Optional.of(referral));
+        when(appointmentRepository.existsByDateAndTime(dto.getDate(), dto.getTime())).thenReturn(false);
+        when(appointmentRepository.existsById(referralId)).thenReturn(false);
+        when(appointmentRepository.save(any())).thenReturn(new Appointment());
+
+        appointmentService.createAppointment(dto, userId);
+
+        verify(appointmentRepository).save(any(Appointment.class));
+    }
+
+    @Test
+    public void testCreateAppointment_AppointmentAlreadyExistsForReferral() {
+        UUID userId = UUID.randomUUID();
+        UUID referralId = UUID.randomUUID();
+
+        // Use non-family doctor type to avoid handleFamilyDoctorReferral flow
+        DoctorType cardiologistType = new DoctorType();
+        cardiologistType.setTypeName("Cardiologist");
+
+        Patient patient = new Patient();
+        patient.setId(userId);
+        patient.setBirthDate(LocalDate.now().minusYears(25));
+
+        Doctor doctor = new Doctor();
+        doctor.setId(UUID.randomUUID());
+        doctor.setDoctorType(cardiologistType);
+        doctor.setType("adult");
+
+        Referral referral = new Referral();
+        referral.setId(referralId);
+        referral.setPatient(patient);
+        referral.setDoctorType(cardiologistType);
+
+        AppointmentCreateUpdateDto dto = new AppointmentCreateUpdateDto();
+        dto.setPatientId(userId);
+        dto.setDoctorId(doctor.getId());
+        dto.setReferralId(referralId);
+        dto.setDate(LocalDate.now().plusDays(1));
+        dto.setTime(LocalTime.of(10, 0));
+
+        when(doctorRepository.findById(dto.getDoctorId())).thenReturn(Optional.of(doctor));
+        when(patientRepository.findById(userId)).thenReturn(Optional.of(patient));
+        when(appointmentRepository.existsByDateAndTime(dto.getDate(), dto.getTime())).thenReturn(false);
+        when(appointmentRepository.existsById(referralId)).thenReturn(true);
+
+        assertThrows(AppointmentTargetConflictException.class, () -> {
+            appointmentService.createAppointment(dto, userId);
+        });
+    }
+
+    @Test
+    public void testCreateAppointment_AppointmentAlreadyExistsForDateAndTime() {
+        UUID userId = UUID.randomUUID();
+        UUID referralId = UUID.randomUUID();
+
+        Doctor doctor = new Doctor();
+        doctor.setId(UUID.randomUUID());
+
+        AppointmentCreateUpdateDto dto = new AppointmentCreateUpdateDto();
+        dto.setPatientId(userId);
+        dto.setDoctorId(doctor.getId());
+        dto.setReferralId(referralId);
+        dto.setDate(LocalDate.now().plusDays(1));
+        dto.setTime(LocalTime.of(10, 0));
+
+        // checkIfAppointmentExists is called first in processDoctorAppointment
+        // and throws before any other repository calls
+        when(appointmentRepository.existsByDateAndTime(dto.getDate(), dto.getTime())).thenReturn(true);
+
+        assertThrows(AppointmentTargetConflictException.class, () -> {
+            appointmentService.createAppointment(dto, userId);
+        });
+    }
+
+    @Test
+    public void testCreateAppointment_WithHospital() throws AccessDeniedException {
+        UUID userId = UUID.randomUUID();
+        UUID referralId = UUID.randomUUID();
+        Long hospitalId = 1L;
+
+        DoctorType doctorType = new DoctorType();
+        doctorType.setTypeName("Radiologist");
+
+        Examination examination = new Examination();
+        examination.setExamName("X-Ray");
+
+        Patient patient = new Patient();
+        patient.setId(userId);
+
+        Hospital hospital = new Hospital();
+        hospital.setId(hospitalId);
+
+        Referral referral = new Referral();
+        referral.setId(referralId);
+        referral.setPatient(patient);
+        referral.setDoctorType(doctorType);
+        referral.setExamination(examination);
+
+        AppointmentCreateUpdateDto dto = new AppointmentCreateUpdateDto();
+        dto.setPatientId(userId);
+        dto.setHospitalId(hospitalId);
+        dto.setReferralId(referralId);
+        dto.setDate(LocalDate.now().plusDays(1));
+
+        when(referralRepository.findById(referralId)).thenReturn(Optional.of(referral));
+        when(hospitalRepository.findById(hospitalId)).thenReturn(Optional.of(hospital));
+        when(hospitalService.providesExamination(hospital, examination)).thenReturn(true);
+        when(appointmentRepository.existsById(referralId)).thenReturn(false);
+        when(appointmentRepository.save(any())).thenReturn(new Appointment());
+
+        appointmentService.createAppointment(dto, userId);
+
+        verify(appointmentRepository).save(any(Appointment.class));
+    }
+
+    @Test
+    public void testCreateAppointment_HospitalDoesNotProvideExamination() {
+        UUID userId = UUID.randomUUID();
+        UUID referralId = UUID.randomUUID();
+        Long hospitalId = 1L;
+
+        Examination examination = new Examination();
+        examination.setExamName("X-Ray");
+
+        Patient patient = new Patient();
+        patient.setId(userId);
+
+        Hospital hospital = new Hospital();
+        hospital.setId(hospitalId);
+
+        Referral referral = new Referral();
+        referral.setId(referralId);
+        referral.setPatient(patient);
+        referral.setExamination(examination);
+
+        AppointmentCreateUpdateDto dto = new AppointmentCreateUpdateDto();
+        dto.setPatientId(userId);
+        dto.setHospitalId(hospitalId);
+        dto.setReferralId(referralId);
+        dto.setDate(LocalDate.now().plusDays(1));
+
+        when(referralRepository.findById(referralId)).thenReturn(Optional.of(referral));
+        when(hospitalRepository.findById(hospitalId)).thenReturn(Optional.of(hospital));
+        when(hospitalService.providesExamination(hospital, examination)).thenReturn(false);
+
+        assertThrows(AppointmentTargetConflictException.class, () -> {
+            appointmentService.createAppointment(dto, userId);
+        });
+    }
+
+    @Test
+    public void testCreateAppointment_WithPastDate() {
+        UUID userId = UUID.randomUUID();
+        UUID referralId = UUID.randomUUID();
+
+        // Use non-family doctor type to avoid handleFamilyDoctorReferral flow
+        DoctorType cardiologistType = new DoctorType();
+        cardiologistType.setTypeName("Cardiologist");
+
+        Patient patient = new Patient();
+        patient.setId(userId);
+        patient.setBirthDate(LocalDate.now().minusYears(25));
+
+        Doctor doctor = new Doctor();
+        doctor.setId(UUID.randomUUID());
+        doctor.setDoctorType(cardiologistType);
+        doctor.setType("adult");
+
+        Referral referral = new Referral();
+        referral.setId(referralId);
+        referral.setPatient(patient);
+        referral.setDoctorType(cardiologistType);
+
+        AppointmentCreateUpdateDto dto = new AppointmentCreateUpdateDto();
+        dto.setPatientId(userId);
+        dto.setDoctorId(doctor.getId());
+        dto.setReferralId(referralId);
+        dto.setDate(LocalDate.now().minusDays(1));
+        dto.setTime(LocalTime.of(10, 0));
+
+        when(doctorRepository.findById(dto.getDoctorId())).thenReturn(Optional.of(doctor));
+        when(patientRepository.findById(userId)).thenReturn(Optional.of(patient));
+        when(referralRepository.findById(referralId)).thenReturn(Optional.of(referral));
+        when(appointmentRepository.existsByDateAndTime(dto.getDate(), dto.getTime())).thenReturn(false);
+        when(appointmentRepository.existsById(referralId)).thenReturn(false);
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            appointmentService.createAppointment(dto, userId);
+        });
+    }
+
+    @Test
+    public void testCreateAppointment_NullDate() {
+        UUID userId = UUID.randomUUID();
+        UUID referralId = UUID.randomUUID();
+
+        // Use non-family doctor type to avoid handleFamilyDoctorReferral flow
+        DoctorType cardiologistType = new DoctorType();
+        cardiologistType.setTypeName("Cardiologist");
+
+        Patient patient = new Patient();
+        patient.setId(userId);
+        patient.setBirthDate(LocalDate.now().minusYears(25));
+
+        Doctor doctor = new Doctor();
+        doctor.setId(UUID.randomUUID());
+        doctor.setDoctorType(cardiologistType);
+        doctor.setType("adult");
+
+        Referral referral = new Referral();
+        referral.setId(referralId);
+        referral.setPatient(patient);
+        referral.setDoctorType(cardiologistType);
+
+        AppointmentCreateUpdateDto dto = new AppointmentCreateUpdateDto();
+        dto.setPatientId(userId);
+        dto.setDoctorId(doctor.getId());
+        dto.setReferralId(referralId);
+        dto.setDate(null);
+        dto.setTime(LocalTime.of(10, 0));
+
+        when(doctorRepository.findById(dto.getDoctorId())).thenReturn(Optional.of(doctor));
+        when(patientRepository.findById(userId)).thenReturn(Optional.of(patient));
+        when(referralRepository.findById(referralId)).thenReturn(Optional.of(referral));
+        when(appointmentRepository.existsByDateAndTime(null, dto.getTime())).thenReturn(false);
+        when(appointmentRepository.existsById(referralId)).thenReturn(false);
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            appointmentService.createAppointment(dto, userId);
+        });
+    }
+
+    @Test
+    public void testCreateAppointment_NullTime() {
+        UUID userId = UUID.randomUUID();
+        UUID referralId = UUID.randomUUID();
+
+        // Use non-family doctor type to avoid handleFamilyDoctorReferral flow
+        DoctorType cardiologistType = new DoctorType();
+        cardiologistType.setTypeName("Cardiologist");
+
+        Patient patient = new Patient();
+        patient.setId(userId);
+        patient.setBirthDate(LocalDate.now().minusYears(25));
+
+        Doctor doctor = new Doctor();
+        doctor.setId(UUID.randomUUID());
+        doctor.setDoctorType(cardiologistType);
+        doctor.setType("adult");
+
+        Referral referral = new Referral();
+        referral.setId(referralId);
+        referral.setPatient(patient);
+        referral.setDoctorType(cardiologistType);
+
+        AppointmentCreateUpdateDto dto = new AppointmentCreateUpdateDto();
+        dto.setPatientId(userId);
+        dto.setDoctorId(doctor.getId());
+        dto.setReferralId(referralId);
+        dto.setDate(LocalDate.now().plusDays(1));
+        dto.setTime(null);
+
+        when(doctorRepository.findById(dto.getDoctorId())).thenReturn(Optional.of(doctor));
+        when(patientRepository.findById(userId)).thenReturn(Optional.of(patient));
+        when(referralRepository.findById(referralId)).thenReturn(Optional.of(referral));
+        when(appointmentRepository.existsByDateAndTime(dto.getDate(), null)).thenReturn(false);
+        when(appointmentRepository.existsById(referralId)).thenReturn(false);
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            appointmentService.createAppointment(dto, userId);
+        });
+    }
+
+    @Test
+    public void testCreateAppointment_DoctorTypeMismatch() {
+        UUID userId = UUID.randomUUID();
+        UUID referralId = UUID.randomUUID();
+
+        DoctorType cardiologistType = new DoctorType();
+        cardiologistType.setTypeName("Cardiologist");
+
+        DoctorType neurologistType = new DoctorType();
+        neurologistType.setTypeName("Neurologist");
+
+        Patient patient = new Patient();
+        patient.setId(userId);
+        patient.setBirthDate(LocalDate.now().minusYears(25));
+
+        Doctor doctor = new Doctor();
+        doctor.setId(UUID.randomUUID());
+        doctor.setDoctorType(cardiologistType);
+        doctor.setType("adult");
+
+        Referral referral = new Referral();
+        referral.setId(referralId);
+        referral.setPatient(patient);
+        referral.setDoctorType(neurologistType);
+
+        AppointmentCreateUpdateDto dto = new AppointmentCreateUpdateDto();
+        dto.setPatientId(userId);
+        dto.setDoctorId(doctor.getId());
+        dto.setReferralId(referralId);
+        dto.setDate(LocalDate.now().plusDays(1));
+        dto.setTime(LocalTime.of(10, 0));
+
+        when(doctorRepository.findById(dto.getDoctorId())).thenReturn(Optional.of(doctor));
+        when(patientRepository.findById(userId)).thenReturn(Optional.of(patient));
+        when(referralRepository.findById(referralId)).thenReturn(Optional.of(referral));
+        when(appointmentRepository.existsByDateAndTime(dto.getDate(), dto.getTime())).thenReturn(false);
+        when(appointmentRepository.existsById(referralId)).thenReturn(false);
+
+        assertThrows(AppointmentTargetConflictException.class, () -> {
+            appointmentService.createAppointment(dto, userId);
+        });
+    }
+
+    @Test
+    public void testCreateAppointment_ReferralDoctorTypeNull() {
+        UUID userId = UUID.randomUUID();
+        UUID referralId = UUID.randomUUID();
+
+        DoctorType cardiologistType = new DoctorType();
+        cardiologistType.setTypeName("Cardiologist");
+
+        Patient patient = new Patient();
+        patient.setId(userId);
+        patient.setBirthDate(LocalDate.now().minusYears(25));
+
+        Doctor doctor = new Doctor();
+        doctor.setId(UUID.randomUUID());
+        doctor.setDoctorType(cardiologistType);
+        doctor.setType("adult");
+
+        Referral referral = new Referral();
+        referral.setId(referralId);
+        referral.setPatient(patient);
+        referral.setDoctorType(null);
+
+        AppointmentCreateUpdateDto dto = new AppointmentCreateUpdateDto();
+        dto.setPatientId(userId);
+        dto.setDoctorId(doctor.getId());
+        dto.setReferralId(referralId);
+        dto.setDate(LocalDate.now().plusDays(1));
+        dto.setTime(LocalTime.of(10, 0));
+
+        when(doctorRepository.findById(dto.getDoctorId())).thenReturn(Optional.of(doctor));
+        when(patientRepository.findById(userId)).thenReturn(Optional.of(patient));
+        when(referralRepository.findById(referralId)).thenReturn(Optional.of(referral));
+        when(appointmentRepository.existsByDateAndTime(dto.getDate(), dto.getTime())).thenReturn(false);
+        when(appointmentRepository.existsById(referralId)).thenReturn(false);
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            appointmentService.createAppointment(dto, userId);
+        });
+    }
+
+    @Test
+    public void testCreateAppointment_HospitalIdNull() {
+        UUID userId = UUID.randomUUID();
+        UUID referralId = UUID.randomUUID();
+
+        Examination examination = new Examination();
+        examination.setExamName("X-Ray");
+
+        Patient patient = new Patient();
+        patient.setId(userId);
+
+        Referral referral = new Referral();
+        referral.setId(referralId);
+        referral.setPatient(patient);
+        referral.setExamination(examination);
+
+        AppointmentCreateUpdateDto dto = new AppointmentCreateUpdateDto();
+        dto.setPatientId(userId);
+        dto.setHospitalId(null);
+        dto.setDoctorId(null);
+        dto.setReferralId(referralId);
+        dto.setDate(LocalDate.now().plusDays(1));
+
+        assertThrows(AppointmentTargetConflictException.class, () -> {
+            appointmentService.createAppointment(dto, userId);
+        });
+    }
+
+    @Test
+    public void testCreateAppointment_PatientNotFoundForFamilyDoctor() {
+        UUID userId = UUID.randomUUID();
+
+        DoctorType familyType = new DoctorType();
+        familyType.setTypeName("Family doctor");
+
+        Doctor doctor = new Doctor();
+        doctor.setId(UUID.randomUUID());
+        doctor.setDoctorType(familyType);
+
+        AppointmentCreateUpdateDto dto = new AppointmentCreateUpdateDto();
+        dto.setPatientId(userId);
+        dto.setDoctorId(doctor.getId());
+        dto.setDate(LocalDate.now().plusDays(1));
+        dto.setTime(LocalTime.of(10, 0));
+
+        when(doctorRepository.findById(dto.getDoctorId())).thenReturn(Optional.of(doctor));
+        when(patientRepository.findById(userId)).thenReturn(Optional.empty());
+        when(appointmentRepository.existsByDateAndTime(dto.getDate(), dto.getTime())).thenReturn(false);
+
+        assertThrows(EntityNotFoundException.class, () -> {
+            appointmentService.createAppointment(dto, userId);
+        });
+    }
+
+    @Test
+    public void testCreateAppointment_BuildFamilyDoctorReferral() throws AccessDeniedException {
+        UUID userId = UUID.randomUUID();
+        UUID doctorId = UUID.randomUUID();
+
+        DoctorType familyType = new DoctorType();
+        familyType.setTypeName("Family doctor");
+
+        Patient patient = new Patient();
+        patient.setId(userId);
+        patient.setBirthDate(LocalDate.now().minusYears(25));
+
+        Doctor doctor = new Doctor();
+        doctor.setId(doctorId);
+        doctor.setDoctorType(familyType);
+        doctor.setType("adult");
+
+        AppointmentCreateUpdateDto dto = new AppointmentCreateUpdateDto();
+        dto.setPatientId(userId);
+        dto.setDoctorId(doctorId);
+        dto.setDate(LocalDate.now().plusDays(1));
+        dto.setTime(LocalTime.of(10, 0));
+        dto.setReferralId(null);
+
+        when(doctorRepository.findById(doctorId)).thenReturn(Optional.of(doctor));
+        when(patientRepository.findById(userId)).thenReturn(Optional.of(patient));
+        when(referralService.createReferralForFamilyDoctor(patient, dto.getDate()))
+                .thenReturn(createMockReferral(patient, familyType));
+        when(appointmentRepository.existsByDateAndTime(dto.getDate(), dto.getTime())).thenReturn(false);
+        when(appointmentRepository.existsById(any())).thenReturn(false);
+        when(referralRepository.findById(any())).thenAnswer(invocation -> {
+            Referral ref = createMockReferral(patient, familyType);
+            return Optional.of(ref);
+        });
+        when(appointmentRepository.save(any())).thenReturn(new Appointment());
+
+        appointmentService.createAppointment(dto, userId);
+
+        verify(appointmentRepository).save(any(Appointment.class));
+    }
+
+    private Referral createMockReferral(Patient patient, DoctorType doctorType) {
+        Referral referral = new Referral();
+        referral.setId(UUID.randomUUID());
+        referral.setPatient(patient);
+        referral.setDoctorType(doctorType);
+        return referral;
+    }
+
+    @Test
+    public void testGetFullAppointment_NotFound() {
+        UUID appointmentId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+
+        when(appointmentRepository.findById(appointmentId)).thenReturn(Optional.empty());
+
+        assertThrows(EntityNotFoundException.class, () -> {
+            appointmentService.getFullAppointment(appointmentId, userId);
+        });
+    }
+
+    @Test
+    public void testCancelAppointment_NotFound() {
+        UUID appointmentId = UUID.randomUUID();
+
+        when(appointmentRepository.findById(appointmentId)).thenReturn(Optional.empty());
+
+        assertThrows(AppointmentNotFoundException.class, () -> {
+            appointmentService.cancelAppointment(UUID.randomUUID(), null, appointmentId);
+        });
+    }
+
+    @Test
+    public void testFinishAppointment_NotFound() {
+        UUID appointmentId = UUID.randomUUID();
+        UUID doctorId = UUID.randomUUID();
+
+        when(appointmentRepository.findById(appointmentId)).thenReturn(Optional.empty());
+
+        assertThrows(AppointmentNotFoundException.class, () -> {
+            appointmentService.finishAppointment(doctorId, appointmentId, "diagnosis", null);
+        });
+    }
+
+    @Test
+    public void testAssignLabAssistant_AppointmentNotFound() {
+        UUID appointmentId = UUID.randomUUID();
+        UUID labAssistantId = UUID.randomUUID();
+
+        when(appointmentRepository.findById(appointmentId)).thenReturn(Optional.empty());
+
+        assertThrows(EntityNotFoundException.class, () -> {
+            appointmentService.assignLabAssistantToAppointment(appointmentId, labAssistantId);
+        });
+    }
+
+    @Test
+    public void testAssignLabAssistant_LabAssistantNotFound() {
+        UUID appointmentId = UUID.randomUUID();
+        UUID labAssistantId = UUID.randomUUID();
+
+        Appointment appointment = new Appointment();
+        appointment.setStatus(AppointmentStatus.SCHEDULED);
+
+        when(appointmentRepository.findById(appointmentId)).thenReturn(Optional.of(appointment));
+        when(labAssistantRepository.findById(labAssistantId)).thenReturn(Optional.empty());
+
+        assertThrows(EntityNotFoundException.class, () -> {
+            appointmentService.assignLabAssistantToAppointment(appointmentId, labAssistantId);
+        });
+    }
+
+    @Test
+    public void testValidateDoctorAndPatientAge_PatientNotFound() {
+        UUID doctorId = UUID.randomUUID();
+        UUID patientId = UUID.randomUUID();
+
+        when(patientRepository.findById(patientId)).thenReturn(Optional.empty());
+
+        assertThrows(EntityNotFoundException.class, () -> {
+            appointmentService.validateDoctorAndPatientAge(doctorId, patientId);
+        });
+    }
+
+    @Test
+    public void testValidateDoctorAndPatientAge_DoctorNotFound() {
+        UUID doctorId = UUID.randomUUID();
+        UUID patientId = UUID.randomUUID();
+
+        Patient patient = new Patient();
+        patient.setId(patientId);
+        patient.setBirthDate(LocalDate.now().minusYears(25));
+
+        when(patientRepository.findById(patientId)).thenReturn(Optional.of(patient));
+        when(doctorRepository.findById(doctorId)).thenReturn(Optional.empty());
+
+        assertThrows(EntityNotFoundException.class, () -> {
+            appointmentService.validateDoctorAndPatientAge(doctorId, patientId);
+        });
+    }
+
+    @Test
+    public void testOpenAppointments_NoScheduledAppointments() {
+        when(appointmentRepository.findByStatus(AppointmentStatus.SCHEDULED))
+                .thenReturn(Collections.emptyList());
+
+        appointmentService.openAppointments();
+
+        verify(appointmentRepository).saveAll(Collections.emptyList());
+    }
+
+    @Test
+    public void testOpenAppointments_MixedAppointments() {
+        Appointment pastAppointment = new Appointment();
+        pastAppointment.setId(UUID.randomUUID());
+        pastAppointment.setStatus(AppointmentStatus.SCHEDULED);
+        pastAppointment.setDate(LocalDate.now().minusDays(1));
+        pastAppointment.setTime(LocalTime.of(10, 0));
+
+        Appointment futureAppointment = new Appointment();
+        futureAppointment.setId(UUID.randomUUID());
+        futureAppointment.setStatus(AppointmentStatus.SCHEDULED);
+        futureAppointment.setDate(LocalDate.now().plusDays(1));
+        futureAppointment.setTime(LocalTime.of(10, 0));
+
+        Appointment todayPastTime = new Appointment();
+        todayPastTime.setId(UUID.randomUUID());
+        todayPastTime.setStatus(AppointmentStatus.SCHEDULED);
+        todayPastTime.setDate(LocalDate.now());
+        todayPastTime.setTime(LocalTime.of(0, 1));
+
+        when(appointmentRepository.findByStatus(AppointmentStatus.SCHEDULED))
+                .thenReturn(Arrays.asList(pastAppointment, futureAppointment, todayPastTime));
+
+        appointmentService.openAppointments();
+
+        assertEquals(AppointmentStatus.OPEN, pastAppointment.getStatus());
+        assertEquals(AppointmentStatus.SCHEDULED, futureAppointment.getStatus());
+        assertEquals(AppointmentStatus.OPEN, todayPastTime.getStatus());
     }
 }

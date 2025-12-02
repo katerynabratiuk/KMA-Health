@@ -128,5 +128,55 @@ public class NearestHospitalServiceTest {
         
         assertEquals(0.0, distance, 0.001);
     }
+
+    @Test
+    public void testFindNearestHospital_ShouldReturnFirstWhenSingleHospital() {
+        Hospital singleHospital = new Hospital();
+        singleHospital.setName("Only Hospital");
+        singleHospital.setLatitude(50.4501);
+        singleHospital.setLongitude(30.5234);
+
+        when(hospitalRepository.findByCity("Kyiv")).thenReturn(Collections.singletonList(singleHospital));
+
+        Hospital result = nearestHospitalService.findNearestHospital("Kyiv", "50.4500", "30.5200");
+
+        assertNotNull(result);
+        assertEquals("Only Hospital", result.getName());
+    }
+
+    @Test
+    public void testSortHospitalsByUserCoordinates_SortsByProximity() {
+        Hospital hospital1 = new Hospital();
+        hospital1.setName("Far Hospital");
+        hospital1.setLatitude(52.0);
+        hospital1.setLongitude(32.0);
+
+        Hospital hospital2 = new Hospital();
+        hospital2.setName("Near Hospital");
+        hospital2.setLatitude(50.4505);
+        hospital2.setLongitude(30.5205);
+
+        Hospital hospital3 = new Hospital();
+        hospital3.setName("Medium Hospital");
+        hospital3.setLatitude(50.5);
+        hospital3.setLongitude(30.6);
+
+        when(hospitalRepository.findByCity("Kyiv")).thenReturn(Arrays.asList(hospital1, hospital2, hospital3));
+
+        LinkedList<Hospital> result = nearestHospitalService.sortHospitalsByUserCoordinates("Kyiv", "50.4500", "30.5200");
+
+        assertEquals("Near Hospital", result.get(0).getName());
+        assertEquals("Medium Hospital", result.get(1).getName());
+        assertEquals("Far Hospital", result.get(2).getName());
+    }
+
+    @Test
+    public void testDistanceInKm_LongDistance() {
+        // Kyiv to Lviv (approximately 540 km)
+        double distance = NearestHospitalService.distanceInKm(50.45, 30.52, 49.84, 24.02);
+        
+        assertTrue(distance > 400);
+        assertTrue(distance < 600);
+    }
 }
 

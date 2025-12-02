@@ -22,7 +22,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
@@ -341,6 +340,158 @@ public class AuthServiceTest {
         assertThrows(RuntimeException.class, () -> {
             emptyService.loginByEmail("test@example.com", "password", UserRole.PATIENT);
         });
+    }
+
+    @Test
+    void testUpdateProfile_NoRoleFromAuthentication() {
+        UUID userId = UUID.randomUUID();
+
+        Authentication authentication = mock(Authentication.class);
+        SecurityContext securityContext = mock(SecurityContext.class);
+
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        doReturn(Collections.emptyList()).when(authentication).getAuthorities();
+        SecurityContextHolder.setContext(securityContext);
+
+        Map<String, String> updates = new HashMap<>();
+        updates.put("email", "new@example.com");
+
+        assertThrows(RuntimeException.class, () -> {
+            authService.updateProfile(userId, updates);
+        });
+    }
+
+    @Test
+    void testLoginByPhone_UserNotFound() {
+        when(patientRepository.findByPhoneNumber(anyString())).thenReturn(Optional.empty());
+
+        assertThrows(RoleNotFoundException.class, () -> {
+            authService.loginByPhone("+380991234567", "password", UserRole.PATIENT);
+        });
+    }
+
+    @Test
+    void testLoginByPassport_UserNotFound() {
+        when(patientRepository.findByPassportNumber(anyString())).thenReturn(Optional.empty());
+
+        assertThrows(RoleNotFoundException.class, () -> {
+            authService.loginByPassport("AB123456", "password", UserRole.PATIENT);
+        });
+    }
+
+    @Test
+    void testLoginAny_AllMethodsFail() {
+        when(patientRepository.findByEmail(anyString())).thenReturn(Optional.empty());
+        when(patientRepository.findByPhoneNumber(anyString())).thenReturn(Optional.empty());
+        when(patientRepository.findByPassportNumber(anyString())).thenReturn(Optional.empty());
+
+        assertThrows(RoleNotFoundException.class, () -> {
+            authService.loginAny("invalid_identifier", "password", UserRole.PATIENT);
+        });
+    }
+
+    @Test
+    void testDeleteProfile_UserNotFound() {
+        UUID userId = UUID.randomUUID();
+
+        Authentication authentication = mock(Authentication.class);
+        SecurityContext securityContext = mock(SecurityContext.class);
+
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        doReturn(Collections.singletonList(new SimpleGrantedAuthority("ROLE_PATIENT")))
+                .when(authentication).getAuthorities();
+        SecurityContextHolder.setContext(securityContext);
+
+        when(patientRepository.findById(userId)).thenReturn(Optional.empty());
+
+        assertThrows(RoleNotFoundException.class, () -> {
+            authService.deleteProfile(userId);
+        });
+    }
+
+    @Test
+    void testExtractToken_WithDifferentFormats() {
+        String token1 = authService.extractToken("Bearer token-123");
+        assertEquals("token-123", token1);
+        
+        String token2 = authService.extractToken("Bearer a.b.c");
+        assertEquals("a.b.c", token2);
+    }
+
+    @Test
+    void testLoginByEmail_AsDoctor() {
+        UUID userId = UUID.randomUUID();
+        Doctor doctor = new Doctor();
+        doctor.setId(userId);
+        doctor.setEmail("doctor@example.com");
+        doctor.setPassword("encodedPassword");
+
+        when(doctorRepository.findByEmail("doctor@example.com")).thenReturn(Optional.of(doctor));
+        when(passwordEncoder.matches("password123", "encodedPassword")).thenReturn(true);
+        when(jwtUtils.generateToken(doctor)).thenReturn("doctor-token");
+
+        String token = authService.loginByEmail("doctor@example.com", "password123", UserRole.DOCTOR);
+
+        assertEquals("doctor-token", token);
+    }
+
+    @Test
+    void testUpdateProfile_OnlyPassword() {
+        UUID userId = UUID.randomUUID();
+        Patient patient = new Patient();
+        patient.setId(userId);
+        patient.setEmail("original@example.com");
+
+        Authentication authentication = mock(Authentication.class);
+        SecurityContext securityContext = mock(SecurityContext.class);
+
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        doReturn(Collections.singletonList(new SimpleGrantedAuthority("ROLE_PATIENT")))
+                .when(authentication).getAuthorities();
+        SecurityContextHolder.setContext(securityContext);
+
+        when(patientRepository.findById(userId)).thenReturn(Optional.of(patient));
+        when(passwordEncoder.encode("newPassword")).thenReturn("encodedNewPassword");
+
+        Map<String, String> updates = new HashMap<>();
+        updates.put("password", "newPassword");
+
+        authService.updateProfile(userId, updates);
+
+        assertEquals("encodedNewPassword", patient.getPassword());
+        assertEquals("original@example.com", patient.getEmail());
+        verify(patientRepository).save(patient);
+    }
+
+    @Test
+    void testUpdateProfile_AllFields() {
+        UUID userId = UUID.randomUUID();
+        Patient patient = new Patient();
+        patient.setId(userId);
+
+        Authentication authentication = mock(Authentication.class);
+        SecurityContext securityContext = mock(SecurityContext.class);
+
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        doReturn(Collections.singletonList(new SimpleGrantedAuthority("ROLE_PATIENT")))
+                .when(authentication).getAuthorities();
+        SecurityContextHolder.setContext(securityContext);
+
+        when(patientRepository.findById(userId)).thenReturn(Optional.of(patient));
+        when(passwordEncoder.encode("pass")).thenReturn("encodedPass");
+
+        Map<String, String> updates = new HashMap<>();
+        updates.put("email", "new@email.com");
+        updates.put("password", "pass");
+        updates.put("phoneNumber", "+380999999999");
+        updates.put("passport", "XY123456");
+
+        authService.updateProfile(userId, updates);
+
+        assertEquals("new@email.com", patient.getEmail());
+        assertEquals("encodedPass", patient.getPassword());
+        assertEquals("+380999999999", patient.getPhoneNumber());
+        assertEquals("XY123456", patient.getPassportNumber());
     }
 }
 

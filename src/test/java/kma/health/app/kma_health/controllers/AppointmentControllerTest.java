@@ -270,4 +270,30 @@ class AppointmentControllerTest {
         assertEquals(HttpStatus.NOT_FOUND.value(), response.getStatusCode());
         assertEquals("Not found", response.getMessage());
     }
+
+    // Get Doctor Public Appointments (slots) Tests
+    @Test
+    void testGetDoctorPublicAppointments_Success() {
+        LocalDate date = LocalDate.now();
+        
+        when(appointmentService.getPublicAppointmentsForDoctor(doctorId, date))
+                .thenReturn(Collections.emptyList());
+
+        var response = controller.getDoctorPublicAppointments(doctorId, date);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+    }
+
+    @Test
+    void testGetDoctorPublicAppointments_Exception() {
+        LocalDate date = LocalDate.now();
+        
+        when(appointmentService.getPublicAppointmentsForDoctor(any(), any()))
+                .thenThrow(new RuntimeException("Not found"));
+
+        var response = controller.getDoctorPublicAppointments(doctorId, date);
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
 }

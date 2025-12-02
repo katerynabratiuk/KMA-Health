@@ -183,5 +183,26 @@ class RegisterControllerTest {
                 .andExpect(view().name("register-doctor"))
                 .andExpect(model().attributeExists("globalError"));
     }
+
+    @Test
+    @WithAnonymousUser
+    void testDoctorRegisterPage_WithExistingAttribute() throws Exception {
+        when(hospitalService.getAllHospitals()).thenReturn(Collections.emptyList());
+        when(doctorTypeService.getAllDoctorTypes()).thenReturn(Collections.emptyList());
+
+        mockMvc.perform(get("/ui/public/register/doctor")
+                        .flashAttr("doctorRegisterRequest", new DoctorRegisterRequest()))
+                .andExpect(status().isOk())
+                .andExpect(view().name("register-doctor"));
+    }
+
+    @Test
+    @WithAnonymousUser
+    void testPatientRegisterPage_WithExistingAttribute() throws Exception {
+        mockMvc.perform(get("/ui/public/register/patient")
+                        .flashAttr("registerRequest", new PatientRegisterRequest()))
+                .andExpect(status().isOk())
+                .andExpect(view().name("register-patient"));
+    }
 }
 

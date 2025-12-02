@@ -210,5 +210,25 @@ public class ProfileServiceTest {
         assertNotNull(result.getPlannedAppointments());
         assertEquals(1, result.getPlannedAppointments().size());
     }
+
+    @Test
+    public void testGetProfileData_ForPatient_WithNullFamilyDoctor() {
+        UUID userId = UUID.randomUUID();
+        
+        Patient patient = new Patient();
+        patient.setId(userId);
+        patient.setFullName("John Doe");
+        patient.setEmail("john@example.com");
+        patient.setBirthDate(LocalDate.of(1990, 1, 1));
+
+        when(patientRepository.findById(userId)).thenReturn(Optional.of(patient));
+        when(patientService.getFamilyDoctor(userId)).thenReturn(null);
+        when(patientService.getScheduledAppointments(userId)).thenReturn(Collections.emptyList());
+
+        ProfileDto result = profileService.getProfileData(userId, "PATIENT");
+
+        assertNotNull(result);
+        assertNull(result.getFamilyDoctorName());
+    }
 }
 

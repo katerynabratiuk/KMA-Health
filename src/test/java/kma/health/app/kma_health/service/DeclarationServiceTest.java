@@ -190,5 +190,123 @@ public class DeclarationServiceTest {
 
         verify(declarationRepository, never()).deleteById(any(UUID.class));
     }
+
+    @Test
+    public void testRemoveDeclarationsForAdultPatients_BirthdayNotYetThisYear() {
+        UUID patientId = UUID.randomUUID();
+        UUID declarationId = UUID.randomUUID();
+        
+        // Birthday is later this year - should reduce calculated age by 1
+        LocalDate today = LocalDate.now();
+        LocalDate birthdayLaterThisYear = today.minusYears(18).plusDays(10);
+        
+        Patient patient = new Patient();
+        patient.setId(patientId);
+        patient.setBirthDate(birthdayLaterThisYear);
+
+        Doctor childDoctor = new Doctor();
+        childDoctor.setType("child");
+
+        Declaration declaration = new Declaration();
+        declaration.setId(declarationId);
+        declaration.setDoctor(childDoctor);
+        declaration.setPatient(patient);
+
+        when(patientRepository.findAll()).thenReturn(Collections.singletonList(patient));
+        when(declarationRepository.findById(patientId)).thenReturn(Optional.of(declaration));
+
+        declarationService.removeDeclarationsForAdultPatients();
+
+        // Age is 17 (birthday hasn't occurred yet), so should NOT remove declaration
+        verify(declarationRepository, never()).deleteById(any(UUID.class));
+    }
+
+    @Test
+    public void testRemoveDeclarationsForAdultPatients_ExactlyOnBirthday() {
+        UUID patientId = UUID.randomUUID();
+        UUID declarationId = UUID.randomUUID();
+        
+        // Today is exactly the 18th birthday
+        LocalDate today = LocalDate.now();
+        LocalDate exactBirthday = today.minusYears(18);
+        
+        Patient patient = new Patient();
+        patient.setId(patientId);
+        patient.setBirthDate(exactBirthday);
+
+        Doctor childDoctor = new Doctor();
+        childDoctor.setType("child");
+
+        Declaration declaration = new Declaration();
+        declaration.setId(declarationId);
+        declaration.setDoctor(childDoctor);
+        declaration.setPatient(patient);
+
+        when(patientRepository.findAll()).thenReturn(Collections.singletonList(patient));
+        when(declarationRepository.findById(patientId)).thenReturn(Optional.of(declaration));
+        when(declarationRepository.existsById(declarationId)).thenReturn(true);
+
+        declarationService.removeDeclarationsForAdultPatients();
+
+        // Age is exactly 18 on birthday, should remove declaration for child doctor
+        verify(declarationRepository, times(1)).deleteById(declarationId);
+    }
+
+    @Test
+    public void testRemoveDeclarationsForAdultPatients_MultiplePatients() {
+        UUID patientId1 = UUID.randomUUID();
+        UUID patientId2 = UUID.randomUUID();
+        UUID declarationId1 = UUID.randomUUID();
+        
+        Patient minorPatient = new Patient();
+        minorPatient.setId(patientId1);
+        minorPatient.setBirthDate(LocalDate.now().minusYears(10));
+
+        Patient adultPatient = new Patient();
+        adultPatient.setId(patientId2);
+        adultPatient.setBirthDate(LocalDate.now().minusYears(25));
+
+        Doctor childDoctor = new Doctor();
+        childDoctor.setType("child");
+
+        Declaration declaration = new Declaration();
+        declaration.setId(declarationId1);
+        declaration.setDoctor(childDoctor);
+        declaration.setPatient(adultPatient);
+
+        when(patientRepository.findAll()).thenReturn(Arrays.asList(minorPatient, adultPatient));
+        when(declarationRepository.findById(patientId1)).thenReturn(Optional.empty());
+        when(declarationRepository.findById(patientId2)).thenReturn(Optional.of(declaration));
+        when(declarationRepository.existsById(declarationId1)).thenReturn(true);
+
+        declarationService.removeDeclarationsForAdultPatients();
+
+        // Only adult patient's declaration should be removed
+        verify(declarationRepository, times(1)).deleteById(declarationId1);
+    }
+
+    @Test
+    public void testRemoveDeclarationsForAdultPatients_NullDoctorType() {
+        UUID patientId = UUID.randomUUID();
+        
+        Patient adultPatient = new Patient();
+        adultPatient.setId(patientId);
+        adultPatient.setBirthDate(LocalDate.now().minusYears(20));
+
+        Doctor doctor = new Doctor();
+        doctor.setType(null);
+
+        Declaration declaration = new Declaration();
+        declaration.setDoctor(doctor);
+        declaration.setPatient(adultPatient);
+
+        when(patientRepository.findAll()).thenReturn(Collections.singletonList(adultPatient));
+        when(declarationRepository.findById(patientId)).thenReturn(Optional.of(declaration));
+
+        declarationService.removeDeclarationsForAdultPatients();
+
+        // Type is not "child", so should not remove
+        verify(declarationRepository, never()).deleteById(any(UUID.class));
+    }
 }
 
