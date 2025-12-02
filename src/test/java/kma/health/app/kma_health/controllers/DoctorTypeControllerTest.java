@@ -60,7 +60,6 @@ class DoctorTypeControllerTest {
     @Test
     @WithAnonymousUser
     void testCreateDoctorType_AnonymousDenied() throws Exception {
-        // The endpoint requires authentication - anonymous users are denied
         mockMvc.perform(post("/api/doctortype/")
                         .with(csrf())
                         .contentType("application/json")

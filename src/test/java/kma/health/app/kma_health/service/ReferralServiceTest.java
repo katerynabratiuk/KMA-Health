@@ -317,10 +317,8 @@ public class ReferralServiceTest {
         when(referralRepository.findByPatientIdAndValidUntilGreaterThanEqual(eq(patientId), any(LocalDate.class)))
                 .thenReturn(Arrays.asList(usedReferral, unusedReferral));
 
-        // First referral is used (has appointment)
         when(appointmentRepository.existsByReferral_IdAndStatusNot(usedReferral.getId(), AppointmentStatus.MISSED))
                 .thenReturn(true);
-        // Second referral is not used
         when(appointmentRepository.existsByReferral_IdAndStatusNot(unusedReferral.getId(), AppointmentStatus.MISSED))
                 .thenReturn(false);
 

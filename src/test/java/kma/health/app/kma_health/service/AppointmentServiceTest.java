@@ -27,7 +27,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class AppointmentServiceTest {
+ class AppointmentServiceTest {
 
     @Mock
     private AppointmentRepository appointmentRepository;
@@ -63,7 +63,7 @@ public class AppointmentServiceTest {
     private AppointmentService appointmentService;
 
     @Test
-    public void testCreateAppointment_ShouldThrowExceptionWhenBothDoctorAndHospitalProvided() {
+     void testCreateAppointment_ShouldThrowExceptionWhenBothDoctorAndHospitalProvided() {
         UUID userId = UUID.randomUUID();
 
         AppointmentCreateUpdateDto appointmentDto = new AppointmentCreateUpdateDto();
@@ -71,25 +71,23 @@ public class AppointmentServiceTest {
         appointmentDto.setHospitalId(1L);
         appointmentDto.setPatientId(userId);
 
-        assertThrows(AppointmentTargetConflictException.class, () -> {
-            appointmentService.createAppointment(appointmentDto, userId);
-        });
+        assertThrows(AppointmentTargetConflictException.class,
+                () -> appointmentService.createAppointment(appointmentDto, userId));
     }
 
     @Test
-    public void testCreateAppointment_ShouldThrowExceptionWhenNeitherDoctorNorHospitalProvided() {
+     void testCreateAppointment_ShouldThrowExceptionWhenNeitherDoctorNorHospitalProvided() {
         UUID userId = UUID.randomUUID();
 
         AppointmentCreateUpdateDto appointmentDto = new AppointmentCreateUpdateDto();
         appointmentDto.setPatientId(userId);
 
-        assertThrows(AppointmentTargetConflictException.class, () -> {
-            appointmentService.createAppointment(appointmentDto, userId);
-        });
+        assertThrows(AppointmentTargetConflictException.class,
+                () -> appointmentService.createAppointment(appointmentDto, userId));
     }
 
     @Test
-    public void testGetAppointmentsForPatient_ShouldReturnAppointmentsList() {
+     void testGetAppointmentsForPatient_ShouldReturnAppointmentsList() {
         UUID patientId = UUID.randomUUID();
         
         Patient patient = new Patient();
@@ -122,7 +120,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testGetAppointmentsForPatient_WithDateRange_ShouldReturnAppointmentsList() {
+     void testGetAppointmentsForPatient_WithDateRange_ShouldReturnAppointmentsList() {
         UUID patientId = UUID.randomUUID();
         LocalDate start = LocalDate.now();
         LocalDate end = LocalDate.now().plusDays(7);
@@ -137,7 +135,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testGetAppointmentsForDoctor_ShouldReturnAppointmentsList() {
+     void testGetAppointmentsForDoctor_ShouldReturnAppointmentsList() {
         UUID doctorId = UUID.randomUUID();
         LocalDate start = LocalDate.now();
         LocalDate end = LocalDate.now().plusDays(7);
@@ -151,7 +149,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testDeleteAppointment_ShouldDeleteExistingAppointment() {
+     void testDeleteAppointment_ShouldDeleteExistingAppointment() {
         UUID appointmentId = UUID.randomUUID();
 
         when(appointmentRepository.existsById(appointmentId)).thenReturn(true);
@@ -162,18 +160,17 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testDeleteAppointment_ShouldThrowExceptionWhenNotFound() {
+     void testDeleteAppointment_ShouldThrowExceptionWhenNotFound() {
         UUID appointmentId = UUID.randomUUID();
 
         when(appointmentRepository.existsById(appointmentId)).thenReturn(false);
 
-        assertThrows(AppointmentNotFoundException.class, () -> {
-            appointmentService.deleteAppointment(appointmentId);
-        });
+        assertThrows(AppointmentNotFoundException.class,
+                () -> appointmentService.deleteAppointment(appointmentId));
     }
 
     @Test
-    public void testValidateDoctorAndPatientAge_ShouldThrowExceptionForUnderagePatientWithAdultDoctor() {
+     void testValidateDoctorAndPatientAge_ShouldThrowExceptionForUnderagePatientWithAdultDoctor() {
         UUID doctorId = UUID.randomUUID();
         UUID patientId = UUID.randomUUID();
 
@@ -188,13 +185,12 @@ public class AppointmentServiceTest {
         when(patientRepository.findById(patientId)).thenReturn(Optional.of(underagePatient));
         when(doctorRepository.findById(doctorId)).thenReturn(Optional.of(adultDoctor));
 
-        assertThrows(DoctorSpecializationAgeRestrictionException.class, () -> {
-            appointmentService.validateDoctorAndPatientAge(doctorId, patientId);
-        });
+        assertThrows(DoctorSpecializationAgeRestrictionException.class,
+                () -> appointmentService.validateDoctorAndPatientAge(doctorId, patientId));
     }
 
     @Test
-    public void testValidateDoctorAndPatientAge_ShouldThrowExceptionForAdultPatientWithChildDoctor() {
+     void testValidateDoctorAndPatientAge_ShouldThrowExceptionForAdultPatientWithChildDoctor() {
         UUID doctorId = UUID.randomUUID();
         UUID patientId = UUID.randomUUID();
 
@@ -209,13 +205,12 @@ public class AppointmentServiceTest {
         when(patientRepository.findById(patientId)).thenReturn(Optional.of(adultPatient));
         when(doctorRepository.findById(doctorId)).thenReturn(Optional.of(childDoctor));
 
-        assertThrows(DoctorSpecializationAgeRestrictionException.class, () -> {
-            appointmentService.validateDoctorAndPatientAge(doctorId, patientId);
-        });
+        assertThrows(DoctorSpecializationAgeRestrictionException.class,
+                () -> appointmentService.validateDoctorAndPatientAge(doctorId, patientId));
     }
 
     @Test
-    public void testValidateDoctorAndPatientAge_ShouldPassForChildPatientWithChildDoctor() {
+     void testValidateDoctorAndPatientAge_ShouldPassForChildPatientWithChildDoctor() {
         UUID doctorId = UUID.randomUUID();
         UUID patientId = UUID.randomUUID();
 
@@ -230,13 +225,11 @@ public class AppointmentServiceTest {
         when(patientRepository.findById(patientId)).thenReturn(Optional.of(childPatient));
         when(doctorRepository.findById(doctorId)).thenReturn(Optional.of(childDoctor));
 
-        assertDoesNotThrow(() -> {
-            appointmentService.validateDoctorAndPatientAge(doctorId, patientId);
-        });
+        assertDoesNotThrow(() -> appointmentService.validateDoctorAndPatientAge(doctorId, patientId));
     }
 
     @Test
-    public void testValidateDoctorAndPatientAge_ShouldPassForAdultPatientWithAdultDoctor() {
+     void testValidateDoctorAndPatientAge_ShouldPassForAdultPatientWithAdultDoctor() {
         UUID doctorId = UUID.randomUUID();
         UUID patientId = UUID.randomUUID();
 
@@ -251,25 +244,21 @@ public class AppointmentServiceTest {
         when(patientRepository.findById(patientId)).thenReturn(Optional.of(adultPatient));
         when(doctorRepository.findById(doctorId)).thenReturn(Optional.of(adultDoctor));
 
-        assertDoesNotThrow(() -> {
-            appointmentService.validateDoctorAndPatientAge(doctorId, patientId);
-        });
+        assertDoesNotThrow(() -> appointmentService.validateDoctorAndPatientAge(doctorId, patientId));
     }
 
     @Test
-    public void testValidateDoctorAndPatientAge_ShouldDoNothingWhenDoctorIdIsNull() {
+     void testValidateDoctorAndPatientAge_ShouldDoNothingWhenDoctorIdIsNull() {
         UUID patientId = UUID.randomUUID();
 
-        assertDoesNotThrow(() -> {
-            appointmentService.validateDoctorAndPatientAge(null, patientId);
-        });
+        assertDoesNotThrow(() -> appointmentService.validateDoctorAndPatientAge(null, patientId));
 
         verify(patientRepository, never()).findById(any());
         verify(doctorRepository, never()).findById(any());
     }
 
     @Test
-    public void testHaveOpenAppointment_ShouldReturnTrueWhenOpenAppointmentExists() {
+     void testHaveOpenAppointment_ShouldReturnTrueWhenOpenAppointmentExists() {
         UUID doctorId = UUID.randomUUID();
         UUID patientId = UUID.randomUUID();
 
@@ -283,7 +272,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testHaveOpenAppointment_ShouldReturnFalseWhenNoOpenAppointment() {
+     void testHaveOpenAppointment_ShouldReturnFalseWhenNoOpenAppointment() {
         UUID doctorId = UUID.randomUUID();
         UUID patientId = UUID.randomUUID();
 
@@ -297,7 +286,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testHaveOpenAppointment_ShouldReturnFalseWhenNoAppointments() {
+     void testHaveOpenAppointment_ShouldReturnFalseWhenNoAppointments() {
         UUID doctorId = UUID.randomUUID();
         UUID patientId = UUID.randomUUID();
 
@@ -308,7 +297,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testOpenAppointments_ShouldChangeStatusToOpen() {
+     void testOpenAppointments_ShouldChangeStatusToOpen() {
         Appointment scheduledAppointment = new Appointment();
         scheduledAppointment.setId(UUID.randomUUID());
         scheduledAppointment.setStatus(AppointmentStatus.SCHEDULED);
@@ -325,7 +314,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testGetAppointmentsForPatient_WithSingleDate() {
+     void testGetAppointmentsForPatient_WithSingleDate() {
         UUID patientId = UUID.randomUUID();
         LocalDate date = LocalDate.now();
 
@@ -339,7 +328,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testGetAppointmentsForDoctor_WithSingleDate() {
+     void testGetAppointmentsForDoctor_WithSingleDate() {
         UUID doctorId = UUID.randomUUID();
         LocalDate date = LocalDate.now();
 
@@ -353,7 +342,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testOpenAppointments_ShouldNotChangeStatusForFutureAppointments() {
+     void testOpenAppointments_ShouldNotChangeStatusForFutureAppointments() {
         Appointment futureAppointment = new Appointment();
         futureAppointment.setId(UUID.randomUUID());
         futureAppointment.setStatus(AppointmentStatus.SCHEDULED);
@@ -369,7 +358,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testHaveOpenAppointment_ShouldReturnFalseWhenStatusIsNull() {
+     void testHaveOpenAppointment_ShouldReturnFalseWhenStatusIsNull() {
         UUID doctorId = UUID.randomUUID();
         UUID patientId = UUID.randomUUID();
 
@@ -383,7 +372,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testCreateAppointment_ShouldThrowExceptionWhenPatientIdDoesNotMatch() {
+     void testCreateAppointment_ShouldThrowExceptionWhenPatientIdDoesNotMatch() {
         UUID userId = UUID.randomUUID();
         UUID differentPatientId = UUID.randomUUID();
 
@@ -391,13 +380,12 @@ public class AppointmentServiceTest {
         dto.setPatientId(differentPatientId);
         dto.setDoctorId(UUID.randomUUID());
 
-        assertThrows(AccessDeniedException.class, () -> {
-            appointmentService.createAppointment(dto, userId);
-        });
+        assertThrows(AccessDeniedException.class,
+                () -> appointmentService.createAppointment(dto, userId));
     }
 
     @Test
-    public void testGetFullAppointment_AsPatient() throws AccessDeniedException {
+     void testGetFullAppointment_AsPatient() throws AccessDeniedException {
         UUID appointmentId = UUID.randomUUID();
         UUID patientId = UUID.randomUUID();
 
@@ -431,7 +419,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testGetFullAppointment_AsDoctor_ScheduledAppointment() {
+     void testGetFullAppointment_AsDoctor_ScheduledAppointment() {
         UUID appointmentId = UUID.randomUUID();
         UUID doctorId = UUID.randomUUID();
 
@@ -452,13 +440,12 @@ public class AppointmentServiceTest {
 
         when(appointmentRepository.findById(appointmentId)).thenReturn(Optional.of(appointment));
 
-        assertThrows(AccessDeniedException.class, () -> {
-            appointmentService.getFullAppointment(appointmentId, doctorId);
-        });
+        assertThrows(AccessDeniedException.class,
+                () -> appointmentService.getFullAppointment(appointmentId, doctorId));
     }
 
     @Test
-    public void testGetFullAppointment_Unauthorized() {
+     void testGetFullAppointment_Unauthorized() {
         UUID appointmentId = UUID.randomUUID();
         UUID randomUserId = UUID.randomUUID();
 
@@ -479,13 +466,12 @@ public class AppointmentServiceTest {
 
         when(appointmentRepository.findById(appointmentId)).thenReturn(Optional.of(appointment));
 
-        assertThrows(AccessDeniedException.class, () -> {
-            appointmentService.getFullAppointment(appointmentId, randomUserId);
-        });
+        assertThrows(AccessDeniedException.class,
+                () -> appointmentService.getFullAppointment(appointmentId, randomUserId));
     }
 
     @Test
-    public void testAssignLabAssistantToAppointment_Success() throws AccessDeniedException {
+     void testAssignLabAssistantToAppointment_Success() throws AccessDeniedException {
         UUID appointmentId = UUID.randomUUID();
         UUID labAssistantId = UUID.randomUUID();
 
@@ -516,7 +502,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testAssignLabAssistantToAppointment_AlreadyFinished() {
+     void testAssignLabAssistantToAppointment_AlreadyFinished() {
         UUID appointmentId = UUID.randomUUID();
         UUID labAssistantId = UUID.randomUUID();
 
@@ -528,13 +514,12 @@ public class AppointmentServiceTest {
         when(appointmentRepository.findById(appointmentId)).thenReturn(Optional.of(appointment));
         when(labAssistantRepository.findById(labAssistantId)).thenReturn(Optional.of(labAssistant));
 
-        assertThrows(AccessDeniedException.class, () -> {
-            appointmentService.assignLabAssistantToAppointment(appointmentId, labAssistantId);
-        });
+        assertThrows(AccessDeniedException.class,
+                () -> appointmentService.assignLabAssistantToAppointment(appointmentId, labAssistantId));
     }
 
     @Test
-    public void testAssignLabAssistantToAppointment_AlreadyAssigned() {
+     void testAssignLabAssistantToAppointment_AlreadyAssigned() {
         UUID appointmentId = UUID.randomUUID();
         UUID labAssistantId = UUID.randomUUID();
 
@@ -547,13 +532,12 @@ public class AppointmentServiceTest {
         when(appointmentRepository.findById(appointmentId)).thenReturn(Optional.of(appointment));
         when(labAssistantRepository.findById(labAssistantId)).thenReturn(Optional.of(labAssistant));
 
-        assertThrows(AccessDeniedException.class, () -> {
-            appointmentService.assignLabAssistantToAppointment(appointmentId, labAssistantId);
-        });
+        assertThrows(AccessDeniedException.class,
+                () -> appointmentService.assignLabAssistantToAppointment(appointmentId, labAssistantId));
     }
 
     @Test
-    public void testAssignLabAssistantToAppointment_DoctorTarget() {
+     void testAssignLabAssistantToAppointment_DoctorTarget() {
         UUID appointmentId = UUID.randomUUID();
         UUID labAssistantId = UUID.randomUUID();
 
@@ -566,13 +550,12 @@ public class AppointmentServiceTest {
         when(appointmentRepository.findById(appointmentId)).thenReturn(Optional.of(appointment));
         when(labAssistantRepository.findById(labAssistantId)).thenReturn(Optional.of(labAssistant));
 
-        assertThrows(AppointmentTargetConflictException.class, () -> {
-            appointmentService.assignLabAssistantToAppointment(appointmentId, labAssistantId);
-        });
+        assertThrows(AppointmentTargetConflictException.class,
+                () -> appointmentService.assignLabAssistantToAppointment(appointmentId, labAssistantId));
     }
 
     @Test
-    public void testCancelAppointment_AsPatient_Success() throws AccessDeniedException {
+     void testCancelAppointment_AsPatient_Success() throws AccessDeniedException {
         UUID appointmentId = UUID.randomUUID();
         UUID patientId = UUID.randomUUID();
 
@@ -595,7 +578,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testCancelAppointment_AsDoctor_Success() throws AccessDeniedException {
+     void testCancelAppointment_AsDoctor_Success() throws AccessDeniedException {
         UUID appointmentId = UUID.randomUUID();
         UUID doctorId = UUID.randomUUID();
 
@@ -622,7 +605,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testCancelAppointment_AsDoctor_NotOpen() {
+     void testCancelAppointment_AsDoctor_NotOpen() {
         UUID appointmentId = UUID.randomUUID();
         UUID doctorId = UUID.randomUUID();
 
@@ -641,13 +624,12 @@ public class AppointmentServiceTest {
 
         when(appointmentRepository.findById(appointmentId)).thenReturn(Optional.of(appointment));
 
-        assertThrows(AccessDeniedException.class, () -> {
-            appointmentService.cancelAppointment(doctorId, null, appointmentId);
-        });
+        assertThrows(AccessDeniedException.class,
+                () -> appointmentService.cancelAppointment(doctorId, null, appointmentId));
     }
 
     @Test
-    public void testCancelAppointment_AsPatient_AlreadyOpen() {
+     void testCancelAppointment_AsPatient_AlreadyOpen() {
         UUID appointmentId = UUID.randomUUID();
         UUID patientId = UUID.randomUUID();
 
@@ -664,13 +646,12 @@ public class AppointmentServiceTest {
 
         when(appointmentRepository.findById(appointmentId)).thenReturn(Optional.of(appointment));
 
-        assertThrows(AccessDeniedException.class, () -> {
-            appointmentService.cancelAppointment(null, patientId, appointmentId);
-        });
+        assertThrows(AccessDeniedException.class,
+                () -> appointmentService.cancelAppointment(null, patientId, appointmentId));
     }
 
     @Test
-    public void testFinishAppointment_AsDoctor_Success() throws IOException {
+     void testFinishAppointment_AsDoctor_Success() throws IOException {
         UUID appointmentId = UUID.randomUUID();
         UUID doctorId = UUID.randomUUID();
 
@@ -699,7 +680,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testFinishAppointment_WrongDoctor() {
+     void testFinishAppointment_WrongDoctor() {
         UUID appointmentId = UUID.randomUUID();
         UUID doctorId = UUID.randomUUID();
         UUID wrongDoctorId = UUID.randomUUID();
@@ -725,7 +706,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testFinishAppointment_NotOpen() {
+     void testFinishAppointment_NotOpen() {
         UUID appointmentId = UUID.randomUUID();
         UUID doctorId = UUID.randomUUID();
 
@@ -750,7 +731,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testGetFullAppointment_AsLabAssistant_Open() throws AccessDeniedException {
+     void testGetFullAppointment_AsLabAssistant_Open() throws AccessDeniedException {
         UUID appointmentId = UUID.randomUUID();
         UUID labAssistantId = UUID.randomUUID();
 
@@ -782,7 +763,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testCancelAppointment_AsPatient_WrongPatient() {
+     void testCancelAppointment_AsPatient_WrongPatient() {
         UUID appointmentId = UUID.randomUUID();
         UUID patientId = UUID.randomUUID();
         UUID wrongPatientId = UUID.randomUUID();
@@ -806,7 +787,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testCancelAppointment_AsDoctor_WrongDoctor() {
+     void testCancelAppointment_AsDoctor_WrongDoctor() {
         UUID appointmentId = UUID.randomUUID();
         UUID doctorId = UUID.randomUUID();
         UUID wrongDoctorId = UUID.randomUUID();
@@ -832,7 +813,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testAssignLabAssistant_WrongHospital() {
+     void testAssignLabAssistant_WrongHospital() {
         UUID appointmentId = UUID.randomUUID();
         UUID labAssistantId = UUID.randomUUID();
 
@@ -859,13 +840,12 @@ public class AppointmentServiceTest {
         when(appointmentRepository.findById(appointmentId)).thenReturn(Optional.of(appointment));
         when(labAssistantRepository.findById(labAssistantId)).thenReturn(Optional.of(labAssistant));
 
-        assertThrows(AccessDeniedException.class, () -> {
-            appointmentService.assignLabAssistantToAppointment(appointmentId, labAssistantId);
-        });
+        assertThrows(AccessDeniedException.class,
+                () -> appointmentService.assignLabAssistantToAppointment(appointmentId, labAssistantId));
     }
 
     @Test
-    public void testFinishAppointment_AsLabAssistant_Success() throws IOException {
+     void testFinishAppointment_AsLabAssistant_Success() throws IOException {
         UUID appointmentId = UUID.randomUUID();
         UUID labAssistantId = UUID.randomUUID();
 
@@ -891,7 +871,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testGetPublicAppointmentsForDoctor() {
+     void testGetAppointmentsForDoctor() {
         UUID doctorId = UUID.randomUUID();
         LocalDate date = LocalDate.now();
 
@@ -914,14 +894,14 @@ public class AppointmentServiceTest {
         when(appointmentRepository.findByDoctor_IdAndDateBetween(doctorId, date, date))
                 .thenReturn(Collections.singletonList(appointment));
 
-        var result = appointmentService.getPublicAppointmentsForDoctor(doctorId, date);
+        var result = appointmentService.getAppointmentsForDoctor(doctorId, date);
 
         assertNotNull(result);
         assertEquals(1, result.size());
     }
 
     @Test
-    public void testGetFullAppointment_WithNullDoctor() throws AccessDeniedException {
+     void testGetFullAppointment_WithNullDoctor() throws AccessDeniedException {
         UUID appointmentId = UUID.randomUUID();
         UUID patientId = UUID.randomUUID();
 
@@ -956,7 +936,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testGetFullAppointment_AsLabAssistant_Scheduled_ShouldThrow() {
+     void testGetFullAppointment_AsLabAssistant_Scheduled_ShouldThrow() {
         UUID appointmentId = UUID.randomUUID();
         UUID labAssistantId = UUID.randomUUID();
 
@@ -983,7 +963,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testCancelAppointment_AsLabAssistant_Success() throws AccessDeniedException {
+     void testCancelAppointment_AsLabAssistant_Success() throws AccessDeniedException {
         UUID appointmentId = UUID.randomUUID();
         UUID labAssistantId = UUID.randomUUID();
 
@@ -1014,7 +994,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testCancelAppointment_AsLabAssistant_NotOpen_ShouldThrow() {
+     void testCancelAppointment_AsLabAssistant_NotOpen_ShouldThrow() {
         UUID appointmentId = UUID.randomUUID();
         UUID labAssistantId = UUID.randomUUID();
 
@@ -1039,7 +1019,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testCancelAppointment_AsLabAssistant_WrongLabAssistant_ShouldThrow() {
+     void testCancelAppointment_AsLabAssistant_WrongLabAssistant_ShouldThrow() {
         UUID appointmentId = UUID.randomUUID();
         UUID labAssistantId = UUID.randomUUID();
         UUID wrongLabAssistantId = UUID.randomUUID();
@@ -1065,7 +1045,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testCancelAppointment_NoDoctorOrLabAssistant_AsPatient() throws AccessDeniedException {
+     void testCancelAppointment_NoDoctorOrLabAssistant_AsPatient() throws AccessDeniedException {
         UUID appointmentId = UUID.randomUUID();
         UUID patientId = UUID.randomUUID();
 
@@ -1090,7 +1070,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testFinishAppointment_WithEmptyMedicalFiles() throws IOException {
+     void testFinishAppointment_WithEmptyMedicalFiles() throws IOException {
         UUID appointmentId = UUID.randomUUID();
         UUID doctorId = UUID.randomUUID();
 
@@ -1112,7 +1092,6 @@ public class AppointmentServiceTest {
         when(appointmentRepository.findById(appointmentId)).thenReturn(Optional.of(appointment));
         when(appointmentRepository.save(any())).thenReturn(appointment);
 
-        // Pass empty list instead of null
         appointmentService.finishAppointment(doctorId, appointmentId, "Test diagnosis", Collections.emptyList());
 
         assertEquals(AppointmentStatus.FINISHED, appointment.getStatus());
@@ -1120,7 +1099,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testGetFullAppointment_AsDoctor_Open() throws AccessDeniedException {
+     void testGetFullAppointment_AsDoctor_Open() throws AccessDeniedException {
         UUID appointmentId = UUID.randomUUID();
         UUID doctorId = UUID.randomUUID();
 
@@ -1155,7 +1134,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testGetFullAppointment_WithNullLabAssistant() throws AccessDeniedException {
+     void testGetFullAppointment_WithNullLabAssistant() throws AccessDeniedException {
         UUID appointmentId = UUID.randomUUID();
         UUID patientId = UUID.randomUUID();
 
@@ -1185,7 +1164,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testHaveOpenAppointment_WithFinishedStatus() {
+     void testHaveOpenAppointment_WithFinishedStatus() {
         UUID doctorId = UUID.randomUUID();
         UUID patientId = UUID.randomUUID();
 
@@ -1199,7 +1178,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testHaveOpenAppointment_WithMultipleAppointments() {
+     void testHaveOpenAppointment_WithMultipleAppointments() {
         UUID doctorId = UUID.randomUUID();
         UUID patientId = UUID.randomUUID();
 
@@ -1219,7 +1198,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testCreateAppointment_WithFamilyDoctorReferral() throws AccessDeniedException {
+     void testCreateAppointment_WithFamilyDoctorReferral() throws AccessDeniedException {
         UUID userId = UUID.randomUUID();
         UUID doctorId = UUID.randomUUID();
         UUID referralId = UUID.randomUUID();
@@ -1262,7 +1241,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testCreateAppointment_DoctorTypeNotFamily() throws AccessDeniedException {
+     void testCreateAppointment_DoctorTypeNotFamily() throws AccessDeniedException {
         UUID userId = UUID.randomUUID();
         UUID doctorId = UUID.randomUUID();
         UUID referralId = UUID.randomUUID();
@@ -1304,11 +1283,10 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testCreateAppointment_AppointmentAlreadyExistsForReferral() {
+     void testCreateAppointment_AppointmentAlreadyExistsForReferral() {
         UUID userId = UUID.randomUUID();
         UUID referralId = UUID.randomUUID();
 
-        // Use non-family doctor type to avoid handleFamilyDoctorReferral flow
         DoctorType cardiologistType = new DoctorType();
         cardiologistType.setTypeName("Cardiologist");
 
@@ -1344,7 +1322,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testCreateAppointment_AppointmentAlreadyExistsForDateAndTime() {
+     void testCreateAppointment_AppointmentAlreadyExistsForDateAndTime() {
         UUID userId = UUID.randomUUID();
         UUID referralId = UUID.randomUUID();
 
@@ -1358,8 +1336,6 @@ public class AppointmentServiceTest {
         dto.setDate(LocalDate.now().plusDays(1));
         dto.setTime(LocalTime.of(10, 0));
 
-        // checkIfAppointmentExists is called first in processDoctorAppointment
-        // and throws before any other repository calls
         when(appointmentRepository.existsByDateAndTime(dto.getDate(), dto.getTime())).thenReturn(true);
 
         assertThrows(AppointmentTargetConflictException.class, () -> {
@@ -1368,7 +1344,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testCreateAppointment_WithHospital() throws AccessDeniedException {
+     void testCreateAppointment_WithHospital() throws AccessDeniedException {
         UUID userId = UUID.randomUUID();
         UUID referralId = UUID.randomUUID();
         Long hospitalId = 1L;
@@ -1409,7 +1385,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testCreateAppointment_HospitalDoesNotProvideExamination() {
+     void testCreateAppointment_HospitalDoesNotProvideExamination() {
         UUID userId = UUID.randomUUID();
         UUID referralId = UUID.randomUUID();
         Long hospitalId = 1L;
@@ -1444,11 +1420,10 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testCreateAppointment_WithPastDate() {
+     void testCreateAppointment_WithPastDate() {
         UUID userId = UUID.randomUUID();
         UUID referralId = UUID.randomUUID();
 
-        // Use non-family doctor type to avoid handleFamilyDoctorReferral flow
         DoctorType cardiologistType = new DoctorType();
         cardiologistType.setTypeName("Cardiologist");
 
@@ -1485,11 +1460,10 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testCreateAppointment_NullDate() {
+     void testCreateAppointment_NullDate() {
         UUID userId = UUID.randomUUID();
         UUID referralId = UUID.randomUUID();
 
-        // Use non-family doctor type to avoid handleFamilyDoctorReferral flow
         DoctorType cardiologistType = new DoctorType();
         cardiologistType.setTypeName("Cardiologist");
 
@@ -1526,11 +1500,10 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testCreateAppointment_NullTime() {
+     void testCreateAppointment_NullTime() {
         UUID userId = UUID.randomUUID();
         UUID referralId = UUID.randomUUID();
 
-        // Use non-family doctor type to avoid handleFamilyDoctorReferral flow
         DoctorType cardiologistType = new DoctorType();
         cardiologistType.setTypeName("Cardiologist");
 
@@ -1567,7 +1540,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testCreateAppointment_DoctorTypeMismatch() {
+     void testCreateAppointment_DoctorTypeMismatch() {
         UUID userId = UUID.randomUUID();
         UUID referralId = UUID.randomUUID();
 
@@ -1610,7 +1583,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testCreateAppointment_ReferralDoctorTypeNull() {
+     void testCreateAppointment_ReferralDoctorTypeNull() {
         UUID userId = UUID.randomUUID();
         UUID referralId = UUID.randomUUID();
 
@@ -1650,7 +1623,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testCreateAppointment_HospitalIdNull() {
+     void testCreateAppointment_HospitalIdNull() {
         UUID userId = UUID.randomUUID();
         UUID referralId = UUID.randomUUID();
 
@@ -1678,7 +1651,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testCreateAppointment_PatientNotFoundForFamilyDoctor() {
+     void testCreateAppointment_PatientNotFoundForFamilyDoctor() {
         UUID userId = UUID.randomUUID();
 
         DoctorType familyType = new DoctorType();
@@ -1704,7 +1677,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testCreateAppointment_BuildFamilyDoctorReferral() throws AccessDeniedException {
+     void testCreateAppointment_BuildFamilyDoctorReferral() throws AccessDeniedException {
         UUID userId = UUID.randomUUID();
         UUID doctorId = UUID.randomUUID();
 
@@ -1753,7 +1726,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testGetFullAppointment_NotFound() {
+     void testGetFullAppointment_NotFound() {
         UUID appointmentId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
 
@@ -1765,18 +1738,18 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testCancelAppointment_NotFound() {
+     void testCancelAppointment_NotFound() {
         UUID appointmentId = UUID.randomUUID();
+        UUID doctorId = UUID.randomUUID();
 
         when(appointmentRepository.findById(appointmentId)).thenReturn(Optional.empty());
 
-        assertThrows(AppointmentNotFoundException.class, () -> {
-            appointmentService.cancelAppointment(UUID.randomUUID(), null, appointmentId);
-        });
+        assertThrows(AppointmentNotFoundException.class,
+                () -> appointmentService.cancelAppointment(doctorId, null, appointmentId));
     }
 
     @Test
-    public void testFinishAppointment_NotFound() {
+     void testFinishAppointment_NotFound() {
         UUID appointmentId = UUID.randomUUID();
         UUID doctorId = UUID.randomUUID();
 
@@ -1788,7 +1761,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testAssignLabAssistant_AppointmentNotFound() {
+     void testAssignLabAssistant_AppointmentNotFound() {
         UUID appointmentId = UUID.randomUUID();
         UUID labAssistantId = UUID.randomUUID();
 
@@ -1800,7 +1773,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testAssignLabAssistant_LabAssistantNotFound() {
+     void testAssignLabAssistant_LabAssistantNotFound() {
         UUID appointmentId = UUID.randomUUID();
         UUID labAssistantId = UUID.randomUUID();
 
@@ -1816,7 +1789,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testValidateDoctorAndPatientAge_PatientNotFound() {
+     void testValidateDoctorAndPatientAge_PatientNotFound() {
         UUID doctorId = UUID.randomUUID();
         UUID patientId = UUID.randomUUID();
 
@@ -1828,7 +1801,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testValidateDoctorAndPatientAge_DoctorNotFound() {
+     void testValidateDoctorAndPatientAge_DoctorNotFound() {
         UUID doctorId = UUID.randomUUID();
         UUID patientId = UUID.randomUUID();
 
@@ -1845,7 +1818,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testOpenAppointments_NoScheduledAppointments() {
+     void testOpenAppointments_NoScheduledAppointments() {
         when(appointmentRepository.findByStatus(AppointmentStatus.SCHEDULED))
                 .thenReturn(Collections.emptyList());
 
@@ -1855,7 +1828,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    public void testOpenAppointments_MixedAppointments() {
+     void testOpenAppointments_MixedAppointments() {
         Appointment pastAppointment = new Appointment();
         pastAppointment.setId(UUID.randomUUID());
         pastAppointment.setStatus(AppointmentStatus.SCHEDULED);

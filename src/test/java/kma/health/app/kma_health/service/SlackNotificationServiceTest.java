@@ -44,7 +44,6 @@ public class SlackNotificationServiceTest {
         when(restTemplate.postForEntity(anyString(), any(Map.class), eq(String.class)))
                 .thenThrow(new RuntimeException("Connection failed"));
 
-        // Should not throw - exception is caught internally
         slackNotificationService.sendMessage("Test message");
 
         verify(restTemplate).postForEntity(anyString(), any(Map.class), eq(String.class));

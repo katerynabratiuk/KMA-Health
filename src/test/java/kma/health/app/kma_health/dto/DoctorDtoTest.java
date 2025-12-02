@@ -8,7 +8,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class DoctorDtoTest {
+ class DoctorDtoTest {
 
     @Test
     void testDoctorDto_FromEntity() {
@@ -27,8 +27,6 @@ public class DoctorDtoTest {
         DoctorDto dto = new DoctorDto(doctor);
 
         assertNotNull(dto);
-        // DoctorDto doesn't have getters, so we can't verify fields directly
-        // The test verifies that the constructor works without exceptions
     }
 
     @Test

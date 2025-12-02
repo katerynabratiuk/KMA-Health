@@ -21,7 +21,6 @@ class CustomFileAppenderTest {
 
         appender.start();
 
-        // Should not start because file is null
         assertFalse(appender.isStarted());
     }
 

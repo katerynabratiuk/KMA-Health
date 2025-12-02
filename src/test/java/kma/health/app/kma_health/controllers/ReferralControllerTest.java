@@ -60,8 +60,6 @@ class ReferralControllerTest {
         Patient patient = new Patient();
         patient.setId(patientId);
 
-        // The endpoint uses @AuthenticationPrincipal UUID userId which is null with @WithMockUser
-        // So we mock getDoctorById to return doctor for any input including null
         when(doctorSearchService.getDoctorById(any())).thenReturn(doctor);
         when(patientService.getPatientById(any(UUID.class))).thenReturn(patient);
 

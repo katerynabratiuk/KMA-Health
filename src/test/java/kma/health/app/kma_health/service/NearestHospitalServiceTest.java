@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class NearestHospitalServiceTest {
+ class NearestHospitalServiceTest {
 
     @Mock
     private HospitalRepository hospitalRepository;
@@ -26,7 +26,7 @@ public class NearestHospitalServiceTest {
     private NearestHospitalService nearestHospitalService;
 
     @Test
-    public void testFindNearestHospital_ShouldReturnNearestHospital() {
+     void testFindNearestHospital_ShouldReturnNearestHospital() {
         Hospital nearHospital = new Hospital();
         nearHospital.setName("Near Hospital");
         nearHospital.setLatitude(50.4501);
@@ -46,7 +46,7 @@ public class NearestHospitalServiceTest {
     }
 
     @Test
-    public void testFindNearestHospital_ShouldReturnNullWhenNoHospitals() {
+     void testFindNearestHospital_ShouldReturnNullWhenNoHospitals() {
         when(hospitalRepository.findByCity("Kyiv")).thenReturn(Collections.emptyList());
 
         assertThrows(EmptyResultDataAccessException.class, () -> {
@@ -55,7 +55,7 @@ public class NearestHospitalServiceTest {
     }
 
     @Test
-    public void testSortHospitalsByUserCoordinates_ShouldSortByDistance() {
+     void testSortHospitalsByUserCoordinates_ShouldSortByDistance() {
         Hospital hospital1 = new Hospital();
         hospital1.setName("Hospital 1");
         hospital1.setLatitude(50.4501);
@@ -80,7 +80,7 @@ public class NearestHospitalServiceTest {
     }
 
     @Test
-    public void testSortHospitalsByUserCoordinates_ShouldThrowExceptionWhenNoHospitals() {
+     void testSortHospitalsByUserCoordinates_ShouldThrowExceptionWhenNoHospitals() {
         when(hospitalRepository.findByCity("EmptyCity")).thenReturn(Collections.emptyList());
 
         assertThrows(EmptyResultDataAccessException.class, () -> {
@@ -89,7 +89,7 @@ public class NearestHospitalServiceTest {
     }
 
     @Test
-    public void testSortHospitalsByUserCoordinates_ShouldThrowExceptionForInvalidLatitude() {
+     void testSortHospitalsByUserCoordinates_ShouldThrowExceptionForInvalidLatitude() {
         Hospital hospital = new Hospital();
         hospital.setLatitude(50.4501);
         hospital.setLongitude(30.5234);
@@ -102,7 +102,7 @@ public class NearestHospitalServiceTest {
     }
 
     @Test
-    public void testSortHospitalsByUserCoordinates_ShouldThrowExceptionForInvalidLongitude() {
+     void testSortHospitalsByUserCoordinates_ShouldThrowExceptionForInvalidLongitude() {
         Hospital hospital = new Hospital();
         hospital.setLatitude(50.4501);
         hospital.setLongitude(30.5234);
@@ -115,7 +115,7 @@ public class NearestHospitalServiceTest {
     }
 
     @Test
-    public void testDistanceInKm_ShouldCalculateCorrectDistance() {
+     void testDistanceInKm_ShouldCalculateCorrectDistance() {
         double distance = NearestHospitalService.distanceInKm(50.4501, 30.5234, 50.5000, 30.6000);
         
         assertTrue(distance > 0);
@@ -123,14 +123,14 @@ public class NearestHospitalServiceTest {
     }
 
     @Test
-    public void testDistanceInKm_ShouldReturnZeroForSamePoint() {
+     void testDistanceInKm_ShouldReturnZeroForSamePoint() {
         double distance = NearestHospitalService.distanceInKm(50.4501, 30.5234, 50.4501, 30.5234);
         
         assertEquals(0.0, distance, 0.001);
     }
 
     @Test
-    public void testFindNearestHospital_ShouldReturnFirstWhenSingleHospital() {
+     void testFindNearestHospital_ShouldReturnFirstWhenSingleHospital() {
         Hospital singleHospital = new Hospital();
         singleHospital.setName("Only Hospital");
         singleHospital.setLatitude(50.4501);
@@ -145,7 +145,7 @@ public class NearestHospitalServiceTest {
     }
 
     @Test
-    public void testSortHospitalsByUserCoordinates_SortsByProximity() {
+     void testSortHospitalsByUserCoordinates_SortsByProximity() {
         Hospital hospital1 = new Hospital();
         hospital1.setName("Far Hospital");
         hospital1.setLatitude(52.0);
@@ -171,8 +171,7 @@ public class NearestHospitalServiceTest {
     }
 
     @Test
-    public void testDistanceInKm_LongDistance() {
-        // Kyiv to Lviv (approximately 540 km)
+     void testDistanceInKm_LongDistance() {
         double distance = NearestHospitalService.distanceInKm(50.45, 30.52, 49.84, 24.02);
         
         assertTrue(distance > 400);

@@ -125,7 +125,6 @@ class ProfileControllerTest {
         verify(model).addAttribute(eq("plannedAppointments"), any());
     }
 
-    // Calendar endpoint tests
     @Test
     void testCalendar_WithoutParams_UsesCurrentMonth() {
         setSecurityContext("PATIENT");
@@ -170,7 +169,6 @@ class ProfileControllerTest {
         String result = controller.getCalendar(userId, 2024, null, model);
 
         assertEquals("doctor-calendar", result);
-        // When only year is provided but month is null, it uses current month
         verify(model).addAttribute("currentYear", currentYearMonth.getYear());
         verify(model).addAttribute("currentMonth", currentYearMonth.getMonthValue());
     }
@@ -187,7 +185,6 @@ class ProfileControllerTest {
         String result = controller.getCalendar(userId, null, 3, model);
 
         assertEquals("doctor-calendar", result);
-        // When only month is provided but year is null, it uses current year/month
         verify(model).addAttribute("currentYear", currentYearMonth.getYear());
         verify(model).addAttribute("currentMonth", currentYearMonth.getMonthValue());
     }

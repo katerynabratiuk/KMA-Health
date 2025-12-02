@@ -25,7 +25,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class DeclarationServiceTest {
+ class DeclarationServiceTest {
 
     @Mock
     private DeclarationRepository declarationRepository;
@@ -40,7 +40,7 @@ public class DeclarationServiceTest {
     private DeclarationService declarationService;
 
     @Test
-    public void testCreateDeclaration_ShouldCreateDeclarationForFamilyDoctor() {
+     void testCreateDeclaration_ShouldCreateDeclarationForFamilyDoctor() {
         UUID doctorId = UUID.randomUUID();
         UUID patientId = UUID.randomUUID();
 
@@ -62,7 +62,7 @@ public class DeclarationServiceTest {
     }
 
     @Test
-    public void testCreateDeclaration_ShouldThrowExceptionForNonFamilyDoctor() {
+     void testCreateDeclaration_ShouldThrowExceptionForNonFamilyDoctor() {
         DoctorType specialistType = new DoctorType();
         specialistType.setTypeName("Cardiologist");
 
@@ -79,7 +79,7 @@ public class DeclarationServiceTest {
     }
 
     @Test
-    public void testDeleteDeclaration_ShouldDeleteExistingDeclaration() {
+     void testDeleteDeclaration_ShouldDeleteExistingDeclaration() {
         UUID declarationId = UUID.randomUUID();
 
         when(declarationRepository.existsById(declarationId)).thenReturn(true);
@@ -90,7 +90,7 @@ public class DeclarationServiceTest {
     }
 
     @Test
-    public void testDeleteDeclaration_ShouldThrowExceptionWhenNotFound() {
+     void testDeleteDeclaration_ShouldThrowExceptionWhenNotFound() {
         UUID declarationId = UUID.randomUUID();
 
         when(declarationRepository.existsById(declarationId)).thenReturn(false);
@@ -103,7 +103,7 @@ public class DeclarationServiceTest {
     }
 
     @Test
-    public void testRemoveDeclarationsForAdultPatients_ShouldNotRemoveDeclarationForMinor() {
+     void testRemoveDeclarationsForAdultPatients_ShouldNotRemoveDeclarationForMinor() {
         UUID patientId = UUID.randomUUID();
         
         Patient minorPatient = new Patient();
@@ -118,7 +118,7 @@ public class DeclarationServiceTest {
     }
 
     @Test
-    public void testRemoveDeclarationsForAdultPatients_ShouldRemoveDeclarationForAdultWithChildDoctor() {
+     void testRemoveDeclarationsForAdultPatients_ShouldRemoveDeclarationForAdultWithChildDoctor() {
         UUID patientId = UUID.randomUUID();
         UUID declarationId = UUID.randomUUID();
         
@@ -144,7 +144,7 @@ public class DeclarationServiceTest {
     }
 
     @Test
-    public void testRemoveDeclarationsForAdultPatients_ShouldNotRemoveDeclarationForAdultWithAdultDoctor() {
+     void testRemoveDeclarationsForAdultPatients_ShouldNotRemoveDeclarationForAdultWithAdultDoctor() {
         UUID patientId = UUID.randomUUID();
         
         Patient adultPatient = new Patient();
@@ -167,7 +167,7 @@ public class DeclarationServiceTest {
     }
 
     @Test
-    public void testRemoveDeclarationsForAdultPatients_ShouldHandleEmptyPatientList() {
+     void testRemoveDeclarationsForAdultPatients_ShouldHandleEmptyPatientList() {
         when(patientRepository.findAll()).thenReturn(Collections.emptyList());
 
         declarationService.removeDeclarationsForAdultPatients();
@@ -176,7 +176,7 @@ public class DeclarationServiceTest {
     }
 
     @Test
-    public void testRemoveDeclarationsForAdultPatients_ShouldHandlePatientWithoutDeclaration() {
+     void testRemoveDeclarationsForAdultPatients_ShouldHandlePatientWithoutDeclaration() {
         UUID patientId = UUID.randomUUID();
         
         Patient adultPatient = new Patient();
@@ -192,11 +192,10 @@ public class DeclarationServiceTest {
     }
 
     @Test
-    public void testRemoveDeclarationsForAdultPatients_BirthdayNotYetThisYear() {
+     void testRemoveDeclarationsForAdultPatients_BirthdayNotYetThisYear() {
         UUID patientId = UUID.randomUUID();
         UUID declarationId = UUID.randomUUID();
         
-        // Birthday is later this year - should reduce calculated age by 1
         LocalDate today = LocalDate.now();
         LocalDate birthdayLaterThisYear = today.minusYears(18).plusDays(10);
         
@@ -217,16 +216,14 @@ public class DeclarationServiceTest {
 
         declarationService.removeDeclarationsForAdultPatients();
 
-        // Age is 17 (birthday hasn't occurred yet), so should NOT remove declaration
         verify(declarationRepository, never()).deleteById(any(UUID.class));
     }
 
     @Test
-    public void testRemoveDeclarationsForAdultPatients_ExactlyOnBirthday() {
+     void testRemoveDeclarationsForAdultPatients_ExactlyOnBirthday() {
         UUID patientId = UUID.randomUUID();
         UUID declarationId = UUID.randomUUID();
         
-        // Today is exactly the 18th birthday
         LocalDate today = LocalDate.now();
         LocalDate exactBirthday = today.minusYears(18);
         
@@ -248,12 +245,11 @@ public class DeclarationServiceTest {
 
         declarationService.removeDeclarationsForAdultPatients();
 
-        // Age is exactly 18 on birthday, should remove declaration for child doctor
         verify(declarationRepository, times(1)).deleteById(declarationId);
     }
 
     @Test
-    public void testRemoveDeclarationsForAdultPatients_MultiplePatients() {
+     void testRemoveDeclarationsForAdultPatients_MultiplePatients() {
         UUID patientId1 = UUID.randomUUID();
         UUID patientId2 = UUID.randomUUID();
         UUID declarationId1 = UUID.randomUUID();
@@ -281,12 +277,11 @@ public class DeclarationServiceTest {
 
         declarationService.removeDeclarationsForAdultPatients();
 
-        // Only adult patient's declaration should be removed
         verify(declarationRepository, times(1)).deleteById(declarationId1);
     }
 
     @Test
-    public void testRemoveDeclarationsForAdultPatients_NullDoctorType() {
+     void testRemoveDeclarationsForAdultPatients_NullDoctorType() {
         UUID patientId = UUID.randomUUID();
         
         Patient adultPatient = new Patient();
@@ -305,7 +300,6 @@ public class DeclarationServiceTest {
 
         declarationService.removeDeclarationsForAdultPatients();
 
-        // Type is not "child", so should not remove
         verify(declarationRepository, never()).deleteById(any(UUID.class));
     }
 }

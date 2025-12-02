@@ -13,7 +13,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class AppointmentDtoTest {
+ class AppointmentDtoTest {
 
     @Test
     void testAppointmentFullViewDto_FromAppointment() {
@@ -322,7 +322,6 @@ public class AppointmentDtoTest {
         assertNull(dto.getPatientPhoto());
     }
 
-    // Tests for AppointmentDto (doctorDetail)
     @Test
     void testAppointmentDto_WithDoctor() {
         Doctor doctor = new Doctor();

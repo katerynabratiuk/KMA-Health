@@ -15,13 +15,11 @@ class KmaHealthApplicationTests {
 
     @Test
     void contextLoads() {
-        // Context loads successfully if this test passes
         assertTrue(true);
     }
 
     @Test
     void mainMethodExists() {
-        // Just verify the main method exists and is accessible
         assertNotNull(KmaHealthApplication.class);
     }
 }

@@ -65,7 +65,6 @@ class AppointmentControllerTest {
         SecurityContextHolder.getContext().setAuthentication(auth);
     }
 
-    // Patient Appointments Tests
     @Test
     void testGetPatientAppointments_Success() {
         LocalDate start = LocalDate.now();
@@ -93,7 +92,6 @@ class AppointmentControllerTest {
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
     }
 
-    // Doctor Appointments Tests
     @Test
     void testGetDoctorAppointments_WithEndDate() {
         LocalDate start = LocalDate.now();
@@ -134,7 +132,6 @@ class AppointmentControllerTest {
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 
-    // Finish Appointment Tests
     @Test
     void testFinishAppointment_Success() throws IOException {
         doNothing().when(appointmentService).finishAppointment(any(), any(), any(), any());
@@ -167,7 +164,6 @@ class AppointmentControllerTest {
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
 
-    // Cancel Appointment Tests
     @Test
     void testCancelAppointment_AsPatient_Success() throws AccessDeniedException {
         setSecurityContext(patientId, "PATIENT");
@@ -223,9 +219,6 @@ class AppointmentControllerTest {
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
     }
 
-    // Removed: Unknown role test causes exception since UserRole.fromString throws for unknown roles
-
-    // Assign Lab Assistant Tests
     @Test
     void testAssignLabAssistant_Success() throws AccessDeniedException {
         doNothing().when(appointmentService).assignLabAssistantToAppointment(any(), any());
@@ -235,7 +228,6 @@ class AppointmentControllerTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
-    // Get Single Appointment Tests
     @Test
     void testGetAppointment_Success() throws AccessDeniedException {
         AppointmentFullViewDto dto = new AppointmentFullViewDto();
@@ -249,7 +241,6 @@ class AppointmentControllerTest {
         assertEquals(dto, response.getBody());
     }
 
-    // Create Appointment Tests
     @Test
     void testCreateAppointment_Success() throws AccessDeniedException {
         AppointmentCreateUpdateDto dto = new AppointmentCreateUpdateDto();
@@ -260,7 +251,6 @@ class AppointmentControllerTest {
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
     }
 
-    // Exception Handler Tests
     @Test
     void testHandleAppointmentNotFound() {
         AppointmentNotFoundException ex = new AppointmentNotFoundException("Not found");
@@ -271,7 +261,6 @@ class AppointmentControllerTest {
         assertEquals("Not found", response.getMessage());
     }
 
-    // Get Doctor Public Appointments (slots) Tests
     @Test
     void testGetDoctorPublicAppointments_Success() {
         LocalDate date = LocalDate.now();
