@@ -8,11 +8,7 @@
     <link rel="stylesheet" th:href="@{/css/medical_history.css}">
 </head>
 <body>
-<header>
-    <div id="home-header">
-        <a href="/ui/public/" id="home-title" class="button-link">KMA Health</a>
-    </div>
-</header>
+<header th:replace="~{fragments/layout :: header-auth('PATIENT')}"></header>
 
 <section id="profile-section">
 
@@ -68,6 +64,8 @@
     </div>
 
 </section>
+
+<footer th:replace="~{fragments/layout :: footer-auth('PATIENT')}"></footer>
 
 </body>
 </html>

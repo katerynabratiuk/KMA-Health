@@ -10,6 +10,7 @@ import java.time.Period;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import kma.health.app.kma_health.dto.*;
+import kma.health.app.kma_health.dto.doctorDetail.AppointmentDto;
 import kma.health.app.kma_health.entity.*;
 import kma.health.app.kma_health.enums.AppointmentStatus;
 import kma.health.app.kma_health.exception.AppointmentNotFoundException;
@@ -61,7 +62,10 @@ public class AppointmentService {
     }
 
     public List<AppointmentShortViewDto> getAppointmentsForPatient(UUID patientId, LocalDate date) {
-        return getAppointmentsForPatient(patientId, date, date);
+        return appointmentRepository.findByReferral_Patient_idAndDateBetween(patientId, date, date)
+                .stream()
+                .map(AppointmentShortViewDto::new)
+                .toList();
     }
 
     private List<AppointmentShortViewDto> getAppointmentsForDoctor(UUID doctorId) {
@@ -75,6 +79,13 @@ public class AppointmentService {
         return appointmentRepository.findByDoctor_IdAndDateBetween(doctorId, start, end)
                 .stream()
                 .map(AppointmentShortViewDto::new)
+                .toList();
+    }
+
+    public List<AppointmentDto> getPublicAppointmentsForDoctor(UUID doctorId, LocalDate date) {
+        return appointmentRepository.findByDoctor_IdAndDateBetween(doctorId, date, date)
+                .stream()
+                .map(AppointmentDto::new)
                 .toList();
     }
 
@@ -162,7 +173,7 @@ public class AppointmentService {
         UUID labAssistantIdFromAppointment = appointment.getLabAssistant() != null ? appointment.getLabAssistant().getId() : null;
 
         if (!doctorId.equals(doctorIdFromAppointment) &&
-            !doctorId.equals(labAssistantIdFromAppointment)) {
+                !doctorId.equals(labAssistantIdFromAppointment)) {
             throw new AccessDeniedException(
                     "Appointment " + appointmentId + " doesn't belong to doctor/lab assistant " + doctorId
             );
@@ -208,7 +219,7 @@ public class AppointmentService {
 
         if (doctorIdFromAppointment != null || labAssistantIdFromAppointment != null) {
             if (!doctorId.equals(doctorIdFromAppointment) &&
-                !doctorId.equals(labAssistantIdFromAppointment)) {
+                    !doctorId.equals(labAssistantIdFromAppointment)) {
                 throw new AccessDeniedException(
                         "Appointment " + appointmentId + " doesn't belong to doctor/lab assistant " + doctorId
                 );
@@ -375,7 +386,7 @@ public class AppointmentService {
                 .findByDoctor_IdAndReferral_Patient_Id(doctorId, patientId);
         return appointments.stream()
                 .anyMatch(app -> app.getStatus() != null &&
-                                 app.getStatus().equals(AppointmentStatus.OPEN));
+                        app.getStatus().equals(AppointmentStatus.OPEN));
     }
 
     @Scheduled(fixedRate = 60_000)

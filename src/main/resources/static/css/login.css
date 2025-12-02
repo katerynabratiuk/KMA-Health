@@ -8,7 +8,7 @@
     --input-bg: #f8fafc;
     --primary: #0b2a6b;
     --primary-hover: #082157;
-    --error: #ef4444;
+    --error: #b91c1c;
     --success: #22c55e;
     --radius: 18px;
     --radius-input: 10px;
@@ -109,6 +109,12 @@ select:focus {
 
 select:focus {
     background-color: #fff;
+}
+
+.error {
+    margin: 6px 2px 0;
+    font-size: 12px;
+    color: var(--error);
 }
 
 .error-message {
