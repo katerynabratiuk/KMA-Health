@@ -7,11 +7,7 @@
     <link rel="stylesheet" th:href="@{/css/home.css}">
 </head>
 <body>
-<header>
-    <div id="home-header">
-        <a href="/ui/public/" id="home-title" class="button-link">KMA Health</a>
-    </div>
-</header>
+<header th:replace="~{fragments/layout :: header-auth(${userRole})}"></header>
 
 <section id="profile-section">
 
@@ -123,18 +119,14 @@
 
         <span th:if="${appt.doctorName != null}">
             <span th:text="|${appt.date} о ${appt.time} - ${appt.doctorName}|"></span>
-            <span th:if="${appt.doctorSpecialization}"
-                  th:text="| (${appt.doctorSpecialization})|">
+            <span th:if="${appt.examinationName}"
+                  th:text="| (${appt.examinationName})|">
             </span>
         </span>
 
                 <span th:unless="${appt.doctorName != null}">
             <span th:text="|${appt.date} о ${appt.time} - ${appt.examinationName}|"></span>
         </span>
-
-                <button class="reminder-button" data-appointment-id="${appt.id}">
-                    🔔
-                </button>
             </div>
             <p th:if="${#lists.isEmpty(plannedAppointments)}">Немає запланованих записів.</p>
         </div>
@@ -157,6 +149,8 @@
         <button type="button" id="close-modal" class="profile-button secondary-button">Скасувати</button>
     </form>
 </div>
+
+<footer th:replace="~{fragments/layout :: footer-auth(${userRole})}"></footer>
 
 <script th:src="@{/js/profile.js}"></script>
 </body>

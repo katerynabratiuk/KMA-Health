@@ -4,14 +4,16 @@
     <meta charset="UTF-8">
     <title>Home Page</title>
     <link rel="stylesheet" th:href="@{/css/home.css}">
+    <link rel="icon" type="image/x-icon" th:href="@{/images/icon/favicon.ico}">
 </head>
 <body>
-<header>
-    <div id="home-header">
-        <a href="http://localhost:8090/ui/public/" id="home-title" class="button-link">KMA Health</a>
-        <a th:href="@{/ui/public/login}" id="login-register-button" class="button">Login / Register</a>
-    </div>
-</header>
+<!-- Show authenticated header if user is logged in, otherwise show public header -->
+<th:block th:if="${userRole != null}">
+    <header th:replace="~{fragments/layout :: header-auth(${userRole})}"></header>
+</th:block>
+<th:block th:if="${userRole == null}">
+    <header th:replace="~{fragments/layout :: header-public}"></header>
+</th:block>
 
 <section id="search-section">
     <div id="search-top-row">
@@ -65,9 +67,8 @@
                           th:text="${doctor.rating != null ? #numbers.formatDecimal(doctor.rating, 1, 1) : '—'}">0</span>
                     <img th:src="@{/images/star.png}" alt="Star" class="rating-star">
                 </div>
-                <button class="more-button">More</button>
-                <button class="appointment-button">Book an Appointment</button>
             </div>
+            <a th:href="@{/ui/public/doctors/{id}(id=${doctor.id})}" class="doctor-card-link"></a>
         </div>
     </div>
 
@@ -89,8 +90,6 @@
                           th:text="${hospital.rating != null ? #numbers.formatDecimal(hospital.rating, 1, 1) : '—'}">0</span>
                     <img th:src="@{/images/star.png}" alt="Star" class="rating-star">
                 </div>
-                <button class="more-button">More</button>
-                <button class="appointment-button">Book an Appointment</button>
             </div>
         </div>
     </div>

@@ -8,11 +8,7 @@
     <link rel="stylesheet" th:href="@{/css/referrals.css}">
 </head>
 <body>
-<header>
-    <div id="home-header">
-        <a href="/ui/public/" id="home-title" class="button-link">KMA Health</a>
-    </div>
-</header>
+<header th:replace="~{fragments/layout :: header-profile}"></header>
 
 <section id="profile-section">
 
@@ -64,7 +60,7 @@
 
                     <th:block th:unless="${ref.examination != null}">
                         <span class="type-label doctor-label">До лікаря:</span>
-                        <span th:text="${ref.doctorType.typeName}"></span>
+                        <span th:text="${ref.doctorType}"></span>
                     </th:block>
                 </h3>
 

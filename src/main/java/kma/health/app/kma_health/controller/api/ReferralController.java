@@ -1,6 +1,7 @@
 package kma.health.app.kma_health.controller.api;
 
 import kma.health.app.kma_health.dto.CreateReferralRequest;
+import kma.health.app.kma_health.dto.doctorDetail.DoctorDetailDto;
 import kma.health.app.kma_health.entity.Doctor;
 import kma.health.app.kma_health.entity.Patient;
 import kma.health.app.kma_health.service.AuthService;
@@ -14,6 +15,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -32,17 +34,25 @@ public class ReferralController {
             @AuthenticationPrincipal UUID userId,
             @RequestBody CreateReferralRequest request
     ) {
-        Doctor doctor = doctorSearchService.getDoctorById(userId);
+        DoctorDetailDto doctor = doctorSearchService.getDoctorById(userId);
         if (doctor == null)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 
         Patient patient = patientService.getPatientById(request.getPatientId());
 
+        Doctor d = new Doctor();
+        d.setId(doctor.getId());
         if (request.getDoctorTypeName() == null || request.getDoctorTypeName().isEmpty())
-            referralService.createReferral(doctor, patient, request.getExaminationId());
+            referralService.createReferral(d, patient, request.getExaminationId());
         else
-            referralService.createReferral(doctor, patient, request.getDoctorTypeName());
+            referralService.createReferral(d, patient, request.getDoctorTypeName());
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @PreAuthorize("hasRole('PATIENT')")
+    @GetMapping("/active")
+    public ResponseEntity<?> getActiveReferrals(@AuthenticationPrincipal UUID userId) {
+        return ResponseEntity.ok(referralService.getActiveReferrals(userId));
     }
 }

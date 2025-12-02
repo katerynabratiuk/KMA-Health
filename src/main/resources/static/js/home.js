@@ -210,7 +210,7 @@ document.addEventListener("DOMContentLoaded", function () {
     appointmentButtons.forEach(button => {
         button.addEventListener('click', function () {
             if (!authToken) {
-                alert('Будь ласка, увійдіть в систему для запису на прийом');
+                alert('Будь ласка, увійдіть в систему для запису на приймання');
                 window.location.href = '/ui/public/login';
             } else {
                 console.log('Book appointment - implement this functionality');

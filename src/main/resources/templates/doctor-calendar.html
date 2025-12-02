@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Calendar - KMA Health</title>
+    <link rel="stylesheet" th:href="@{/css/doctor-calendar.css}">
+    <link rel="icon" type="image/x-icon" th:href="@{/images/icon/favicon.ico}">
+</head>
+<body>
+<header th:replace="~{fragments/layout :: header-auth('DOCTOR')}"></header>
+
+    <main class="calendar-container">
+        <div class="calendar-header">
+            <a th:href="@{/ui/profile/calendar(year=${currentMonth == 1 ? currentYear - 1 : currentYear}, month=${currentMonth == 1 ? 12 : currentMonth - 1})}" 
+               class="nav-button">
+                ← Попередній
+            </a>
+            
+            <h2 class="month-year" th:text="${#strings.capitalize(#strings.toLowerCase(monthName))} + ' ' + ${currentYear}">
+                Місяць Рік
+            </h2>
+            
+            <a th:href="@{/ui/profile/calendar(year=${currentMonth == 12 ? currentYear + 1 : currentYear}, month=${currentMonth == 12 ? 1 : currentMonth + 1})}" 
+               class="nav-button">
+                Наступний →
+            </a>
+        </div>
+
+        <!-- Calendar Grid -->
+        <div class="calendar-grid">
+            <!-- Day Headers -->
+            <div class="day-header">Пн</div>
+            <div class="day-header">Вт</div>
+            <div class="day-header">Ср</div>
+            <div class="day-header">Чт</div>
+            <div class="day-header">Пт</div>
+            <div class="day-header">Сб</div>
+            <div class="day-header">Нд</div>
+
+            <th:block th:each="i : ${#numbers.sequence(1, firstDayOfWeek - 1)}">
+                <div class="calendar-day empty"></div>
+            </th:block>
+            <th:block th:each="day : ${#numbers.sequence(1, daysInMonth)}">
+                <th:block th:with="currentDate=${firstDayOfMonth.plusDays(day - 1)},
+                                   dayAppointments=${appointments.?[date.equals(__${currentDate}__)]}">
+                    <div class="calendar-day" 
+                         th:classappend="${currentDate.equals(T(java.time.LocalDate).now())} ? 'today' : ''">
+                        <div class="day-number" th:text="${day}">1</div>
+                        
+                        <div class="appointments-list" th:if="${!dayAppointments.isEmpty()}">
+                            <div class="appointment-item" 
+                                 th:each="appointment : ${dayAppointments}"
+                                 th:classappend="${appointment.status.toString()}"
+                                 th:onclick="'showAppointmentDetails(\'' + ${appointment.id} + '\')'">
+                                <span class="appointment-time" th:text="${appointment.time}">10:00</span>
+                                <span class="appointment-patient" th:text="${appointment.patientName}">Ім'я пацієнта</span>
+                                <span class="appointment-status" 
+                                      th:text="${#strings.capitalize(#strings.toLowerCase(appointment.status.toString()))}">
+                                    Статус
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="no-appointments" th:if="${dayAppointments.isEmpty()}">
+                            <span class="no-apt-text">Немає записів</span>
+                        </div>
+                    </div>
+                </th:block>
+            </th:block>
+        </div>
+
+        <!-- Legend -->
+        <div class="legend">
+            <h3>Легенда:</h3>
+            <div class="legend-items">
+                <div class="legend-item">
+                    <span class="status-badge SCHEDULED">●</span>
+                    <span>Заплановано</span>
+                </div>
+                <div class="legend-item">
+                    <span class="status-badge OPEN">●</span>
+                    <span>Відкрито</span>
+                </div>
+                <div class="legend-item">
+                    <span class="status-badge FINISHED">●</span>
+                    <span>Завершено</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Appointment Details Modal -->
+        <div id="appointmentModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal()">&times;</span>
+                <h2>Деталі запису</h2>
+                <div id="appointmentDetails">
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script th:inline="javascript">
+        const appointments = /*[[${appointments}]]*/ [];
+        
+        function showAppointmentDetails(appointmentId) {
+            const appointment = appointments.find(apt => apt.id === appointmentId);
+            if (!appointment) return;
+            
+            const detailsHtml = `
+                <div class="detail-row">
+                    <strong>Date:</strong> ${appointment.date}
+                </div>
+                <div class="detail-row">
+                    <strong>Time:</strong> ${appointment.time}
+                </div>
+                <div class="detail-row">
+                    <strong>Patient:</strong> ${appointment.patientName}
+                </div>
+                <div class="detail-row">
+                    <strong>Status:</strong> 
+                    <span class="status-badge ${appointment.status}">${appointment.status}</span>
+                </div>
+                ${appointment.diagnosis ? `
+                <div class="detail-row">
+                    <strong>Diagnosis:</strong> ${appointment.diagnosis}
+                </div>
+                ` : ''}
+            `;
+            
+            document.getElementById('appointmentDetails').innerHTML = detailsHtml;
+            document.getElementById('appointmentModal').style.display = 'block';
+        }
+        
+        function closeModal() {
+            document.getElementById('appointmentModal').style.display = 'none';
+        }
+        
+        window.onclick = function(event) {
+            const modal = document.getElementById('appointmentModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+    </script>
+
+<footer th:replace="~{fragments/layout :: footer-auth('DOCTOR')}"></footer>
+
+</body>
+</html>

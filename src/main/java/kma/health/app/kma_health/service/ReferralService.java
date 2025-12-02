@@ -81,14 +81,19 @@ public class ReferralService {
     }
 
     public List<ReferralDto> getActiveReferrals(UUID patientId) {
-        List<Referral> activeReferrals = referralRepository.findByPatientIdAndValidUntilGreaterThanEqual(
-                patientId,
-                LocalDate.now()
-        );
+        List<Referral> activeReferrals = referralRepository
+                .findByPatientIdAndValidUntilGreaterThanEqual(
+                        patientId,
+                        LocalDate.now()
+                );
+
         return activeReferrals.stream()
+                // take only referrals that are not used in any appointment
+                .filter(referral -> (!appointmentRepository.existsByReferral_IdAndStatusNot(referral.getId(), AppointmentStatus.MISSED)))
                 .map(ReferralDto::fromEntity)
                 .collect(Collectors.toList());
     }
+
 
     private boolean haveOpenAppointment(UUID doctorId, UUID patientId) {
         List<Appointment> appointments = appointmentRepository
