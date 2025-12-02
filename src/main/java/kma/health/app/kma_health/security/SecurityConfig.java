@@ -31,6 +31,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        // Public resources
                         .requestMatchers(
                                 "/api/auth/**",
                                 "/ui/public/**",
@@ -38,25 +39,25 @@ public class SecurityConfig {
                                 "/js/**",
                                 "/images/**",
                                 "/api-docs/**",
-                                "/swagger-ui/**",
-                                "/api/**"
-                        ).permitAll()
+                                "/swagger-ui/**")
+                        .permitAll()
 
-                        // patient API
-                        .requestMatchers("/api/patient/**").hasRole("PATIENT")
-
-                        // feedback
+                        // API role-based access - Feedback endpoints MUST come before /api/doctor/**
+                        .requestMatchers(HttpMethod.GET, "/api/doctor/*/feedback/my").hasRole("PATIENT")
                         .requestMatchers(HttpMethod.POST, "/api/doctor/*/feedback").hasRole("PATIENT")
-                        .requestMatchers(HttpMethod.GET,  "/api/doctor/*/feedback").permitAll()
+                        .requestMatchers(HttpMethod.DELETE, "/api/doctor/*/feedback/*")
+                        .hasRole("PATIENT")
+                        .requestMatchers(HttpMethod.GET, "/api/doctor/*/feedback").permitAll()
 
+                        .requestMatchers("/api/patient/**").hasRole("PATIENT")
                         .requestMatchers("/api/doctor/**").hasRole("DOCTOR")
-
                         .requestMatchers("/api/lab/**").hasRole("LAB_ASSISTANT")
-
                         .requestMatchers(HttpMethod.GET, "/api/hospital").permitAll()
 
-                        .anyRequest().authenticated()
-                )
+                        // UI routes for authenticated users
+                        .requestMatchers("/ui/profile/**").authenticated()
+
+                        .anyRequest().authenticated())
 
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 

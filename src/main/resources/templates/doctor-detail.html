@@ -9,7 +9,12 @@
     <link rel="icon" type="image/x-icon" th:href="@{/images/icon/favicon.ico}">
 </head>
 <body>
-    <header th:replace="~{fragments/layout :: header-auth(@{/ui/profile})}"></header>
+    <th:block th:if="${userRole != null}">
+        <header th:replace="~{fragments/layout :: header-auth(${userRole})}"></header>
+    </th:block>
+    <th:block th:if="${userRole == null}">
+        <header th:replace="~{fragments/layout :: header-public}"></header>
+    </th:block>
 
     <main class="doctor-detail-container">
         <!-- Doctor Profile Card -->
@@ -38,7 +43,7 @@
                     </div>
                     <div class="doctor-rating-placeholder" th:unless="${doctor.feedback != null and !#lists.isEmpty(doctor.feedback)}">
                         <span class="no-rating-text">Немає рейтингу</span>
-                        <span class="no-rating-subtext">Будьте першим, хто залишить відгук</span>
+                        <span class="no-rating-subtext" th:if="${doctor.canRate==true}">Будьте першим, хто залишить відгук</span>
                     </div>
                 </div>
 
@@ -86,20 +91,20 @@
                     </p>
 
                     <div class="action-buttons">
-                        <button class="btn-primary" onclick="scrollToAppointment()">
-                            Записатися на прийом
+                        <button class="btn-primary" id="appointmentButton" type="button">
+                            Записатися на приймання
                         </button>
-                        <a th:href="@{/ui/doctor/{id}/feedback(id=${doctor.id})}" class="btn-secondary">
+                        <button th:if="${doctor.canRate}" class="btn-secondary" id="scrollToFeedback" type="button">
                             Залишити відгук
-                        </a>
+                        </button>
                     </div>
                 </div>
             </div>
         </section>
 
         <!-- Appointment Form Section -->
-        <section class="info-section" id="appointment-section">
-            <h2 class="section-title">Записатися на прийом</h2>
+        <section class="info-section" id="appointment-section" th:if="${doctor.canGetAppointment == true}">
+            <h2 class="section-title">Записатися на приймання</h2>
             <div class="appointment-form-container">
                 <form id="appointmentForm" class="appointment-form">
                     <input type="hidden" id="doctorId" name="doctorId" th:value="${doctor.id}">
@@ -126,16 +131,15 @@
                     </div>
                     
                     <div class="form-group">
+                        <label for="referralSelect">Направлення <span class="required">*</span></label>
+                        <select id="referralSelect" name="referralId" class="form-input" required>
+                            <option value="">Завантаження...</option>
+                        </select>
+                        <span class="error-message" id="referralError"></span>
+                    </div>
+                    
+                    <div class="form-group">
                         <label>Оберіть зручний час <span class="required">*</span></label>
-                        
-                        <div class="duration-tabs">
-                            <button type="button" class="duration-tab active" data-duration="30">
-                                30 хвилин
-                            </button>
-                            <button type="button" class="duration-tab" data-duration="60">
-                                1 година
-                            </button>
-                        </div>
                         
                         <div class="time-slots-legend">
                             <div class="legend-item">
@@ -157,32 +161,13 @@
                                     <circle cx="12" cy="12" r="10"></circle>
                                     <polyline points="12 6 12 12 16 14"></polyline>
                                 </svg>
-                                <p>Спочатку оберіть дату прийому</p>
+                                <p>Спочатку оберіть дату приймання</p>
                             </div>
                         </div>
                         <span class="error-message" id="timeError"></span>
                         <input type="hidden" id="selectedTimeSlot" name="selectedTimeSlot">
                     </div>
                     
-                    <div class="form-group">
-                        <label for="reason">Причина відвідування <span class="required">*</span></label>
-                        <textarea id="reason" 
-                                  name="reason" 
-                                  class="form-textarea" 
-                                  rows="4"
-                                  placeholder="Опишіть причину вашого візиту..."
-                                  required></textarea>
-                        <span class="error-message" id="reasonError"></span>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="symptoms">Симптоми (необов'язково)</label>
-                        <textarea id="symptoms" 
-                                  name="symptoms" 
-                                  class="form-textarea" 
-                                  rows="3"
-                                  placeholder="Опишіть ваші симптоми..."></textarea>
-                    </div>
                     
                     <div class="form-actions">
                         <button type="submit" class="btn-primary btn-submit">
@@ -198,6 +183,83 @@
             </div>
         </section>
 
+        <!-- Feedback Form Section -->
+        <section class="feedback-form-section" id="feedback-section" th:if="${doctor.canRate == true}" style="display: none;" th:data-doctor-id="${doctor.id}">
+            <h2 class="section-title">Залишити відгук</h2>
+            <div class="feedback-form-container">
+                <div class="edit-warning" id="editWarning" style="display: none;">
+                    <span class="warning-text">Ви вже залишали відгук для цього лікаря. Надіслання нового відгуку замінить попередній.</span>
+                </div>
+                <form id="feedbackForm" class="feedback-form">
+                    <input type="hidden" id="feedbackDoctorId" th:value="${doctor.id}">
+                    <input type="hidden" id="feedbackId">
+                    
+                    <div class="form-group rating-group">
+                        <div class="rating-label-row">
+                            <label>Оцініть лікаря <span class="required">*</span></label>
+                            <div class="star-rating">
+                                <input type="radio" id="star5" name="rating" value="5" />
+                                <label for="star5" class="star" title="5 зірок">⭐</label>
+                                
+                                <input type="radio" id="star4" name="rating" value="4" />
+                                <label for="star4" class="star" title="4 зірки">⭐</label>
+                                
+                                <input type="radio" id="star3" name="rating" value="3" />
+                                <label for="star3" class="star" title="3 зірки">⭐</label>
+                                
+                                <input type="radio" id="star2" name="rating" value="2" />
+                                <label for="star2" class="star" title="2 зірки">⭐</label>
+                                
+                                <input type="radio" id="star1" name="rating" value="1" />
+                                <label for="star1" class="star" title="1 зірка">⭐</label>
+                            </div>
+                        </div>
+                        <span class="error-message" id="ratingError"></span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="feedbackComment">Ваш відгук</label>
+                        <textarea 
+                            id="feedbackComment" 
+                            name="comment" 
+                            class="form-textarea"
+                            rows="4"
+                            placeholder="Поділіться своїм досвідом відвідування цього лікаря..."
+                            maxlength="500"></textarea>
+                        <span class="char-count" id="charCount">0/500</span>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary btn-submit">
+                            Надіслати відгук
+                        </button>
+                        <button type="button" class="btn-secondary" id="cancelFeedback">
+                            Скасувати
+                        </button>
+                        <button type="button" class="btn-danger" id="deleteFeedback" style="display: none;">
+                            Видалити відгук
+                        </button>
+                    </div>
+                    
+                    <div id="feedbackMessage" class="feedback-message" style="display: none;"></div>
+                </form>
+            </div>
+        </section>
+
+        <!-- Delete Confirmation Modal -->
+        <div id="deleteConfirmModal" class="modal-overlay" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Підтвердження видалення</h3>
+                </div>
+                <p class="modal-text">Ви впевнені, що хочете видалити свій відгук? Цю дію не можна скасувати.</p>
+                <div class="modal-actions">
+                    <button type="button" class="btn-danger" id="confirmDelete">Видалити</button>
+                    <button type="button" class="btn-secondary" id="cancelDelete">Скасувати</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Reviews Section -->
         <section class="reviews-section" th:if="${doctor.feedback != null and !#lists.isEmpty(doctor.feedback)}">
             <h2 class="section-title">Відгуки пацієнтів</h2>
@@ -210,7 +272,7 @@
                             </div>
                             <div>
                                 <div class="author-name" th:text="${feedback.patient.fullName}">Пацієнт Іван</div>
-                                <div class="review-date" th:text="${feedback.createdAt}">2024-11-15</div>
+                                <div class="review-date" th:text="${#temporals.format(feedback.date, 'dd.MM.yyyy')}">15.11.2024</div>
                             </div>
                         </div>
                         <div class="review-rating">
@@ -226,6 +288,16 @@
         </section>
     </main>
     
-    <script th:src="@{/js/doctor-detail.js}"></script>
+    <script type="module">
+        import { initializeReferralPopup } from '/js/doctor-referral-popup.js';
+        import { initializeFeedbackForm } from '/js/doctor-feedback.js';
+        
+        const canGetAppointment = /*[[${doctor.canGetAppointment}]]*/ false;
+        const doctorId = /*[[${doctor.id}]]*/ null;
+        
+        initializeReferralPopup(canGetAppointment);
+        initializeFeedbackForm(doctorId);
+    </script>
+    <script type="module" th:src="@{/js/doctor-detail.js}"></script>
 </body>
 </html>

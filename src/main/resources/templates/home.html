@@ -7,7 +7,13 @@
     <link rel="icon" type="image/x-icon" th:href="@{/images/icon/favicon.ico}">
 </head>
 <body>
-<header th:replace="~{fragments/layout :: header-public}"></header>
+<!-- Show authenticated header if user is logged in, otherwise show public header -->
+<th:block th:if="${userRole != null}">
+    <header th:replace="~{fragments/layout :: header-auth(${userRole})}"></header>
+</th:block>
+<th:block th:if="${userRole == null}">
+    <header th:replace="~{fragments/layout :: header-public}"></header>
+</th:block>
 
 <section id="search-section">
     <div id="search-top-row">

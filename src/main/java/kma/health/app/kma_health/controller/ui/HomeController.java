@@ -10,6 +10,9 @@ import kma.health.app.kma_health.service.DoctorTypeService;
 import kma.health.app.kma_health.service.HospitalSearchService;
 import kma.health.app.kma_health.service.HospitalService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -27,6 +30,20 @@ public class HomeController {
 
     @GetMapping({ "/" })
     public String home(Model model) throws InterruptedException {
+        // Detect if user is authenticated
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userRole = null;
+        if (authentication != null && authentication.isAuthenticated()
+                && !"anonymousUser".equals(authentication.getPrincipal())) {
+            userRole = authentication.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .filter(a -> a.startsWith("ROLE_"))
+                    .map(a -> a.substring(5))
+                    .findFirst()
+                    .orElse(null);
+        }
+        model.addAttribute("userRole", userRole);
+
         SearchFormDto formDto = new SearchFormDto();
         formDto.setSearchType("clinic");
         formDto.setSort("rating-asc");

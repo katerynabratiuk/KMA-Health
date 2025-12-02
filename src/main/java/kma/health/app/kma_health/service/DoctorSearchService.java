@@ -1,6 +1,7 @@
 package kma.health.app.kma_health.service;
 
 import jakarta.persistence.EntityManager;
+import kma.health.app.kma_health.dto.ReferralDto;
 import kma.health.app.kma_health.dto.doctorDetail.DoctorDetailDto;
 import kma.health.app.kma_health.dto.DoctorSearchDto;
 import kma.health.app.kma_health.entity.Doctor;
@@ -23,6 +24,8 @@ public class DoctorSearchService {
     private final EntityManager em;
 
     private final DoctorRepository doctorRepository;
+    private final ReferralService referralService;
+    private final FeedbackService feedbackService;
 
     public List<Doctor> searchDoctors(DoctorSearchDto dto, double userLat, double userLon)
             throws InterruptedException {
@@ -161,6 +164,36 @@ public class DoctorSearchService {
 
         return doctor;
     }
+
+    public DoctorDetailDto getDoctorDetailById(UUID id, Optional<UUID> patientId) {
+        DoctorDetailDto doctor = new DoctorDetailDto(Objects.requireNonNull(doctorRepository.findById(id).orElse(null)));
+        doctor.setFeedback(feedbackService.getDoctorFeedbacks(doctor.getId()));
+
+        doctor.setRating(this.aggregatedRating(doctor.getFeedback()));
+        doctor.setYearsOfExperience(countExperience(doctor.getStartedWorking()));
+        patientId.ifPresent(uuid -> doctor.setCanGetAppointment(patientCanGetAppointment(doctor, uuid)));
+        patientId.ifPresent(uuid -> doctor.setCanRate(feedbackService.patientCanRateDoctor(id, patientId.get())));
+
+        return doctor;
+    }
+
+    private Boolean patientCanGetAppointment(DoctorDetailDto doctor, UUID patientId) {
+        List<ReferralDto> activeReferrals = referralService.getActiveReferrals(patientId);
+
+        return activeReferrals.stream().anyMatch(referral ->
+                // Referral directly to this doctor
+                (referral.getDoctorId() != null &&
+                        referral.getDoctorId().equals(doctor.getId())) ||
+
+                        // Referral to doctor type
+                        (referral.getDoctorType() != null &&
+                                referral.getDoctorType().equalsIgnoreCase(
+                                        doctor.getDoctorType()
+                                ))
+        );
+    }
+
+
 
     private Double aggregatedRating(List<Feedback> feedback){
         double avgRating = 0;

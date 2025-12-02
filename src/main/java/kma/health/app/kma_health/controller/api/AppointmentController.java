@@ -4,6 +4,7 @@ import kma.health.app.kma_health.dto.AppointmentCreateUpdateDto;
 import kma.health.app.kma_health.dto.AppointmentFullViewDto;
 import kma.health.app.kma_health.dto.AppointmentShortViewDto;
 import kma.health.app.kma_health.dto.MedicalFileUploadDto;
+import kma.health.app.kma_health.dto.doctorDetail.AppointmentDto;
 import kma.health.app.kma_health.enums.UserRole;
 import kma.health.app.kma_health.exception.AppointmentNotFoundException;
 import kma.health.app.kma_health.service.AppointmentService;
@@ -36,15 +37,10 @@ public class AppointmentController {
     @GetMapping("/patient")
     public ResponseEntity<List<AppointmentShortViewDto>> getPatientAppointments(
             @AuthenticationPrincipal UUID userId,
-            @RequestParam LocalDate start,
-            @RequestParam(required = false) LocalDate end
-    ) {
+            @RequestParam LocalDate start) {
         try {
             List<AppointmentShortViewDto> appointments;
-            if (end == null)
-                appointments = appointmentService.getAppointmentsForPatient(userId, start);
-            else
-                appointments = appointmentService.getAppointmentsForPatient(userId, start, end);
+            appointments = appointmentService.getAppointmentsForPatient(userId, start);
             return ResponseEntity.ok(appointments);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -52,12 +48,11 @@ public class AppointmentController {
     }
 
     @PreAuthorize("isAuthenticated()")
-    @GetMapping("/doctor")
+    @GetMapping("/doctor/{doctorId}")
     public ResponseEntity<List<AppointmentShortViewDto>> getDoctorAppointments(
-            @RequestParam UUID doctorId,
+            @PathVariable UUID doctorId,
             @RequestParam LocalDate start,
-            @RequestParam(required = false) LocalDate end
-    ) {
+            @RequestParam(required = false) LocalDate end) {
         try {
             List<AppointmentShortViewDto> appointments;
             if (end == null)
@@ -70,14 +65,25 @@ public class AppointmentController {
         }
     }
 
+    @GetMapping("/doctor/{doctorId}/slots")
+    public ResponseEntity<List<AppointmentDto>> getDoctorPublicAppointments(
+            @PathVariable("doctorId") UUID doctor,
+            @RequestParam LocalDate date) {
+        try {
+            List<AppointmentDto> appointments = appointmentService.getPublicAppointmentsForDoctor(doctor, date);
+            return ResponseEntity.ok(appointments);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+
     @PostMapping("/finish")
     @PreAuthorize("hasAnyRole('DOCTOR', 'LAB_ASSISTANT')")
     public ResponseEntity<?> finishAppointment(
             @AuthenticationPrincipal UUID userId,
             @RequestPart("files") List<MedicalFileUploadDto> filesDto,
             @RequestParam UUID appointmentId,
-            @RequestParam String diagnosis
-    ) {
+            @RequestParam String diagnosis) {
         try {
             appointmentService.finishAppointment(userId, appointmentId, diagnosis, filesDto);
             return ResponseEntity.ok().build();
@@ -96,10 +102,10 @@ public class AppointmentController {
             @AuthenticationPrincipal UUID userId,
             @RequestParam UUID doctorId,
             @RequestParam UUID patientId,
-            @RequestParam UUID appointmentId
-    ) throws AccessDeniedException {
+            @RequestParam UUID appointmentId) throws AccessDeniedException {
         var auth = SecurityContextHolder.getContext().getAuthentication();
-        UserRole role = UserRole.fromString(auth.getAuthorities().iterator().next().getAuthority().replace("ROLE_", ""));
+        UserRole role = UserRole
+                .fromString(auth.getAuthorities().iterator().next().getAuthority().replace("ROLE_", ""));
 
         boolean isRoleMatching;
         switch (role) {
@@ -117,13 +123,11 @@ public class AppointmentController {
         return ResponseEntity.ok().build();
     }
 
-
     @PreAuthorize("hasRole('LAB_ASSISTANT')")
     @PostMapping("/assign/assistant")
     public ResponseEntity<?> assignLabAssistantToAppointment(
             @AuthenticationPrincipal UUID userId,
-            @RequestParam UUID appointmentId
-            ) throws AccessDeniedException {
+            @RequestParam UUID appointmentId) throws AccessDeniedException {
         appointmentService.assignLabAssistantToAppointment(userId, appointmentId);
         return ResponseEntity.ok().build();
     }
@@ -141,8 +145,8 @@ public class AppointmentController {
     @PostMapping
     public ResponseEntity<?> createAppointment(
             @AuthenticationPrincipal UUID userId,
-            @RequestBody AppointmentCreateUpdateDto app
-    ) throws AccessDeniedException {
+            @RequestBody AppointmentCreateUpdateDto app) throws AccessDeniedException {
+        app.setPatientId(userId);
         appointmentService.createAppointment(app, userId);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }

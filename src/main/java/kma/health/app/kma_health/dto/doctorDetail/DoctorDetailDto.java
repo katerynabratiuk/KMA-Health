@@ -33,6 +33,9 @@ public class DoctorDetailDto {
     private List<Feedback> feedback;
     private HospitalDto hospital;
 
+    private Boolean canGetAppointment;
+    private Boolean canRate;
+
     public DoctorDetailDto(Doctor doctor) {
         this.id = doctor.getId();
         this.fullName = doctor.getFullName();
