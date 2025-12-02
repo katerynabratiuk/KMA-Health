@@ -8,7 +8,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class DoctorDtoTest {
+ class DoctorDtoTest {
 
     @Test
     void testDoctorDto_FromEntity() {

@@ -13,7 +13,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class AppointmentDtoTest {
+ class AppointmentDtoTest {
 
     @Test
     void testAppointmentFullViewDto_FromAppointment() {

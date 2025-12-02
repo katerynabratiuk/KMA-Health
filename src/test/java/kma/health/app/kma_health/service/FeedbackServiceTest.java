@@ -26,7 +26,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class FeedbackServiceTest {
+ class FeedbackServiceTest {
 
     @Mock
     private FeedbackRepository feedbackRepository;
@@ -38,7 +38,7 @@ public class FeedbackServiceTest {
     private FeedbackService feedbackService;
 
     @Test
-    public void testCalculateDoctorRating_ShouldReturnCorrectAverageRating() {
+     void testCalculateDoctorRating_ShouldReturnCorrectAverageRating() {
         UUID doctorId = UUID.randomUUID();
 
         Feedback feedback1 = new Feedback();
@@ -59,7 +59,7 @@ public class FeedbackServiceTest {
     }
 
     @Test
-    public void testCalculateDoctorRating_ShouldReturnZeroWhenNoFeedbacks() {
+     void testCalculateDoctorRating_ShouldReturnZeroWhenNoFeedbacks() {
         UUID doctorId = UUID.randomUUID();
 
         when(feedbackRepository.findByDoctor_Id(doctorId)).thenReturn(Collections.emptyList());
@@ -70,7 +70,7 @@ public class FeedbackServiceTest {
     }
 
     @Test
-    public void testCalculateHospitalRating_ShouldReturnCorrectAverageRating() {
+     void testCalculateHospitalRating_ShouldReturnCorrectAverageRating() {
         Long hospitalId = 1L;
 
         Feedback feedback1 = new Feedback();
@@ -88,7 +88,7 @@ public class FeedbackServiceTest {
     }
 
     @Test
-    public void testCalculateHospitalRating_ShouldReturnZeroWhenNoFeedbacks() {
+     void testCalculateHospitalRating_ShouldReturnZeroWhenNoFeedbacks() {
         Long hospitalId = 1L;
 
         when(feedbackRepository.findByHospital_Id(hospitalId)).thenReturn(Collections.emptyList());
@@ -99,7 +99,7 @@ public class FeedbackServiceTest {
     }
 
     @Test
-    public void testGetHospitalFeedbacks_ShouldReturnFeedbacksList() {
+     void testGetHospitalFeedbacks_ShouldReturnFeedbacksList() {
         Long hospitalId = 1L;
         Feedback feedback1 = new Feedback();
         Feedback feedback2 = new Feedback();
@@ -113,7 +113,7 @@ public class FeedbackServiceTest {
     }
 
     @Test
-    public void testGetDoctorFeedbacks_ShouldReturnFeedbacksList() {
+     void testGetDoctorFeedbacks_ShouldReturnFeedbacksList() {
         UUID doctorId = UUID.randomUUID();
         Feedback feedback1 = new Feedback();
         Feedback feedback2 = new Feedback();
@@ -127,7 +127,7 @@ public class FeedbackServiceTest {
     }
 
     @Test
-    public void testCreateFeedback_ForDoctor_ShouldSaveFeedback() {
+     void testCreateFeedback_ForDoctor_ShouldSaveFeedback() {
         UUID patientId = UUID.randomUUID();
         UUID doctorId = UUID.randomUUID();
 
@@ -148,7 +148,7 @@ public class FeedbackServiceTest {
     }
 
     @Test
-    public void testCreateFeedback_ForDoctor_ShouldThrowExceptionWhenNoHistory() {
+     void testCreateFeedback_ForDoctor_ShouldThrowExceptionWhenNoHistory() {
         UUID patientId = UUID.randomUUID();
         UUID doctorId = UUID.randomUUID();
 
@@ -167,7 +167,7 @@ public class FeedbackServiceTest {
     }
 
     @Test
-    public void testCreateFeedback_ForHospital_ShouldSaveFeedback() {
+     void testCreateFeedback_ForHospital_ShouldSaveFeedback() {
         UUID patientId = UUID.randomUUID();
         Long hospitalId = 1L;
 
@@ -186,7 +186,7 @@ public class FeedbackServiceTest {
     }
 
     @Test
-    public void testCreateFeedback_ForHospital_ShouldThrowExceptionWhenNoHistory() {
+     void testCreateFeedback_ForHospital_ShouldThrowExceptionWhenNoHistory() {
         UUID patientId = UUID.randomUUID();
         Long hospitalId = 1L;
 
@@ -203,7 +203,7 @@ public class FeedbackServiceTest {
     }
 
     @Test
-    public void testDeleteFeedback_ShouldDeleteById() {
+     void testDeleteFeedback_ShouldDeleteById() {
         Long feedbackId = 1L;
 
         feedbackService.deleteFeedback(feedbackId);
@@ -212,7 +212,7 @@ public class FeedbackServiceTest {
     }
 
     @Test
-    public void testCalculateDoctorRating_ShouldRoundToTwoDecimalPlaces() {
+     void testCalculateDoctorRating_ShouldRoundToTwoDecimalPlaces() {
         UUID doctorId = UUID.randomUUID();
 
         Feedback feedback1 = new Feedback();
@@ -233,7 +233,7 @@ public class FeedbackServiceTest {
     }
 
     @Test
-    public void testCalculateAverage_ShouldReturnZeroForNullFeedbacks() {
+     void testCalculateAverage_ShouldReturnZeroForNullFeedbacks() {
         UUID doctorId = UUID.randomUUID();
 
         when(feedbackRepository.findByDoctor_Id(doctorId)).thenReturn(null);
@@ -244,7 +244,7 @@ public class FeedbackServiceTest {
     }
 
     @Test
-    public void testGetPatientFeedbackForDoctor_ShouldReturnFeedback() {
+     void testGetPatientFeedbackForDoctor_ShouldReturnFeedback() {
         UUID doctorId = UUID.randomUUID();
         UUID patientId = UUID.randomUUID();
 
@@ -261,7 +261,7 @@ public class FeedbackServiceTest {
     }
 
     @Test
-    public void testGetPatientFeedbackForDoctor_ShouldReturnEmptyWhenNotFound() {
+     void testGetPatientFeedbackForDoctor_ShouldReturnEmptyWhenNotFound() {
         UUID doctorId = UUID.randomUUID();
         UUID patientId = UUID.randomUUID();
 
@@ -274,7 +274,7 @@ public class FeedbackServiceTest {
     }
 
     @Test
-    public void testPatientCanRateDoctor_ShouldReturnTrue_WhenFinishedAppointmentExists() {
+     void testPatientCanRateDoctor_ShouldReturnTrue_WhenFinishedAppointmentExists() {
         UUID doctorId = UUID.randomUUID();
         UUID patientId = UUID.randomUUID();
 
@@ -291,7 +291,7 @@ public class FeedbackServiceTest {
     }
 
     @Test
-    public void testPatientCanRateDoctor_ShouldReturnFalse_WhenNoFinishedAppointment() {
+     void testPatientCanRateDoctor_ShouldReturnFalse_WhenNoFinishedAppointment() {
         UUID doctorId = UUID.randomUUID();
         UUID patientId = UUID.randomUUID();
 
@@ -308,7 +308,7 @@ public class FeedbackServiceTest {
     }
 
     @Test
-    public void testPatientCanRateDoctor_ShouldReturnFalse_WhenNoAppointments() {
+     void testPatientCanRateDoctor_ShouldReturnFalse_WhenNoAppointments() {
         UUID doctorId = UUID.randomUUID();
         UUID patientId = UUID.randomUUID();
 
@@ -321,7 +321,7 @@ public class FeedbackServiceTest {
     }
 
     @Test
-    public void testPatientCanRateDoctor_ShouldReturnFalse_WhenAppointmentInFuture() {
+     void testPatientCanRateDoctor_ShouldReturnFalse_WhenAppointmentInFuture() {
         UUID doctorId = UUID.randomUUID();
         UUID patientId = UUID.randomUUID();
 
@@ -334,11 +334,11 @@ public class FeedbackServiceTest {
 
         boolean result = feedbackService.patientCanRateDoctor(doctorId, patientId);
 
-        assertNotNull(result);
+        assertFalse(result);
     }
 
     @Test
-    public void testCreateFeedback_ForDoctor_ShouldUpdateExistingFeedback() {
+     void testCreateFeedback_ForDoctor_ShouldUpdateExistingFeedback() {
         UUID patientId = UUID.randomUUID();
         UUID doctorId = UUID.randomUUID();
 
@@ -368,7 +368,7 @@ public class FeedbackServiceTest {
     }
 
     @Test
-    public void testCreateFeedback_ForHospital_ShouldUpdateExistingFeedback() {
+     void testCreateFeedback_ForHospital_ShouldUpdateExistingFeedback() {
         UUID patientId = UUID.randomUUID();
         Long hospitalId = 1L;
 
@@ -395,7 +395,7 @@ public class FeedbackServiceTest {
     }
 
     @Test
-    public void testCreateFeedback_ForDoctor_NoExistingFeedback() {
+     void testCreateFeedback_ForDoctor_NoExistingFeedback() {
         UUID patientId = UUID.randomUUID();
         UUID doctorId = UUID.randomUUID();
 
@@ -419,7 +419,7 @@ public class FeedbackServiceTest {
     }
 
     @Test
-    public void testCreateFeedback_ForHospital_NoExistingFeedback() {
+     void testCreateFeedback_ForHospital_NoExistingFeedback() {
         UUID patientId = UUID.randomUUID();
         Long hospitalId = 1L;
 
@@ -441,7 +441,7 @@ public class FeedbackServiceTest {
     }
 
     @Test
-    public void testCreateFeedback_WithNullDoctorId() {
+     void testCreateFeedback_WithNullDoctorId() {
         UUID patientId = UUID.randomUUID();
         Long hospitalId = 1L;
 
@@ -464,7 +464,7 @@ public class FeedbackServiceTest {
     }
 
     @Test
-    public void testCreateFeedback_WithNullPatientId() {
+     void testCreateFeedback_WithNullPatientId() {
         UUID doctorId = UUID.randomUUID();
 
         FeedbackCreateUpdateDto dto = new FeedbackCreateUpdateDto();
