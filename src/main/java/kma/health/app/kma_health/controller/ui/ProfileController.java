@@ -54,7 +54,7 @@ public class ProfileController {
         return "profile";
     }
 
-    @PreAuthorize("hasRole('PATIENT'")
+    @PreAuthorize("hasRole('PATIENT')")
     @GetMapping("/calendar")
     public String getCalendar(
             @AuthenticationPrincipal UUID userId,

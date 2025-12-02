@@ -59,15 +59,13 @@ class DoctorTypeControllerTest {
 
     @Test
     @WithAnonymousUser
-    void testCreateDoctorType_AnonymousCanCreate() throws Exception {
-        // The endpoint allows anonymous access
-        doNothing().when(doctorTypeService).createDoctorType(any());
-        
+    void testCreateDoctorType_AnonymousDenied() throws Exception {
+        // The endpoint requires authentication - anonymous users are denied
         mockMvc.perform(post("/api/doctortype/")
                         .with(csrf())
                         .contentType("application/json")
                         .content("{\"typeName\":\"Cardiologist\"}"))
-                .andExpect(status().isCreated());
+                .andExpect(status().isForbidden());
     }
 
     @Test

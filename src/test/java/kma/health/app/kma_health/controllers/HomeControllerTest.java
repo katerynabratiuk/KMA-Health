@@ -1,152 +1,258 @@
 package kma.health.app.kma_health.controllers;
 
+import kma.health.app.kma_health.controller.ui.HomeController;
+import kma.health.app.kma_health.dto.DoctorSearchDto;
+import kma.health.app.kma_health.dto.HospitalSearchDto;
+import kma.health.app.kma_health.dto.SearchFormDto;
 import kma.health.app.kma_health.entity.Hospital;
-import kma.health.app.kma_health.security.JwtUtils;
 import kma.health.app.kma_health.service.DoctorSearchService;
 import kma.health.app.kma_health.service.DoctorTypeService;
 import kma.health.app.kma_health.service.HospitalSearchService;
 import kma.health.app.kma_health.service.HospitalService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.ui.Model;
 
 import java.util.Collections;
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyDouble;
-import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
-@SpringBootTest
-@AutoConfigureMockMvc
+@ExtendWith(MockitoExtension.class)
 class HomeControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
-
-    @MockitoBean
+    @Mock
     private DoctorSearchService doctorSearchService;
 
-    @MockitoBean
+    @Mock
     private HospitalSearchService hospitalSearchService;
 
-    @MockitoBean
+    @Mock
     private HospitalService hospitalService;
 
-    @MockitoBean
+    @Mock
     private DoctorTypeService doctorTypeService;
 
-    @MockitoBean
-    private JwtUtils jwtUtils;
+    @Mock
+    private Model model;
 
+    @InjectMocks
+    private HomeController controller;
+
+    @BeforeEach
+    void setUp() {
+        SecurityContextHolder.clearContext();
+    }
+
+    private void setSecurityContext(String role) {
+        var auth = new UsernamePasswordAuthenticationToken(
+                "user",
+                null,
+                List.of(new SimpleGrantedAuthority("ROLE_" + role))
+        );
+        SecurityContextHolder.getContext().setAuthentication(auth);
+    }
+
+    // Home page tests
     @Test
-    void testHome_Success() throws Exception {
-        when(hospitalSearchService.searchHospitals(any(), anyDouble(), anyDouble()))
+    void testHome_AnonymousUser_Success() throws Exception {
+        when(hospitalSearchService.searchHospitals(any(HospitalSearchDto.class), anyDouble(), anyDouble()))
                 .thenReturn(Collections.emptyList());
-        when(hospitalService.getAllCities()).thenReturn(List.of("Kyiv"));
-        when(doctorTypeService.getAllDoctorTypeNames()).thenReturn(List.of("Cardiologist"));
+        when(hospitalService.getAllCities()).thenReturn(Collections.emptyList());
+        when(doctorTypeService.getAllDoctorTypeNames()).thenReturn(Collections.emptyList());
 
-        mockMvc.perform(get("/ui/public/"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("home"))
-                .andExpect(model().attributeExists("formDto", "cities", "specialties"));
+        String result = controller.home(model);
+
+        assertEquals("home", result);
+        verify(model).addAttribute(eq("userRole"), isNull());
+        verify(model).addAttribute(eq("searchPerformed"), eq(false));
     }
 
     @Test
-    void testProcessSearch_Clinic() throws Exception {
-        when(hospitalSearchService.searchHospitals(any(), anyDouble(), anyDouble()))
+    void testHome_AuthenticatedPatient_Success() throws Exception {
+        setSecurityContext("PATIENT");
+        when(hospitalSearchService.searchHospitals(any(HospitalSearchDto.class), anyDouble(), anyDouble()))
                 .thenReturn(Collections.emptyList());
-        when(hospitalService.getAllCities()).thenReturn(List.of("Kyiv"));
-        when(doctorTypeService.getAllDoctorTypeNames()).thenReturn(List.of("Cardiologist"));
+        when(hospitalService.getAllCities()).thenReturn(List.of("Kyiv", "Lviv"));
+        when(doctorTypeService.getAllDoctorTypeNames()).thenReturn(List.of("Cardiologist", "Dentist"));
 
-        mockMvc.perform(post("/ui/public/search")
-                        .with(csrf())
-                        .param("searchType", "clinic")
-                        .param("query", "test")
-                        .param("sort", "rating-asc"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("home"))
-                .andExpect(model().attribute("searchPerformed", true));
+        String result = controller.home(model);
+
+        assertEquals("home", result);
+        verify(model).addAttribute("userRole", "PATIENT");
     }
 
     @Test
-    void testProcessSearch_Doctor() throws Exception {
-        when(doctorSearchService.searchDoctors(any(), anyDouble(), anyDouble()))
+    void testHome_AuthenticatedDoctor_Success() throws Exception {
+        setSecurityContext("DOCTOR");
+        when(hospitalSearchService.searchHospitals(any(HospitalSearchDto.class), anyDouble(), anyDouble()))
                 .thenReturn(Collections.emptyList());
-        when(hospitalService.getAllCities()).thenReturn(List.of("Kyiv"));
-        when(doctorTypeService.getAllDoctorTypeNames()).thenReturn(List.of("Cardiologist"));
+        when(hospitalService.getAllCities()).thenReturn(Collections.emptyList());
+        when(doctorTypeService.getAllDoctorTypeNames()).thenReturn(Collections.emptyList());
 
-        mockMvc.perform(post("/ui/public/search")
-                        .with(csrf())
-                        .param("searchType", "doctor")
-                        .param("query", "Dr. Smith")
-                        .param("sort", "distance-dsc"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("home"));
+        String result = controller.home(model);
+
+        assertEquals("home", result);
+        verify(model).addAttribute("userRole", "DOCTOR");
+    }
+
+    // Search tests - clinic search
+    @Test
+    void testProcessSearch_ClinicSearch_Success() throws Exception {
+        SearchFormDto formDto = new SearchFormDto();
+        formDto.setSearchType("clinic");
+        formDto.setQuery("test");
+        formDto.setSort("rating-asc");
+        formDto.setUserLat(50.45);
+        formDto.setUserLon(30.52);
+
+        Hospital hospital = new Hospital();
+        hospital.setId(1L);
+        hospital.setName("Test Hospital");
+
+        when(hospitalSearchService.searchHospitals(any(HospitalSearchDto.class), anyDouble(), anyDouble()))
+                .thenReturn(List.of(hospital));
+        when(hospitalService.getAllCities()).thenReturn(Collections.emptyList());
+        when(doctorTypeService.getAllDoctorTypeNames()).thenReturn(Collections.emptyList());
+
+        String result = controller.processSearch(formDto, model);
+
+        assertEquals("home", result);
+        verify(model).addAttribute(eq("hospitals"), anyList());
+        verify(model).addAttribute("doctors", null);
+        verify(model).addAttribute("searchPerformed", true);
     }
 
     @Test
-    void testProcessSearch_HospitalError() throws Exception {
-        when(hospitalSearchService.searchHospitals(any(), anyDouble(), anyDouble()))
+    void testProcessSearch_ClinicSearch_Exception() throws Exception {
+        SearchFormDto formDto = new SearchFormDto();
+        formDto.setSearchType("clinic");
+        formDto.setSort("rating-asc");
+
+        when(hospitalSearchService.searchHospitals(any(HospitalSearchDto.class), anyDouble(), anyDouble()))
                 .thenThrow(new RuntimeException("Search failed"));
-        when(hospitalService.getAllCities()).thenReturn(List.of("Kyiv"));
-        when(doctorTypeService.getAllDoctorTypeNames()).thenReturn(List.of("Cardiologist"));
+        when(hospitalService.getAllCities()).thenReturn(Collections.emptyList());
+        when(doctorTypeService.getAllDoctorTypeNames()).thenReturn(Collections.emptyList());
 
-        mockMvc.perform(post("/ui/public/search")
-                        .with(csrf())
-                        .param("searchType", "clinic")
-                        .param("sort", "rating-asc"))
-                .andExpect(status().isOk())
-                .andExpect(model().attributeExists("searchError"));
+        String result = controller.processSearch(formDto, model);
+
+        assertEquals("home", result);
+        verify(model).addAttribute("hospitals", null);
+        verify(model).addAttribute(eq("searchError"), anyString());
     }
 
+    // Search tests - doctor search
     @Test
-    void testProcessSearch_DoctorError() throws Exception {
-        when(doctorSearchService.searchDoctors(any(), anyDouble(), anyDouble()))
-                .thenThrow(new RuntimeException("Search failed"));
-        when(hospitalService.getAllCities()).thenReturn(List.of("Kyiv"));
-        when(doctorTypeService.getAllDoctorTypeNames()).thenReturn(List.of("Cardiologist"));
+    void testProcessSearch_DoctorSearch_Success() throws Exception {
+        SearchFormDto formDto = new SearchFormDto();
+        formDto.setSearchType("doctor");
+        formDto.setQuery("smith");
+        formDto.setSort("name-desc");
 
-        mockMvc.perform(post("/ui/public/search")
-                        .with(csrf())
-                        .param("searchType", "doctor")
-                        .param("sort", "rating-asc"))
-                .andExpect(status().isOk())
-                .andExpect(model().attributeExists("searchError"));
-    }
-
-    @Test
-    void testProcessSearch_EmptySort() throws Exception {
-        when(doctorSearchService.searchDoctors(any(), anyDouble(), anyDouble()))
+        when(doctorSearchService.searchDoctors(any(DoctorSearchDto.class), anyDouble(), anyDouble()))
                 .thenReturn(Collections.emptyList());
-        when(hospitalService.getAllCities()).thenReturn(List.of("Kyiv"));
-        when(doctorTypeService.getAllDoctorTypeNames()).thenReturn(List.of("Cardiologist"));
+        when(hospitalService.getAllCities()).thenReturn(Collections.emptyList());
+        when(doctorTypeService.getAllDoctorTypeNames()).thenReturn(Collections.emptyList());
 
-        mockMvc.perform(post("/ui/public/search")
-                        .with(csrf())
-                        .param("searchType", "doctor")
-                        .param("sort", ""))
-                .andExpect(status().isOk());
+        String result = controller.processSearch(formDto, model);
+
+        assertEquals("home", result);
+        verify(model).addAttribute(eq("doctors"), anyList());
+        verify(model).addAttribute("hospitals", null);
+    }
+
+    @Test
+    void testProcessSearch_DoctorSearch_Exception() throws Exception {
+        SearchFormDto formDto = new SearchFormDto();
+        formDto.setSearchType("doctor");
+
+        when(doctorSearchService.searchDoctors(any(DoctorSearchDto.class), anyDouble(), anyDouble()))
+                .thenThrow(new RuntimeException("Doctor search failed"));
+        when(hospitalService.getAllCities()).thenReturn(Collections.emptyList());
+        when(doctorTypeService.getAllDoctorTypeNames()).thenReturn(Collections.emptyList());
+
+        String result = controller.processSearch(formDto, model);
+
+        assertEquals("home", result);
+        verify(model).addAttribute("doctors", null);
+        verify(model).addAttribute(eq("searchError"), anyString());
+    }
+
+    // Sort parsing edge cases
+    @Test
+    void testProcessSearch_SortWithoutDirection() throws Exception {
+        SearchFormDto formDto = new SearchFormDto();
+        formDto.setSearchType("clinic");
+        formDto.setSort("rating");
+
+        when(hospitalSearchService.searchHospitals(any(HospitalSearchDto.class), anyDouble(), anyDouble()))
+                .thenReturn(Collections.emptyList());
+        when(hospitalService.getAllCities()).thenReturn(Collections.emptyList());
+        when(doctorTypeService.getAllDoctorTypeNames()).thenReturn(Collections.emptyList());
+
+        String result = controller.processSearch(formDto, model);
+
+        assertEquals("home", result);
+    }
+
+    @Test
+    void testProcessSearch_NullSort() throws Exception {
+        SearchFormDto formDto = new SearchFormDto();
+        formDto.setSearchType("clinic");
+        formDto.setSort(null);
+
+        when(hospitalSearchService.searchHospitals(any(HospitalSearchDto.class), anyDouble(), anyDouble()))
+                .thenReturn(Collections.emptyList());
+        when(hospitalService.getAllCities()).thenReturn(Collections.emptyList());
+        when(doctorTypeService.getAllDoctorTypeNames()).thenReturn(Collections.emptyList());
+
+        String result = controller.processSearch(formDto, model);
+
+        assertEquals("home", result);
     }
 
     @Test
     void testProcessSearch_NullQuery() throws Exception {
-        when(doctorSearchService.searchDoctors(any(), anyDouble(), anyDouble()))
+        SearchFormDto formDto = new SearchFormDto();
+        formDto.setSearchType("clinic");
+        formDto.setSort("rating-asc");
+        formDto.setQuery(null);
+
+        when(hospitalSearchService.searchHospitals(any(HospitalSearchDto.class), anyDouble(), anyDouble()))
+                .thenReturn(Collections.emptyList());
+        when(hospitalService.getAllCities()).thenReturn(Collections.emptyList());
+        when(doctorTypeService.getAllDoctorTypeNames()).thenReturn(Collections.emptyList());
+
+        String result = controller.processSearch(formDto, model);
+
+        assertEquals("home", result);
+    }
+
+    @Test
+    void testProcessSearch_WithCityAndDoctorType() throws Exception {
+        SearchFormDto formDto = new SearchFormDto();
+        formDto.setSearchType("doctor");
+        formDto.setCity("Kyiv");
+        formDto.setDoctorType("Cardiologist");
+        formDto.setSort("distance-asc");
+
+        when(doctorSearchService.searchDoctors(any(DoctorSearchDto.class), anyDouble(), anyDouble()))
                 .thenReturn(Collections.emptyList());
         when(hospitalService.getAllCities()).thenReturn(List.of("Kyiv"));
         when(doctorTypeService.getAllDoctorTypeNames()).thenReturn(List.of("Cardiologist"));
 
-        mockMvc.perform(post("/ui/public/search")
-                        .with(csrf())
-                        .param("searchType", "doctor")
-                        .param("sort", "rating-asc"))
-                .andExpect(status().isOk());
+        String result = controller.processSearch(formDto, model);
+
+        assertEquals("home", result);
+        verify(model).addAttribute("searchPerformed", true);
     }
 }

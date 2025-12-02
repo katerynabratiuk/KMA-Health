@@ -3,6 +3,7 @@ package kma.health.app.kma_health.service;
 import kma.health.app.kma_health.dto.FeedbackCreateUpdateDto;
 import kma.health.app.kma_health.entity.Appointment;
 import kma.health.app.kma_health.entity.Feedback;
+import kma.health.app.kma_health.enums.AppointmentStatus;
 import kma.health.app.kma_health.exception.FeedbackNotPermitted;
 import kma.health.app.kma_health.repository.AppointmentRepository;
 import kma.health.app.kma_health.repository.FeedbackRepository;
@@ -12,6 +13,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -133,6 +135,8 @@ public class FeedbackServiceTest {
         dto.setScore((short) 5);
 
         Appointment appointment = new Appointment();
+        appointment.setStatus(AppointmentStatus.FINISHED);
+        appointment.setTime(LocalTime.now().minusHours(1)); // Past time
         when(appointmentRepository.findByReferral_Patient_IdAndDoctor_Id(patientId, doctorId))
                 .thenReturn(Collections.singletonList(appointment));
 

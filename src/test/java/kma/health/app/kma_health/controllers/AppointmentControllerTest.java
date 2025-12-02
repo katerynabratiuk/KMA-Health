@@ -67,31 +67,17 @@ class AppointmentControllerTest {
 
     // Patient Appointments Tests
     @Test
-    void testGetPatientAppointments_WithEndDate() {
-        LocalDate start = LocalDate.now();
-        LocalDate end = LocalDate.now().plusDays(7);
-        List<AppointmentShortViewDto> appointments = Collections.emptyList();
-        
-        when(appointmentService.getAppointmentsForPatient(userId, start, end)).thenReturn(appointments);
-
-        ResponseEntity<List<AppointmentShortViewDto>> response = 
-                controller.getPatientAppointments(userId, start, end);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(appointments, response.getBody());
-    }
-
-    @Test
-    void testGetPatientAppointments_WithoutEndDate() {
+    void testGetPatientAppointments_Success() {
         LocalDate start = LocalDate.now();
         List<AppointmentShortViewDto> appointments = Collections.emptyList();
         
         when(appointmentService.getAppointmentsForPatient(userId, start)).thenReturn(appointments);
 
         ResponseEntity<List<AppointmentShortViewDto>> response = 
-                controller.getPatientAppointments(userId, start, null);
+                controller.getPatientAppointments(userId, start);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(appointments, response.getBody());
     }
 
     @Test
@@ -102,7 +88,7 @@ class AppointmentControllerTest {
                 .thenThrow(new RuntimeException("Error"));
 
         ResponseEntity<List<AppointmentShortViewDto>> response = 
-                controller.getPatientAppointments(userId, start, null);
+                controller.getPatientAppointments(userId, start);
 
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
     }

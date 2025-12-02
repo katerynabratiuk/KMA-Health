@@ -4,6 +4,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.*;
 import kma.health.app.kma_health.dto.DoctorSearchDto;
+import kma.health.app.kma_health.dto.doctorDetail.DoctorDetailDto;
 import kma.health.app.kma_health.entity.Doctor;
 import kma.health.app.kma_health.entity.DoctorType;
 import kma.health.app.kma_health.entity.Feedback;
@@ -35,6 +36,12 @@ public class DoctorSearchServiceTest {
     private DoctorRepository doctorRepository;
 
     @Mock
+    private ReferralService referralService;
+
+    @Mock
+    private FeedbackService feedbackService;
+
+    @Mock
     private CriteriaBuilder criteriaBuilder;
 
     @Mock
@@ -59,7 +66,7 @@ public class DoctorSearchServiceTest {
 
     @BeforeEach
     void setUp() {
-        doctorSearchService = new DoctorSearchService(entityManager, doctorRepository);
+        doctorSearchService = new DoctorSearchService(entityManager, doctorRepository, referralService, feedbackService);
     }
 
     @Test
@@ -125,6 +132,17 @@ public class DoctorSearchServiceTest {
         doctor.setId(UUID.randomUUID());
         doctor.setStartedWorking(LocalDate.of(2020, 1, 1));
         doctor.setFeedback(null);
+        
+        DoctorType doctorType = new DoctorType();
+        doctorType.setTypeName("Cardiologist");
+        doctor.setDoctorType(doctorType);
+        
+        Hospital hospital = new Hospital();
+        hospital.setId(1L);
+        hospital.setName("Test Hospital");
+        hospital.setAddress("Test Address");
+        doctor.setHospital(hospital);
+        
         when(typedQuery.getResultList()).thenReturn(new ArrayList<>(List.of(doctor)));
 
         List<Doctor> result = doctorSearchService.searchDoctors(dto, 50.45, 30.52);
@@ -143,6 +161,17 @@ public class DoctorSearchServiceTest {
         doctor.setId(UUID.randomUUID());
         doctor.setStartedWorking(LocalDate.of(2020, 1, 1));
         doctor.setFeedback(new ArrayList<>());
+        
+        DoctorType doctorType = new DoctorType();
+        doctorType.setTypeName("Cardiologist");
+        doctor.setDoctorType(doctorType);
+        
+        Hospital hospital = new Hospital();
+        hospital.setId(1L);
+        hospital.setName("Test Hospital");
+        hospital.setAddress("Test Address");
+        doctor.setHospital(hospital);
+        
         when(typedQuery.getResultList()).thenReturn(new ArrayList<>(List.of(doctor)));
 
         List<Doctor> result = doctorSearchService.searchDoctors(dto, 50.45, 30.52);
@@ -157,16 +186,28 @@ public class DoctorSearchServiceTest {
 
         setupCriteriaMocks();
 
+        DoctorType doctorType = new DoctorType();
+        doctorType.setTypeName("Cardiologist");
+        
+        Hospital hospital = new Hospital();
+        hospital.setId(1L);
+        hospital.setName("Test Hospital");
+        hospital.setAddress("Test Address");
+
         Doctor doctor1 = new Doctor();
         doctor1.setId(UUID.randomUUID());
         doctor1.setStartedWorking(LocalDate.of(2020, 1, 1));
         doctor1.setRating(null);
         doctor1.setFeedback(null);
+        doctor1.setDoctorType(doctorType);
+        doctor1.setHospital(hospital);
 
         Doctor doctor2 = new Doctor();
         doctor2.setId(UUID.randomUUID());
         doctor2.setStartedWorking(LocalDate.of(2019, 1, 1));
         doctor2.setRating(4.5);
+        doctor2.setDoctorType(doctorType);
+        doctor2.setHospital(hospital);
 
         when(typedQuery.getResultList()).thenReturn(new ArrayList<>(List.of(doctor1, doctor2)));
 
@@ -180,10 +221,21 @@ public class DoctorSearchServiceTest {
         UUID doctorId = UUID.randomUUID();
         Doctor doctor = new Doctor();
         doctor.setId(doctorId);
+        doctor.setStartedWorking(LocalDate.of(2020, 1, 1));
+
+        DoctorType doctorType = new DoctorType();
+        doctorType.setTypeName("Cardiologist");
+        doctor.setDoctorType(doctorType);
+
+        Hospital hospital = new Hospital();
+        hospital.setId(1L);
+        hospital.setName("Test Hospital");
+        hospital.setAddress("Test Address");
+        doctor.setHospital(hospital);
 
         when(doctorRepository.findById(doctorId)).thenReturn(Optional.of(doctor));
 
-        Doctor result = doctorSearchService.getDoctorById(doctorId);
+        DoctorDetailDto result = doctorSearchService.getDoctorById(doctorId);
 
         assertNotNull(result);
         assertEquals(doctorId, result.getId());
@@ -194,9 +246,7 @@ public class DoctorSearchServiceTest {
         UUID doctorId = UUID.randomUUID();
         when(doctorRepository.findById(doctorId)).thenReturn(Optional.empty());
 
-        Doctor result = doctorSearchService.getDoctorById(doctorId);
-
-        assertNull(result);
+        assertThrows(NullPointerException.class, () -> doctorSearchService.getDoctorById(doctorId));
     }
 
     @Test
@@ -235,11 +285,18 @@ public class DoctorSearchServiceTest {
         doctor.setFullName("Dr. Smith");
         doctor.setStartedWorking(LocalDate.of(2015, 1, 1));
 
+        DoctorType doctorType = new DoctorType();
+        doctorType.setTypeName("Cardiologist");
+        doctor.setDoctorType(doctorType);
+
         Feedback feedback = new Feedback();
         feedback.setScore((short) 5);
         doctor.setFeedback(List.of(feedback));
 
         Hospital hospital = new Hospital();
+        hospital.setId(1L);
+        hospital.setName("Test Hospital");
+        hospital.setAddress("Test Address");
         hospital.setLatitude(50.45);
         hospital.setLongitude(30.52);
         doctor.setHospital(hospital);
@@ -253,7 +310,14 @@ public class DoctorSearchServiceTest {
         doctor.setStartedWorking(LocalDate.of(2015, 1, 1));
         doctor.setFeedback(new ArrayList<>());
 
+        DoctorType doctorType = new DoctorType();
+        doctorType.setTypeName("Cardiologist");
+        doctor.setDoctorType(doctorType);
+
         Hospital hospital = new Hospital();
+        hospital.setId(1L);
+        hospital.setName("Test Hospital");
+        hospital.setAddress("Test Address");
         hospital.setLatitude(lat);
         hospital.setLongitude(lon);
         doctor.setHospital(hospital);

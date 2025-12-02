@@ -38,7 +38,7 @@ public class ReferralDtoTest {
         assertEquals(validUntil, dto.getValidUntil());
         assertEquals(doctorId, dto.getDoctorId());
         assertEquals("Dr. Smith", dto.getDoctorFullName());
-        assertEquals(doctorType, dto.getDoctorType());
+        assertEquals(doctorType.getTypeName(), dto.getDoctorType());
         assertNull(dto.getExamination());
     }
 
@@ -85,14 +85,14 @@ public class ReferralDtoTest {
         dto.setValidUntil(validUntil);
         dto.setDoctorId(doctorId);
         dto.setDoctorFullName("Dr. Test");
-        dto.setDoctorType(doctorType);
+        dto.setDoctorType(doctorType.getTypeName());
         dto.setExamination(examination);
 
         assertEquals(id, dto.getId());
         assertEquals(validUntil, dto.getValidUntil());
         assertEquals(doctorId, dto.getDoctorId());
         assertEquals("Dr. Test", dto.getDoctorFullName());
-        assertEquals(doctorType, dto.getDoctorType());
+        assertEquals(doctorType.getTypeName(), dto.getDoctorType());
         assertEquals(examination, dto.getExamination());
     }
 

@@ -1,6 +1,6 @@
 package kma.health.app.kma_health.controllers;
 
-import kma.health.app.kma_health.entity.Doctor;
+import kma.health.app.kma_health.dto.doctorDetail.DoctorDetailDto;
 import kma.health.app.kma_health.entity.Patient;
 import kma.health.app.kma_health.security.JwtUtils;
 import kma.health.app.kma_health.service.AuthService;
@@ -52,7 +52,7 @@ class ReferralControllerTest {
         UUID doctorId = UUID.randomUUID();
         UUID patientId = UUID.randomUUID();
 
-        Doctor doctor = new Doctor();
+        DoctorDetailDto doctor = new DoctorDetailDto();
         doctor.setId(doctorId);
 
         Patient patient = new Patient();
@@ -76,7 +76,7 @@ class ReferralControllerTest {
         UUID doctorId = UUID.randomUUID();
         UUID patientId = UUID.randomUUID();
 
-        Doctor doctor = new Doctor();
+        DoctorDetailDto doctor = new DoctorDetailDto();
         doctor.setId(doctorId);
 
         Patient patient = new Patient();

@@ -33,11 +33,10 @@ class HospitalFeedbackControllerTest {
 
     @Test
     @WithAnonymousUser
-    void testGetHospitalFeedback_Anonymous() throws Exception {
-        when(feedbackService.getHospitalFeedbacks(1L)).thenReturn(Collections.emptyList());
-
+    void testGetHospitalFeedback_AnonymousDenied() throws Exception {
+        // Anonymous users cannot access hospital feedback
         mockMvc.perform(get("/api/hospitals/1/feedback"))
-                .andExpect(status().isOk());
+                .andExpect(status().isForbidden());
     }
 
     @Test
