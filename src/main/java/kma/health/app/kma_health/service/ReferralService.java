@@ -31,7 +31,7 @@ public class ReferralService {
             throw new MissingOpenAppointmentException("Cannot create a referral with no open appointments");
 
         Referral referral = createReferralBoilerplate(doctor, patient);
-        if (doctorTypeName.equals("Family doctor"))
+        if (doctorTypeName.equals(DoctorTypeService.familyDoctorTypeName))
             throw new InvalidFamilyDoctorReferralMethodException("Wrong method used for referral creation");
 
         referral.setDoctorType(doctorTypeRepository.findByTypeName(doctorTypeName)
@@ -56,7 +56,7 @@ public class ReferralService {
 
     public Referral createReferralForFamilyDoctor(Patient patient, LocalDate appointmentDate) {
         Referral referral = new Referral();
-        referral.setDoctorType(doctorTypeRepository.findByTypeName("Family doctor")
+        referral.setDoctorType(doctorTypeRepository.findByTypeName(DoctorTypeService.familyDoctorTypeName)
                 .orElseThrow(() -> new RuntimeException("Doctor type Family doctor not found")));
         referral.setPatient(patient);
         referral.setValidUntil(appointmentDate.plusDays(1));

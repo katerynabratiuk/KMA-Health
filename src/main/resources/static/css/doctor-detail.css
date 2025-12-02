@@ -139,7 +139,7 @@ body {
 
 .doctor-specialty-badge {
     display: inline-block;
-    background: linear-gradient(135deg, var(--kma-health-blue) 0%, var(--kma-health-dark-blue) 100%);
+    background: var(--kma-health-blue);
     color: white;
     padding: 8px 20px;
     border-radius: 20px;
@@ -248,7 +248,7 @@ body {
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, var(--kma-health-blue) 0%, var(--kma-health-dark-blue) 100%);
+    background: var(--kma-health-blue);
     color: white;
     box-shadow: 0 4px 12px rgba(21, 71, 157, 0.3);
 }
