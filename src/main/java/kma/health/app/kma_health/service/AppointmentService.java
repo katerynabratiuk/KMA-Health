@@ -170,7 +170,7 @@ public class AppointmentService {
     }
 
     private boolean isFamilyDoctor(Doctor doctor) {
-        return "Family doctor".equals(doctor.getDoctorType().getTypeName());
+        return DoctorTypeService.familyDoctorTypeName.equals(doctor.getDoctorType().getTypeName());
     }
 
     @Transactional
@@ -319,7 +319,7 @@ public class AppointmentService {
 
     private Referral buildFamilyDoctorReferral(AppointmentCreateUpdateDto dto) {
         Referral referral = new Referral();
-        referral.setDoctorType(doctorTypeRepository.findByTypeName("Family doctor")
+        referral.setDoctorType(doctorTypeRepository.findByTypeName(DoctorTypeService.familyDoctorTypeName)
                 .orElseThrow(() -> new EntityNotFoundException("Doctor type not found")));
 
         referral.setPatient(patientRepository.findById(dto.getPatientId())

@@ -30,7 +30,7 @@ body {
     color: inherit;
 }
 
-#login-register-button {
+#login-register-button, #logout-button {
     background-color: white;
     color: var(--kma-health-blue);
     border: var(--kma-health-blue) 1px solid;
@@ -41,7 +41,7 @@ body {
     cursor: pointer;
 }
 
-#login-register-button:hover {
+#login-register-button:hover, #logout-button:hover {
     background-color: var(--kma-health-blue);
     color: white;
     border: white 1px solid;

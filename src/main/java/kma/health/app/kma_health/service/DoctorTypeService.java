@@ -5,6 +5,8 @@ import kma.health.app.kma_health.dto.DoctorTypeDto;
 import kma.health.app.kma_health.entity.DoctorType;
 import kma.health.app.kma_health.repository.DoctorTypeRepository;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.cache.annotation.Cacheable;
@@ -13,10 +15,13 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class DoctorTypeService {
 
     private final DoctorTypeRepository doctorTypeRepository;
+
+    @Value("${family_doctor.type_name}")
+    public static String familyDoctorTypeName;
 
     public void createDoctorType(DoctorTypeDto dto) {
         Optional<DoctorType> doctorType = doctorTypeRepository.findByTypeName(dto.getTypeName());
