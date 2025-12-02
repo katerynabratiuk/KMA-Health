@@ -17,8 +17,6 @@ public class HospitalGeocodingServiceTest {
 
     @Test
     void testGetCoordinatesByAddress_InvalidAddress() {
-        // This will fail to get coordinates from the API
-        // and should throw CoordinatesNotFoundException
         assertThrows(CoordinatesNotFoundException.class, () -> {
             geocodingService.getCoordinatesByAddress("nonexistent_address_xyz_123456789");
         });
@@ -26,7 +24,6 @@ public class HospitalGeocodingServiceTest {
 
     @Test
     void testGetCoordinatesByAddress_EmptyAddress() {
-        // Empty address should throw CoordinatesNotFoundException
         assertThrows(CoordinatesNotFoundException.class, () -> {
             geocodingService.getCoordinatesByAddress("");
         });
@@ -34,7 +31,6 @@ public class HospitalGeocodingServiceTest {
 
     @Test
     void testGetCoordinatesByAddress_SpecialCharacters() {
-        // Address with special characters that need URL encoding
         assertThrows(CoordinatesNotFoundException.class, () -> {
             geocodingService.getCoordinatesByAddress("!@#$%^&*()+={}[]|\\:\";<>?,./");
         });
@@ -42,14 +38,11 @@ public class HospitalGeocodingServiceTest {
 
     @Test
     void testGetCoordinatesByAddress_UnicodeAddress() {
-        // Ukrainian address - might return results or throw exception based on API availability
         try {
             HospitalGeocodingService.Coordinates result = 
                 geocodingService.getCoordinatesByAddress("вулиця_неіснуюча_xyz12345");
-            // If API returns a result, verify it's valid
             assertNotNull(result);
         } catch (CoordinatesNotFoundException e) {
-            // Expected if address not found
             assertTrue(e.getMessage().contains("Couldn't get coordinates") || 
                        e.getMessage().contains("Error while fetching"));
         }
@@ -57,7 +50,6 @@ public class HospitalGeocodingServiceTest {
 
     @Test
     void testGetCoordinatesByAddress_VeryLongAddress() {
-        // Very long address string
         StringBuilder longAddress = new StringBuilder();
         for (int i = 0; i < 100; i++) {
             longAddress.append("nonexistent_street_");
@@ -70,7 +62,6 @@ public class HospitalGeocodingServiceTest {
 
     @Test
     void testGetCoordinatesByAddress_NullHandling() {
-        // Null address should be handled gracefully
         assertThrows(CoordinatesNotFoundException.class, () -> {
             geocodingService.getCoordinatesByAddress(null);
         });

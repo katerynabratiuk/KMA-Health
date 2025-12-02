@@ -138,7 +138,7 @@ public class FeedbackServiceTest {
 
         Appointment appointment = new Appointment();
         appointment.setStatus(AppointmentStatus.FINISHED);
-        appointment.setTime(LocalTime.now().minusHours(1)); // Past time
+        appointment.setTime(LocalTime.now().minusHours(1));
         when(appointmentRepository.findByReferral_Patient_IdAndDoctor_Id(patientId, doctorId))
                 .thenReturn(Collections.singletonList(appointment));
 
@@ -280,7 +280,7 @@ public class FeedbackServiceTest {
 
         Appointment appointment = new Appointment();
         appointment.setStatus(AppointmentStatus.FINISHED);
-        appointment.setTime(LocalTime.of(8, 0)); // Past time
+        appointment.setTime(LocalTime.of(8, 0));
 
         when(appointmentRepository.findByReferral_Patient_IdAndDoctor_Id(patientId, doctorId))
                 .thenReturn(Collections.singletonList(appointment));
@@ -327,14 +327,13 @@ public class FeedbackServiceTest {
 
         Appointment appointment = new Appointment();
         appointment.setStatus(AppointmentStatus.FINISHED);
-        appointment.setTime(LocalTime.of(23, 59)); // Future time today
+        appointment.setTime(LocalTime.of(23, 59));
 
         when(appointmentRepository.findByReferral_Patient_IdAndDoctor_Id(patientId, doctorId))
                 .thenReturn(Collections.singletonList(appointment));
 
         boolean result = feedbackService.patientCanRateDoctor(doctorId, patientId);
 
-        // Will depend on current time, but tests the branch
         assertNotNull(result);
     }
 
@@ -473,7 +472,6 @@ public class FeedbackServiceTest {
         dto.setDoctor_id(doctorId);
         dto.setScore((short) 5);
 
-        // When patient_id is null, should skip doctor check and go to save
         feedbackService.createFeedback(dto);
 
         verify(feedbackRepository, times(1)).save(any(Feedback.class));

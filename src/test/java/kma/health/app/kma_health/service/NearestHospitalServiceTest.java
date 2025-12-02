@@ -172,7 +172,6 @@ public class NearestHospitalServiceTest {
 
     @Test
     public void testDistanceInKm_LongDistance() {
-        // Kyiv to Lviv (approximately 540 km)
         double distance = NearestHospitalService.distanceInKm(50.45, 30.52, 49.84, 24.02);
         
         assertTrue(distance > 400);

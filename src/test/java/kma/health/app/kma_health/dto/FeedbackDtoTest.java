@@ -141,7 +141,6 @@ public class FeedbackDtoTest {
         assertEquals("Great", entity.getComment());
     }
 
-    // Additional tests for missing branches
     @Test
     void testFeedbackCreateUpdateDto_FromEntity_WithHospital() {
         Patient patient = new Patient();
@@ -154,7 +153,7 @@ public class FeedbackDtoTest {
         feedback.setScore((short) 4);
         feedback.setComment("Nice hospital");
         feedback.setPatient(patient);
-        feedback.setDoctor(null);  // No doctor
+        feedback.setDoctor(null);
         feedback.setHospital(hospital);
 
         FeedbackCreateUpdateDto dto = FeedbackCreateUpdateDto.fromEntity(feedback);
@@ -189,7 +188,7 @@ public class FeedbackDtoTest {
         FeedbackCreateUpdateDto dto = new FeedbackCreateUpdateDto();
         dto.setScore((short) 4);
         dto.setComment("Good hospital");
-        dto.setDoctor_id(null);  // No doctor
+        dto.setDoctor_id(null);
         dto.setHospital_id(1L);
         dto.setPatient_id(UUID.randomUUID());
 

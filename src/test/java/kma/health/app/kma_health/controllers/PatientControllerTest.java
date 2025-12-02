@@ -61,7 +61,6 @@ class PatientControllerTest {
         SecurityContextHolder.getContext().setAuthentication(auth);
     }
 
-    // Profile Tests
     @Test
     void testGetProfile_Success() {
         Patient patient = new Patient();
@@ -77,7 +76,6 @@ class PatientControllerTest {
         assertEquals("Test Patient", result.getFullName());
     }
 
-    // Patient Contacts Tests
     @Test
     void testGetPatientContacts_Success() {
         PatientContactsDto contacts = new PatientContactsDto();
@@ -98,7 +96,6 @@ class PatientControllerTest {
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 
-    // Patient History Tests
     @Test
     void testGetPatientHistory_AsPatient_OwnHistory() {
         setSecurityContext(patientId, "PATIENT");
@@ -149,7 +146,6 @@ class PatientControllerTest {
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
     }
 
-    // Patient Referrals Tests
     @Test
     void testGetReferrals_AsPatient_OwnReferrals() {
         setSecurityContext(patientId, "PATIENT");

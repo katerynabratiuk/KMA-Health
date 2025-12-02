@@ -18,10 +18,9 @@ public class JwtUtilsTest {
     @BeforeEach
     void setUp() {
         jwtUtils = new JwtUtils();
-        // Set required properties via reflection
         ReflectionTestUtils.setField(jwtUtils, "jwtSecret", 
             "mySecretKeyForTestingPurposesWhichIsLongEnoughForHS512Algorithm123456789");
-        ReflectionTestUtils.setField(jwtUtils, "jwtExpirationMs", 3600000L); // 1 hour
+        ReflectionTestUtils.setField(jwtUtils, "jwtExpirationMs", 3600000L);
     }
 
     @Test
@@ -113,15 +112,13 @@ public class JwtUtilsTest {
 
     @Test
     void testValidateToken_ExpiredToken() {
-        // Create JwtUtils with very short expiration
         JwtUtils shortLivedJwtUtils = new JwtUtils();
         ReflectionTestUtils.setField(shortLivedJwtUtils, "jwtSecret", 
             "mySecretKeyForTestingPurposesWhichIsLongEnoughForHS512Algorithm123456789");
-        ReflectionTestUtils.setField(shortLivedJwtUtils, "jwtExpirationMs", 1L); // 1ms
+        ReflectionTestUtils.setField(shortLivedJwtUtils, "jwtExpirationMs", 1L);
 
         String token = shortLivedJwtUtils.generateToken(UUID.randomUUID().toString(), UserRole.PATIENT);
 
-        // Wait for token to expire
         try {
             Thread.sleep(100);
         } catch (InterruptedException e) {

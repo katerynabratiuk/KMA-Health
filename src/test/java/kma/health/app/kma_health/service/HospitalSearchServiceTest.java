@@ -169,11 +169,9 @@ public class HospitalSearchServiceTest {
 
         setupCriteriaMocks();
 
-        // Hospital with null coordinates will cause exception in distance calculation
         Hospital hospital = new Hospital();
         hospital.setId(1L);
         hospital.setFeedback(new ArrayList<>());
-        // No lat/lon set - will cause NullPointerException in distance calc
         when(typedQuery.getResultList()).thenReturn(new ArrayList<>(List.of(hospital)));
 
         List<Hospital> result = hospitalSearchService.searchHospitals(dto, 50.45, 30.52);
@@ -192,7 +190,7 @@ public class HospitalSearchServiceTest {
             hospitalSearchService.searchHospitals(dto, 50.45, 30.52);
         });
 
-        Thread.interrupted(); // Clear interrupt flag
+        Thread.interrupted();
     }
 
     private void setupCriteriaMocks() {

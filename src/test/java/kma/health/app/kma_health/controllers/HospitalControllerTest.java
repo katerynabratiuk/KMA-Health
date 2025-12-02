@@ -28,7 +28,6 @@ class HospitalControllerTest {
     @InjectMocks
     private HospitalController controller;
 
-    // GET /api/hospital tests
     @Test
     void testGetHospitals_WithoutParams_Success() {
         HospitalDto hospitalDto = new HospitalDto();
@@ -101,7 +100,6 @@ class HospitalControllerTest {
         verify(hospitalService).searchHospitals(isNull(), eq(1), eq(0));
     }
 
-    // GET /api/hospital/{hospitalId} tests
     @Test
     void testGetHospital_Success() {
         HospitalDto hospitalDto = new HospitalDto();
@@ -131,7 +129,6 @@ class HospitalControllerTest {
         assertEquals("Doctor Hospital", result.getName());
     }
 
-    // POST /api/hospital/ tests
     @Test
     void testCreateHospital_Success() {
         HospitalDto hospitalDto = new HospitalDto();

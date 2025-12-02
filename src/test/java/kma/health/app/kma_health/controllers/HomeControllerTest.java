@@ -62,7 +62,6 @@ class HomeControllerTest {
         SecurityContextHolder.getContext().setAuthentication(auth);
     }
 
-    // Home page tests
     @Test
     void testHome_AnonymousUser_Success() throws Exception {
         when(hospitalSearchService.searchHospitals(any(HospitalSearchDto.class), anyDouble(), anyDouble()))
@@ -105,7 +104,6 @@ class HomeControllerTest {
         verify(model).addAttribute("userRole", "DOCTOR");
     }
 
-    // Search tests - clinic search
     @Test
     void testProcessSearch_ClinicSearch_Success() throws Exception {
         SearchFormDto formDto = new SearchFormDto();
@@ -150,7 +148,6 @@ class HomeControllerTest {
         verify(model).addAttribute(eq("searchError"), anyString());
     }
 
-    // Search tests - doctor search
     @Test
     void testProcessSearch_DoctorSearch_Success() throws Exception {
         SearchFormDto formDto = new SearchFormDto();
@@ -187,7 +184,6 @@ class HomeControllerTest {
         verify(model).addAttribute(eq("searchError"), anyString());
     }
 
-    // Sort parsing edge cases
     @Test
     void testProcessSearch_SortWithoutDirection() throws Exception {
         SearchFormDto formDto = new SearchFormDto();
@@ -258,7 +254,6 @@ class HomeControllerTest {
 
     @Test
     void testHome_AuthenticatedWithNoRolePrefix() throws Exception {
-        // User authenticated but authorities don't start with ROLE_
         var auth = new UsernamePasswordAuthenticationToken(
                 "user",
                 null,

@@ -322,7 +322,6 @@ public class AppointmentDtoTest {
         assertNull(dto.getPatientPhoto());
     }
 
-    // Tests for AppointmentDto (doctorDetail)
     @Test
     void testAppointmentDto_WithDoctor() {
         Doctor doctor = new Doctor();

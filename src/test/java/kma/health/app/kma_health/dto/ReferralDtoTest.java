@@ -112,7 +112,7 @@ public class ReferralDtoTest {
         Referral referral = new Referral();
         referral.setId(referralId);
         referral.setValidUntil(LocalDate.now().plusDays(30));
-        referral.setDoctor(null);  // Null doctor
+        referral.setDoctor(null);
         referral.setDoctorType(doctorType);
 
         ReferralDto dto = ReferralDto.fromEntity(referral);
@@ -136,7 +136,7 @@ public class ReferralDtoTest {
         referral.setId(referralId);
         referral.setValidUntil(LocalDate.now().plusDays(30));
         referral.setDoctor(doctor);
-        referral.setDoctorType(null);  // Null doctor type
+        referral.setDoctorType(null);
 
         ReferralDto dto = ReferralDto.fromEntity(referral);
 

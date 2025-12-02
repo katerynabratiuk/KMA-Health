@@ -27,8 +27,6 @@ public class DoctorDtoTest {
         DoctorDto dto = new DoctorDto(doctor);
 
         assertNotNull(dto);
-        // DoctorDto doesn't have getters, so we can't verify fields directly
-        // The test verifies that the constructor works without exceptions
     }
 
     @Test

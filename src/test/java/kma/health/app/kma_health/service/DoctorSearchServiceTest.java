@@ -117,7 +117,6 @@ public class DoctorSearchServiceTest {
         Doctor doctor = createMockDoctor();
         when(typedQuery.getResultList()).thenReturn(new ArrayList<>(List.of(doctor)));
 
-        // Should fall back to rating sort when coordinates are 0,0
         List<Doctor> result = doctorSearchService.searchDoctors(dto, 0, 0);
 
         assertNotNull(result);
@@ -262,7 +261,6 @@ public class DoctorSearchServiceTest {
             doctorSearchService.searchDoctors(dto, 50.45, 30.52);
         });
 
-        // Clear interrupt flag
         Thread.interrupted();
     }
 
@@ -273,7 +271,6 @@ public class DoctorSearchServiceTest {
         when(criteriaQuery.where(any(Predicate[].class))).thenReturn(criteriaQuery);
         when(entityManager.createQuery(criteriaQuery)).thenReturn(typedQuery);
 
-        // Mock path operations
         when(root.get(anyString())).thenReturn(path);
         when(path.get(anyString())).thenReturn(path);
         when(criteriaBuilder.lower(any())).thenReturn(lowerExpression);
@@ -438,7 +435,6 @@ public class DoctorSearchServiceTest {
         hospital.setAddress("Test Address");
         doctor.setHospital(hospital);
 
-        // Referral directly to this doctor
         ReferralDto referral = new ReferralDto();
         referral.setDoctorId(doctorId);
 
@@ -472,7 +468,6 @@ public class DoctorSearchServiceTest {
         hospital.setAddress("Test Address");
         doctor.setHospital(hospital);
 
-        // Referral to doctor type (not specific doctor)
         ReferralDto referral = new ReferralDto();
         referral.setDoctorType("Cardiologist");
 
@@ -506,7 +501,6 @@ public class DoctorSearchServiceTest {
         hospital.setAddress("Test Address");
         doctor.setHospital(hospital);
 
-        // Referral to different doctor type
         ReferralDto referral = new ReferralDto();
         referral.setDoctorType("Neurologist");
 
@@ -640,7 +634,6 @@ public class DoctorSearchServiceTest {
         hospital.setName("Test Hospital");
         hospital.setAddress("Test Address");
 
-        // Doctor with null rating and feedback with score
         Doctor doctor1 = new Doctor();
         doctor1.setId(UUID.randomUUID());
         doctor1.setStartedWorking(LocalDate.of(2020, 1, 1));
@@ -651,7 +644,6 @@ public class DoctorSearchServiceTest {
         doctor1.setDoctorType(doctorType);
         doctor1.setHospital(hospital);
 
-        // Doctor with existing rating
         Doctor doctor2 = new Doctor();
         doctor2.setId(UUID.randomUUID());
         doctor2.setStartedWorking(LocalDate.of(2019, 1, 1));

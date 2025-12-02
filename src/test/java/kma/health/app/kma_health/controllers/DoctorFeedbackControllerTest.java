@@ -41,7 +41,6 @@ class DoctorFeedbackControllerTest {
         patientId = UUID.randomUUID();
     }
 
-    // GET /api/doctor/{doctorId}/feedback tests
     @Test
     void testGetAllFeedbacks_Success() {
         Feedback feedback = new Feedback();
@@ -69,7 +68,6 @@ class DoctorFeedbackControllerTest {
         assertTrue(result.isEmpty());
     }
 
-    // GET /api/doctor/{doctorId}/feedback/my tests
     @Test
     void testGetMyFeedback_Found_Success() {
         Feedback feedback = new Feedback();
@@ -98,7 +96,6 @@ class DoctorFeedbackControllerTest {
         assertNull(result.getBody());
     }
 
-    // POST /api/doctor/{doctorId}/feedback tests
     @Test
     void testCreateFeedback_Success() {
         FeedbackCreateUpdateDto feedbackDto = new FeedbackCreateUpdateDto();
@@ -125,7 +122,6 @@ class DoctorFeedbackControllerTest {
         assertEquals(patientId, feedbackDto.getPatient_id());
     }
 
-    // DELETE /api/doctor/{doctorId}/feedback/{feedbackId} tests
     @Test
     void testDeleteFeedback_Success() {
         doNothing().when(feedbackService).deleteFeedback(1L);

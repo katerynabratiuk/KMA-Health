@@ -20,7 +20,6 @@ class CacheConfigTest {
 
     @Test
     void testCacheNamesAreAvailable() {
-        // Just verify cache manager is working
         assertNotNull(cacheManager.getCacheNames());
     }
 }

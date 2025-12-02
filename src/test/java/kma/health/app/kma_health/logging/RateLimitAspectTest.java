@@ -63,32 +63,21 @@ public class RateLimitAspectTest {
         when(rateLimited.maxCalls()).thenReturn(2);
         when(rateLimited.timeWindowSeconds()).thenReturn(60);
 
-        // First call - set MDC and call
         MDC.put("userId", userId.toString());
         rateLimitAspect.applyRateLimit(joinPoint, rateLimited);
 
-        // Second call - set MDC again since it gets cleared after each call
         MDC.put("userId", userId.toString());
         rateLimitAspect.applyRateLimit(joinPoint, rateLimited);
 
-        // Third call should exceed limit
-        // But since the rate limit check happens AFTER proceed(), the method still executes
-        // The exception is thrown after the method completes
         MDC.put("userId", userId.toString());
 
-        // The rate limiting logic adds the call to storage after proceed() returns
-        // And checks the count before adding. So the 3rd call will throw an exception
-        // after checking that we already have 2 calls recorded.
         try {
             rateLimitAspect.applyRateLimit(joinPoint, rateLimited);
-            // If we get here, the rate limit wasn't exceeded yet (the 3rd call was recorded)
-            // Let's try a 4th call
             MDC.put("userId", userId.toString());
             assertThrows(RateLimitExceededException.class, () -> {
                 rateLimitAspect.applyRateLimit(joinPoint, rateLimited);
             });
         } catch (RateLimitExceededException e) {
-            // Expected - rate limit exceeded on 3rd call
         }
     }
 
@@ -99,18 +88,14 @@ public class RateLimitAspectTest {
 
         when(joinPoint.proceed()).thenReturn("result");
         when(rateLimited.maxCalls()).thenReturn(1);
-        when(rateLimited.timeWindowSeconds()).thenReturn(1); // 1 second window
+        when(rateLimited.timeWindowSeconds()).thenReturn(1);
 
-        // First call succeeds
         rateLimitAspect.applyRateLimit(joinPoint, rateLimited);
 
-        // Wait for time window to pass
         Thread.sleep(1100);
 
-        // Set MDC again since it gets cleared
         MDC.put("userId", userId.toString());
 
-        // Second call should also succeed after window reset
         Object result = rateLimitAspect.applyRateLimit(joinPoint, rateLimited);
         assertEquals("result", result);
     }
@@ -124,11 +109,9 @@ public class RateLimitAspectTest {
         when(rateLimited.maxCalls()).thenReturn(1);
         when(rateLimited.timeWindowSeconds()).thenReturn(60);
 
-        // First user first call
         MDC.put("userId", userId1.toString());
         rateLimitAspect.applyRateLimit(joinPoint, rateLimited);
 
-        // Second user first call - should succeed
         MDC.put("userId", userId2.toString());
         Object result = rateLimitAspect.applyRateLimit(joinPoint, rateLimited);
 

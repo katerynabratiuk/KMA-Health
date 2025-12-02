@@ -42,7 +42,6 @@ class SecurityClassesTest {
     @Test
     void testSchedulingConfig() {
         SchedulingConfig config = new SchedulingConfig();
-        // Just verify it can be instantiated
         assertNotNull(config);
     }
 

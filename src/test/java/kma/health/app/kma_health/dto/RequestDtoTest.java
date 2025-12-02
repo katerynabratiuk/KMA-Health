@@ -12,15 +12,12 @@ import static org.mockito.Mockito.mock;
 
 class RequestDtoTest {
 
-    // CreateReferralRequest tests
     @Test
     void testCreateReferralRequest_GettersSetters() {
         CreateReferralRequest request = new CreateReferralRequest();
-        // It's a simple record/dto, test what's available
         assertNotNull(request);
     }
 
-    // PatientRegisterRequest tests
     @Test
     void testPatientRegisterRequest_GettersSetters() {
         PatientRegisterRequest request = new PatientRegisterRequest();
@@ -42,7 +39,6 @@ class RequestDtoTest {
         assertEquals(UserRole.PATIENT, request.getRole());
     }
 
-    // DoctorRegisterRequest tests
     @Test
     void testDoctorRegisterRequest_GettersSetters() {
         DoctorRegisterRequest request = new DoctorRegisterRequest();
@@ -72,7 +68,6 @@ class RequestDtoTest {
         assertEquals("key123", request.getRegisterKey());
     }
 
-    // MedicalFileUploadDto tests
     @Test
     void testMedicalFileUploadDto_GettersSetters() {
         MedicalFileUploadDto dto = new MedicalFileUploadDto();
@@ -89,7 +84,6 @@ class RequestDtoTest {
         assertEquals(mockFile, dto.getFile());
     }
 
-    // HospitalSearchDto tests
     @Test
     void testHospitalSearchDto_GettersSetters() {
         HospitalSearchDto dto = new HospitalSearchDto();
@@ -103,7 +97,6 @@ class RequestDtoTest {
         assertNotNull(dto.getSortBy());
     }
 
-    // DoctorSearchDto tests
     @Test
     void testDoctorSearchDto_GettersSetters() {
         DoctorSearchDto dto = new DoctorSearchDto();
@@ -120,7 +113,6 @@ class RequestDtoTest {
         assertEquals(1L, dto.getHospitalId());
     }
 
-    // DoctorTypeDto tests
     @Test
     void testDoctorTypeDto_GettersSetters() {
         DoctorTypeDto dto = new DoctorTypeDto("Cardiologist");
@@ -131,7 +123,6 @@ class RequestDtoTest {
         assertEquals("Surgeon", dto.getTypeName());
     }
 
-    // AppointmentCreateUpdateDto tests
     @Test
     void testAppointmentCreateUpdateDto() {
         AppointmentCreateUpdateDto dto = new AppointmentCreateUpdateDto();
@@ -153,7 +144,6 @@ class RequestDtoTest {
         assertEquals(referralId, dto.getReferralId());
     }
 
-    // ExaminationDto tests
     @Test
     void testExaminationDto_AllArgsConstructor() {
         ExaminationDto dto = new ExaminationDto("Blood Test", "ml");
@@ -173,7 +163,6 @@ class RequestDtoTest {
         assertEquals("image", dto.getUnit());
     }
 
-    // SearchFormDto tests
     @Test
     void testSearchFormDto_DefaultValues() {
         SearchFormDto dto = new SearchFormDto();
@@ -205,7 +194,6 @@ class RequestDtoTest {
         assertEquals(30.52, dto.getUserLon());
     }
 
-    // PatientContactsDto tests
     @Test
     void testPatientContactsDto_DefaultConstructor() {
         PatientContactsDto dto = new PatientContactsDto();
@@ -236,22 +224,18 @@ class RequestDtoTest {
         dto.setFamilyDoctorName("Dr. Smith");
         dto.setBirthDate(LocalDate.of(1985, 5, 15));
 
-        // Only setters are available (no getters defined)
         assertNotNull(dto);
     }
 
-    // CreateReferralRequest tests - it only has getters
     @Test
     void testCreateReferralRequest_Getters() {
         CreateReferralRequest request = new CreateReferralRequest();
 
-        // Verify getters exist and return null for uninitialized fields
         assertNull(request.getPatientId());
         assertNull(request.getDoctorTypeName());
         assertNull(request.getExaminationId());
     }
 
-    // DoctorRegisterRequest builder test
     @Test
     void testDoctorRegisterRequest_Builder() {
         DoctorRegisterRequest request = DoctorRegisterRequest.builder()
@@ -274,7 +258,6 @@ class RequestDtoTest {
         assertEquals(UserRole.DOCTOR, request.getRole());
     }
 
-    // MedicalFileUploadDto AllArgsConstructor
     @Test
     void testMedicalFileUploadDto_AllArgsConstructor() {
         java.util.UUID id = java.util.UUID.randomUUID();
@@ -295,7 +278,6 @@ class RequestDtoTest {
         assertEquals(mockFile, dto.getFile());
     }
 
-    // EditHospitalRequest tests
     @Test
     void testEditHospitalRequest_DefaultConstructor() {
         EditHospitalRequest request = new EditHospitalRequest();
@@ -332,7 +314,6 @@ class RequestDtoTest {
         assertEquals("Lviv", request.getCity());
     }
 
-    // HospitalSearchDto extended tests
     @Test
     void testHospitalSearchDto_DefaultValues() {
         HospitalSearchDto dto = new HospitalSearchDto();
@@ -366,7 +347,6 @@ class RequestDtoTest {
         assertEquals(HospitalType.PRIVATE, dto.getHospitalType());
     }
 
-    // DoctorTypeDto extended tests
     @Test
     void testDoctorTypeDto_AllArgsConstructor() {
         DoctorTypeDto dto = new DoctorTypeDto("Surgeon");
@@ -374,7 +354,6 @@ class RequestDtoTest {
         assertEquals("Surgeon", dto.getTypeName());
     }
 
-    // DoctorSearchDto.SortBy tests
     @Test
     void testSortBy_AllArgsConstructor() {
         DoctorSearchDto.SortBy sortBy = new DoctorSearchDto.SortBy("name", "asc");

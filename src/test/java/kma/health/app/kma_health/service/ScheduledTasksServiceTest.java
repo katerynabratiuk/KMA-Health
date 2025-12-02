@@ -123,7 +123,7 @@ public class ScheduledTasksServiceTest {
     @Test
     void testGenerateAppointmentReminders_NoUpcomingAppointments() {
         Appointment appointment = new Appointment();
-        appointment.setDate(LocalDate.now().plusDays(7)); // Not today or tomorrow
+        appointment.setDate(LocalDate.now().plusDays(7));
         appointment.setStatus(AppointmentStatus.SCHEDULED);
 
         when(appointmentRepository.findByStatus(AppointmentStatus.SCHEDULED))

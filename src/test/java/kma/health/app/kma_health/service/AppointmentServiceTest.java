@@ -1112,7 +1112,6 @@ public class AppointmentServiceTest {
         when(appointmentRepository.findById(appointmentId)).thenReturn(Optional.of(appointment));
         when(appointmentRepository.save(any())).thenReturn(appointment);
 
-        // Pass empty list instead of null
         appointmentService.finishAppointment(doctorId, appointmentId, "Test diagnosis", Collections.emptyList());
 
         assertEquals(AppointmentStatus.FINISHED, appointment.getStatus());
@@ -1308,7 +1307,6 @@ public class AppointmentServiceTest {
         UUID userId = UUID.randomUUID();
         UUID referralId = UUID.randomUUID();
 
-        // Use non-family doctor type to avoid handleFamilyDoctorReferral flow
         DoctorType cardiologistType = new DoctorType();
         cardiologistType.setTypeName("Cardiologist");
 
@@ -1358,8 +1356,6 @@ public class AppointmentServiceTest {
         dto.setDate(LocalDate.now().plusDays(1));
         dto.setTime(LocalTime.of(10, 0));
 
-        // checkIfAppointmentExists is called first in processDoctorAppointment
-        // and throws before any other repository calls
         when(appointmentRepository.existsByDateAndTime(dto.getDate(), dto.getTime())).thenReturn(true);
 
         assertThrows(AppointmentTargetConflictException.class, () -> {
@@ -1448,7 +1444,6 @@ public class AppointmentServiceTest {
         UUID userId = UUID.randomUUID();
         UUID referralId = UUID.randomUUID();
 
-        // Use non-family doctor type to avoid handleFamilyDoctorReferral flow
         DoctorType cardiologistType = new DoctorType();
         cardiologistType.setTypeName("Cardiologist");
 
@@ -1489,7 +1484,6 @@ public class AppointmentServiceTest {
         UUID userId = UUID.randomUUID();
         UUID referralId = UUID.randomUUID();
 
-        // Use non-family doctor type to avoid handleFamilyDoctorReferral flow
         DoctorType cardiologistType = new DoctorType();
         cardiologistType.setTypeName("Cardiologist");
 
@@ -1530,7 +1524,6 @@ public class AppointmentServiceTest {
         UUID userId = UUID.randomUUID();
         UUID referralId = UUID.randomUUID();
 
-        // Use non-family doctor type to avoid handleFamilyDoctorReferral flow
         DoctorType cardiologistType = new DoctorType();
         cardiologistType.setTypeName("Cardiologist");
 

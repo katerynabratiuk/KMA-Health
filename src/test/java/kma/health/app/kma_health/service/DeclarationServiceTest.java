@@ -196,7 +196,6 @@ public class DeclarationServiceTest {
         UUID patientId = UUID.randomUUID();
         UUID declarationId = UUID.randomUUID();
         
-        // Birthday is later this year - should reduce calculated age by 1
         LocalDate today = LocalDate.now();
         LocalDate birthdayLaterThisYear = today.minusYears(18).plusDays(10);
         
@@ -217,7 +216,6 @@ public class DeclarationServiceTest {
 
         declarationService.removeDeclarationsForAdultPatients();
 
-        // Age is 17 (birthday hasn't occurred yet), so should NOT remove declaration
         verify(declarationRepository, never()).deleteById(any(UUID.class));
     }
 
@@ -226,7 +224,6 @@ public class DeclarationServiceTest {
         UUID patientId = UUID.randomUUID();
         UUID declarationId = UUID.randomUUID();
         
-        // Today is exactly the 18th birthday
         LocalDate today = LocalDate.now();
         LocalDate exactBirthday = today.minusYears(18);
         
@@ -248,7 +245,6 @@ public class DeclarationServiceTest {
 
         declarationService.removeDeclarationsForAdultPatients();
 
-        // Age is exactly 18 on birthday, should remove declaration for child doctor
         verify(declarationRepository, times(1)).deleteById(declarationId);
     }
 
@@ -281,7 +277,6 @@ public class DeclarationServiceTest {
 
         declarationService.removeDeclarationsForAdultPatients();
 
-        // Only adult patient's declaration should be removed
         verify(declarationRepository, times(1)).deleteById(declarationId1);
     }
 
@@ -305,7 +300,6 @@ public class DeclarationServiceTest {
 
         declarationService.removeDeclarationsForAdultPatients();
 
-        // Type is not "child", so should not remove
         verify(declarationRepository, never()).deleteById(any(UUID.class));
     }
 }
