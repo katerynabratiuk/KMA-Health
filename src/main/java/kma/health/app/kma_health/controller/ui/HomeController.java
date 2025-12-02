@@ -71,6 +71,20 @@ public class HomeController {
 
     @PostMapping("/search")
     public String processSearch(@ModelAttribute SearchFormDto formDto, Model model) {
+        // Detect if user is authenticated
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userRole = null;
+        if (authentication != null && authentication.isAuthenticated()
+                && !"anonymousUser".equals(authentication.getPrincipal())) {
+            userRole = authentication.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .filter(a -> a.startsWith("ROLE_"))
+                    .map(a -> a.substring(5))
+                    .findFirst()
+                    .orElse(null);
+        }
+        model.addAttribute("userRole", userRole);
+
         String param = "";
         String direction = "";
         if (formDto.getSort() != null && formDto.getSort().contains("-")) {

@@ -23,10 +23,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import static kma.health.app.kma_health.service.HospitalService.EXAMINATION_TIME;
 
@@ -51,8 +48,22 @@ public class AppointmentService {
         return appointmentRepository.findByReferral_Patient_Id(patientId)
                 .stream()
                 .map(AppointmentFullViewDto::new)
+                .sorted(Comparator
+                        .comparing((AppointmentFullViewDto a) -> mapStatusOrder(a.getStatus()))
+                        .thenComparing(AppointmentFullViewDto::getDate)
+                )
                 .toList();
     }
+
+    private int mapStatusOrder(AppointmentStatus status) {
+        return switch (status) {
+            case SCHEDULED -> 0;
+            case OPEN -> 1;
+            case MISSED -> 2;
+            case FINISHED -> 3;
+        };
+    }
+
 
     public List<AppointmentShortViewDto> getAppointmentsForPatient(UUID patientId, LocalDate start, LocalDate end) {
         return appointmentRepository.findByReferral_Patient_idAndDateBetween(patientId, start, end)
