@@ -26,6 +26,7 @@ public class ProfileDto {
     private String hospitalName;
     private String patientType;
     private String familyDoctorName;
+    private UUID familyDoctorId;
 
     private List<AppointmentShortViewDto> plannedAppointments;
 

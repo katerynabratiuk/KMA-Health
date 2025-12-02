@@ -155,8 +155,8 @@
             <!-- Patient-specific navigation -->
             <th:block th:if="${userRole == 'PATIENT'}">
                 <a th:href="@{/ui/appointments}" class="nav-link">Мої записи</a>
-                <a th:href="@{/ui/profile/medical-history}" class="nav-link">Медична історія</a>
-                <a th:href="@{/ui/p}" class="nav-link">Запис до сім. лікаря</a>
+                <a th:href="@{/ui/history/{patientId}(patientId=${#authentication.principal})}" class="nav-link">Медична історія</a>
+                <a href="#" id="familyDoctorLink" class="nav-link">Запис до сім. лікаря</a>
             </th:block>
             
             <!-- Doctor-specific navigation -->
@@ -170,6 +170,89 @@
             <a th:href="@{/ui/public/logout}" class="nav-link logout">Вийти</a>
         </nav>
     </div>
+    
+    <script th:if="${userRole == 'PATIENT'}">
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Family doctor script loaded');
+            const familyDoctorLink = document.getElementById('familyDoctorLink');
+            console.log('Family doctor link:', familyDoctorLink);
+            
+            if (familyDoctorLink) {
+                familyDoctorLink.addEventListener('click', async function(e) {
+                    e.preventDefault();
+                    console.log('Family doctor link clicked');
+                    
+                    try {
+                        const response = await fetch('/api/patient/contacts', {
+                            credentials: 'include'
+                        });
+                        
+                        console.log('API response status:', response.status);
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            console.log('Patient data:', data);
+                            
+                            if (data.familyDoctorName && data.familyDoctorId) {
+                                console.log('Redirecting to doctor page');
+                                window.location.href = `/ui/doctors/${data.familyDoctorId}`;
+                            } else {
+                                console.log('No family doctor, showing modal');
+                                showNoFamilyDoctorModal();
+                            }
+                        } else {
+                            console.log('API error, redirecting to profile');
+                            showNoFamilyDoctorModal();
+                        }
+                    } catch (error) {
+                        console.error('Error checking family doctor:', error);
+                        showNoFamilyDoctorModal();
+                    }
+                });
+            }
+            
+            function showNoFamilyDoctorModal() {
+                console.log('showNoFamilyDoctorModal called');
+                
+                // Create modal overlay
+                const overlay = document.createElement('div');
+                overlay.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; z-index: 10000;';
+                
+                // Create modal content
+                const modal = document.createElement('div');
+                modal.style.cssText = 'background: white; padding: 24px; border-radius: 12px; max-width: 400px; text-align: center; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);';
+                modal.innerHTML = `
+                    <div style="font-size: 18px; font-weight: 600; margin-bottom: 12px; color: #333;">У вас немає сімейного лікаря</div>
+                    <div style="font-size: 14px; color: #666; margin-bottom: 20px;">Для запису до сімейного лікаря спочатку потрібно оформити декларацію</div>
+                    <button id="closeNoFamilyDoctorModal" style="background: #15479D; color: white; border: none; padding: 10px 24px; border-radius: 8px; font-size: 14px; cursor: pointer; font-weight: 500;">
+                        Зрозуміло
+                    </button>
+                `;
+                
+                overlay.appendChild(modal);
+                document.body.appendChild(overlay);
+                
+                console.log('Modal appended to body');
+                
+                // Close modal on button click
+                const closeBtn = document.getElementById('closeNoFamilyDoctorModal');
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', function() {
+                        console.log('Close button clicked');
+                        document.body.removeChild(overlay);
+                    });
+                }
+                
+                // Close modal on overlay click
+                overlay.addEventListener('click', function(e) {
+                    if (e.target === overlay) {
+                        console.log('Overlay clicked');
+                        document.body.removeChild(overlay);
+                    }
+                });
+            }
+        });
+    </script>
 </header>
 
 <!-- Header for profile page (just logo) -->
@@ -441,12 +524,6 @@
     </style>
     
     <div class="footer-container">
-        <div class="footer-cta" th:if="${userRole == 'PATIENT'}">
-            <h3>Потрібна консультація сімейного лікаря?</h3>
-            <p>Запишіться на приймання до сімейного лікаря просто зараз</p>
-            <a th:href="@{/ui/public/}" class="footer-button">Записатися до сімейного лікаря</a>
-        </div>
-        
         <div class="footer-links">
             <a th:href="@{/ui/public/}" class="footer-link">Головна</a>
             <a th:href="@{/ui/profile}" class="footer-link">Профіль</a>
