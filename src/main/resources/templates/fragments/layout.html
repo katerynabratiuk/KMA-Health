@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(title, styles)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title} ?: 'KMA Health'">KMA Health</title>
+    <link rel="icon" type="image/x-icon" th:href="@{/images/icon/favicon.ico}">
+    <!-- Common styles can be added here -->
+    <!-- Additional styles passed as parameter -->
+    <th:block th:replace="${styles}"/>
+</head>
+
+<!-- Header for public pages (not logged in) -->
+<header th:fragment="header-public">
+    <div id="home-header">
+        <a th:href="@{/ui/public/}" id="home-title" class="button-link">KMA Health</a>
+        <a th:href="@{/ui/public/login}" id="login-register-button" class="button">Login / Register</a>
+    </div>
+</header>
+
+<!-- Unified Header for authenticated users (Patient/Doctor) -->
+<header th:fragment="header-auth(userRole)" class="app-header">
+    <style>
+        :root {
+            --kma-health-blue: #15479D;
+            --kma-health-dark-blue: #062159;
+            --kma-health-light-blue: #e8ecf4;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: var(--kma-health-light-blue);
+        }
+        
+        .app-header {
+            background: var(--kma-health-blue);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            padding: 0;
+        }
+        
+        .header-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .app-header .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            text-decoration: none;
+            transition: opacity 0.3s ease;
+        }
+        
+        .app-header .logo:hover {
+            opacity: 0.9;
+        }
+        
+        .nav-menu {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .nav-link {
+            text-decoration: none;
+            color: white;
+            font-weight: 500;
+            font-size: 15px;
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .nav-link:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        
+        .nav-link.logout {
+            background: white;
+            color: var(--kma-health-blue);
+            border: 1px solid white;
+        }
+        
+        .nav-link.logout:hover {
+            background: var(--kma-health-dark-blue);
+            color: white;
+            border-color: white;
+        }
+        
+        @media (max-width: 968px) {
+            .header-container {
+                padding: 10px 15px;
+            }
+            
+            .nav-menu {
+                gap: 8px;
+            }
+            
+            .nav-link {
+                padding: 8px 12px;
+                font-size: 14px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header-container {
+                flex-direction: column;
+                gap: 10px;
+                padding: 10px;
+            }
+            
+            .nav-menu {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 8px;
+            }
+            
+            .nav-link {
+                padding: 8px 12px;
+                font-size: 14px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .app-header .logo {
+                font-size: 20px;
+            }
+            
+            .nav-link {
+                padding: 6px 10px;
+                font-size: 13px;
+            }
+        }
+    </style>
+    
+    <div class="header-container">
+        <a th:href="@{/ui/public/}" class="logo">KMA Health</a>
+        
+        <nav class="nav-menu">
+            
+            <!-- Patient-specific navigation -->
+            <th:block th:if="${userRole == 'PATIENT'}">
+                <a th:href="@{/ui/appointments}" class="nav-link">Мої записи</a>
+                <a th:href="@{/ui/profile/medical-history}" class="nav-link">Медична історія</a>
+                <a th:href="@{/ui/p}" class="nav-link">Запис до сім. лікаря</a>
+            </th:block>
+            
+            <!-- Doctor-specific navigation -->
+            <th:block th:if="${userRole == 'DOCTOR'}">
+                <a th:href="@{/ui/profile/calendar}" class="nav-link">Календар</a>
+                <a th:href="@{/ui/profile/appointments}" class="nav-link">Записи</a>
+            </th:block>
+            
+            <!-- Common for all authenticated users -->
+            <a th:href="@{/ui/profile}" class="nav-link">Профіль</a>
+            <a th:href="@{/ui/public/logout}" class="nav-link logout">Вийти</a>
+        </nav>
+    </div>
+</header>
+
+<!-- Header for profile page (just logo) -->
+<header th:fragment="header-profile">
+    <div id="home-header">
+        <a th:href="@{/ui/public/}" id="home-title" class="button-link">KMA Health</a>
+    </div>
+</header>
+
+<!-- Logo header for login/register pages -->
+<div th:fragment="logo-header" class="logo-header">KMA Health</div>
+
+<style th:fragment="header-styles">
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        background: #f5f7fa;
+    }
+    
+    .app-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        padding: 0;
+    }
+    
+    .header-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 1rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .app-header .logo {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #ffffff;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        letter-spacing: -0.5px;
+        display: flex;
+        align-items: center;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .app-header .logo:hover {
+        transform: translateY(-2px);
+        text-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    
+    .nav-menu {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+    
+    .nav-link {
+        text-decoration: none;
+        color: #ffffff;
+        font-weight: 500;
+        font-size: 0.95rem;
+        padding: 0.65rem 1.25rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        background: rgba(255,255,255,0.1);
+        backdrop-filter: blur(10px);
+    }
+    
+    .nav-link::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: rgba(255,255,255,0.2);
+        transition: left 0.3s ease;
+        z-index: -1;
+    }
+    
+    .nav-link:hover::before {
+        left: 0;
+    }
+    
+    .nav-link:hover {
+        background: rgba(255,255,255,0.25);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    
+    .nav-link:active {
+        transform: translateY(0);
+    }
+    
+    .nav-link.logout {
+        background: rgba(231, 76, 60, 0.9);
+        color: #ffffff;
+        border: 2px solid rgba(255,255,255,0.3);
+    }
+    
+    .nav-link.logout::before {
+        background: rgba(192, 57, 43, 0.3);
+    }
+    
+    .nav-link.logout:hover {
+        background: rgba(192, 57, 43, 0.95);
+        border-color: rgba(255,255,255,0.5);
+        box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
+    }
+    
+    @media (max-width: 968px) {
+        .header-container {
+            padding: 1rem 1.5rem;
+        }
+        
+        .nav-menu {
+            gap: 0.4rem;
+        }
+        
+        .nav-link {
+            padding: 0.55rem 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .app-header .logo {
+            font-size: 1.5rem;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .header-container {
+            flex-direction: column;
+            gap: 1rem;
+            padding: 1rem;
+        }
+        
+        .nav-menu {
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .nav-link {
+            padding: 0.5rem 0.85rem;
+            font-size: 0.85rem;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .app-header .logo {
+            font-size: 1.35rem;
+        }
+        
+        .nav-link {
+            padding: 0.45rem 0.75rem;
+            font-size: 0.8rem;
+        }
+    }
+</style>
+
+<!-- Footer for authenticated pages -->
+<footer th:fragment="footer-auth(userRole)" class="app-footer">
+    <style>
+        .app-footer {
+            background: var(--kma-health-blue);
+            color: white;
+            padding: 30px 20px;
+            margin-top: 50px;
+        }
+        
+        .footer-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .footer-cta {
+            text-align: center;
+        }
+        
+        .footer-cta h3 {
+            font-size: 20px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .footer-cta p {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 15px;
+        }
+        
+        .footer-button {
+            display: inline-block;
+            background: white;
+            color: var(--kma-health-blue);
+            padding: 10px 24px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            border: 2px solid white;
+        }
+        
+        .footer-button:hover {
+            background: var(--kma-health-dark-blue);
+            color: white;
+            border-color: white;
+        }
+        
+        .footer-links {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .footer-link {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            opacity: 0.9;
+            transition: opacity 0.3s ease;
+        }
+        
+        .footer-link:hover {
+            opacity: 1;
+            text-decoration: underline;
+        }
+        
+        .footer-bottom {
+            text-align: center;
+            font-size: 13px;
+            opacity: 0.8;
+            border-top: 1px solid rgba(255,255,255,0.2);
+            padding-top: 15px;
+            width: 100%;
+        }
+        
+        @media (max-width: 768px) {
+            .footer-cta h3 {
+                font-size: 18px;
+            }
+            
+            .footer-links {
+                gap: 20px;
+            }
+            
+            .footer-button {
+                padding: 8px 20px;
+                font-size: 14px;
+            }
+        }
+    </style>
+    
+    <div class="footer-container">
+        <div class="footer-cta" th:if="${userRole == 'PATIENT'}">
+            <h3>Потрібна консультація сімейного лікаря?</h3>
+            <p>Запишіться на приймання до сімейного лікаря просто зараз</p>
+            <a th:href="@{/ui/public/}" class="footer-button">Записатися до сімейного лікаря</a>
+        </div>
+        
+        <div class="footer-links">
+            <a th:href="@{/ui/public/}" class="footer-link">Головна</a>
+            <a th:href="@{/ui/profile}" class="footer-link">Профіль</a>
+            <a th:if="${userRole == 'PATIENT'}" th:href="@{/ui/profile/appointments}" class="footer-link">Мої записи</a>
+            <a th:if="${userRole == 'PATIENT'}" th:href="@{/ui/profile/medical-history}" class="footer-link">Медична історія</a>
+            <a th:if="${userRole == 'DOCTOR'}" th:href="@{/ui/profile/calendar}" class="footer-link">Календар</a>
+        </div>
+        
+        <div class="footer-bottom">
+            <p>&copy; 2025 KMA Health. Всі права захищені.</p>
+        </div>
+    </div>
+</footer>
+
+</html>
