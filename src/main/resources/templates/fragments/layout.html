@@ -48,7 +48,6 @@
         }
         
         .header-container {
-            max-width: 1400px;
             margin: 0 auto;
             padding: 10px 20px;
             display: flex;
@@ -154,15 +153,12 @@
             
             <!-- Patient-specific navigation -->
             <th:block th:if="${userRole == 'PATIENT'}">
-                <a th:href="@{/ui/appointments}" class="nav-link">Мої записи</a>
-                <a th:href="@{/ui/profile/medical-history}" class="nav-link">Медична історія</a>
                 <a th:href="@{/ui/p}" class="nav-link">Запис до сім. лікаря</a>
             </th:block>
             
             <!-- Doctor-specific navigation -->
             <th:block th:if="${userRole == 'DOCTOR'}">
                 <a th:href="@{/ui/profile/calendar}" class="nav-link">Календар</a>
-                <a th:href="@{/ui/profile/appointments}" class="nav-link">Записи</a>
             </th:block>
             
             <!-- Common for all authenticated users -->
@@ -441,20 +437,10 @@
     </style>
     
     <div class="footer-container">
-        <div class="footer-cta" th:if="${userRole == 'PATIENT'}">
-            <h3>Потрібна консультація сімейного лікаря?</h3>
-            <p>Запишіться на приймання до сімейного лікаря просто зараз</p>
-            <a th:href="@{/ui/public/}" class="footer-button">Записатися до сімейного лікаря</a>
-        </div>
-        
         <div class="footer-links">
             <a th:href="@{/ui/public/}" class="footer-link">Головна</a>
             <a th:href="@{/ui/profile}" class="footer-link">Профіль</a>
-            <a th:if="${userRole == 'PATIENT'}" th:href="@{/ui/profile/appointments}" class="footer-link">Мої записи</a>
-            <a th:if="${userRole == 'PATIENT'}" th:href="@{/ui/profile/medical-history}" class="footer-link">Медична історія</a>
-            <a th:if="${userRole == 'DOCTOR'}" th:href="@{/ui/profile/calendar}" class="footer-link">Календар</a>
         </div>
-        
         <div class="footer-bottom">
             <p>&copy; 2025 KMA Health. Всі права захищені.</p>
         </div>
