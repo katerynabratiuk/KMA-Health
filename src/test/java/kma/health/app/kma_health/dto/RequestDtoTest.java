@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
@@ -118,7 +119,7 @@ class RequestDtoTest {
         DoctorTypeDto dto = new DoctorTypeDto("Cardiologist");
 
         assertEquals("Cardiologist", dto.getTypeName());
-        
+
         dto.setTypeName("Surgeon");
         assertEquals("Surgeon", dto.getTypeName());
     }
@@ -203,13 +204,14 @@ class RequestDtoTest {
     @Test
     void testPatientContactsDto_AllArgsConstructor() {
         LocalDate birthDate = LocalDate.of(1990, 1, 1);
+        UUID familyDoctorId = UUID.randomUUID();
         PatientContactsDto dto = new PatientContactsDto(
                 "John Doe",
                 "+380991234567",
                 "john@example.com",
                 "Dr. Family",
-                birthDate
-        );
+                familyDoctorId,
+                birthDate);
 
         assertNotNull(dto);
     }
@@ -268,8 +270,7 @@ class RequestDtoTest {
                 "document",
                 "test.pdf",
                 "pdf",
-                mockFile
-        );
+                mockFile);
 
         assertEquals(id, dto.getId());
         assertEquals("document", dto.getFileType());
@@ -290,8 +291,7 @@ class RequestDtoTest {
                 1L,
                 "Test Hospital",
                 "Test Address",
-                "Kyiv"
-        );
+                "Kyiv");
 
         assertEquals(1L, request.getId());
         assertEquals("Test Hospital", request.getName());
@@ -379,4 +379,3 @@ class RequestDtoTest {
         assertNotNull(sortBy);
     }
 }
-

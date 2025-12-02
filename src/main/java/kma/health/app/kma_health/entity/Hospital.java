@@ -30,7 +30,7 @@ public class Hospital {
     @NotNull
     private String city;
     @NotNull
-    @Enumerated(EnumType.STRING)
+    @Enumerated(EnumType.ORDINAL)
     private HospitalType type;
     @Transient
     private Double rating;
