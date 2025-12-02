@@ -48,10 +48,16 @@ public class ProfileService {
         ProfileDto dto = new ProfileDto(patient);
         try {
             Doctor familyDoctor = patientService.getFamilyDoctor(userId);
-            if (familyDoctor != null)
+            if (familyDoctor != null) {
                 dto.setFamilyDoctorName(familyDoctor.getFullName());
+                dto.setFamilyDoctorId(familyDoctor.getId());
+            } else {
+                dto.setFamilyDoctorName(null);
+                dto.setFamilyDoctorId(null);
+            }
         } catch (EntityNotFoundException e) {
             dto.setFamilyDoctorName(null);
+            dto.setFamilyDoctorId(null);
         }
 
         List<Appointment> scheduledAppointments = patientService.getScheduledAppointments(userId);

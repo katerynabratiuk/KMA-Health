@@ -5,9 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${title} ?: 'KMA Health'">KMA Health</title>
     <link rel="icon" type="image/x-icon" th:href="@{/images/icon/favicon.ico}">
+    <!-- Common styles can be added here -->
+    <!-- Additional styles passed as parameter -->
     <th:block th:replace="${styles}"/>
 </head>
 
+<!-- Header for public pages (not logged in) -->
 <header th:fragment="header-public">
     <div id="home-header">
         <a th:href="@{/ui/public/}" id="home-title" class="button-link">KMA Health</a>
@@ -15,6 +18,7 @@
     </div>
 </header>
 
+<!-- Unified Header for authenticated users (Patient/Doctor) -->
 <header th:fragment="header-auth(userRole)" class="app-header">
     <style>
         :root {
@@ -22,21 +26,18 @@
             --kma-health-dark-blue: #062159;
             --kma-health-light-blue: #e8ecf4;
         }
-
+        
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
+        
         body {
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
+            font-family: Arial, sans-serif;
+            background: var(--kma-health-light-blue);
         }
-
+        
         .app-header {
             background: var(--kma-health-blue);
             box-shadow: 0 2px 6px rgba(0,0,0,0.1);
@@ -45,14 +46,16 @@
             z-index: 1000;
             padding: 0;
         }
-
+        
         .header-container {
+            max-width: 1400px;
+            margin: 0 auto;
             padding: 10px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-
+        
         .app-header .logo {
             font-size: 24px;
             font-weight: bold;
@@ -60,23 +63,17 @@
             text-decoration: none;
             transition: opacity 0.3s ease;
         }
-
+        
         .app-header .logo:hover {
             opacity: 0.9;
         }
-
-        #profile-section {
-            width: 100%;
-            padding: 40px 20px;
-            flex-grow: 1;
-        }
-
+        
         .nav-menu {
             display: flex;
             gap: 10px;
             align-items: center;
         }
-
+        
         .nav-link {
             text-decoration: none;
             color: white;
@@ -87,67 +84,62 @@
             transition: all 0.3s ease;
             background: rgba(255,255,255,0.1);
         }
-
+        
         .nav-link:hover {
             background: rgba(255,255,255,0.2);
         }
-
+        
         .nav-link.logout {
             background: white;
             color: var(--kma-health-blue);
             border: 1px solid white;
         }
-
+        
         .nav-link.logout:hover {
             background: var(--kma-health-dark-blue);
             color: white;
             border-color: white;
         }
-
-        .app-footer {
-            background: var(--kma-health-blue);
-            padding: 30px 20px;
-        }
-
+        
         @media (max-width: 968px) {
             .header-container {
                 padding: 10px 15px;
             }
-
+            
             .nav-menu {
                 gap: 8px;
             }
-
+            
             .nav-link {
                 padding: 8px 12px;
                 font-size: 14px;
             }
         }
-
+        
         @media (max-width: 768px) {
             .header-container {
                 flex-direction: column;
                 gap: 10px;
                 padding: 10px;
             }
-
+            
             .nav-menu {
                 flex-wrap: wrap;
                 justify-content: center;
                 gap: 8px;
             }
-
+            
             .nav-link {
                 padding: 8px 12px;
                 font-size: 14px;
             }
         }
-
+        
         @media (max-width: 480px) {
             .app-header .logo {
                 font-size: 20px;
             }
-
+            
             .nav-link {
                 padding: 6px 10px;
                 font-size: 13px;
@@ -159,23 +151,118 @@
         <a th:href="@{/ui/public/}" class="logo">KMA Health</a>
         
         <nav class="nav-menu">
-
+            
+            <!-- Patient-specific navigation -->
             <th:block th:if="${userRole == 'PATIENT'}">
-                <a th:href="@{/ui/p}" class="nav-link">Запис до сім. лікаря</a>
+                <a th:href="@{/ui/appointments}" class="nav-link">Мої записи</a>
+                <a th:href="@{/ui/history/{patientId}(patientId=${#authentication.principal})}" class="nav-link">Медична історія</a>
+                <a href="#" id="familyDoctorLink" class="nav-link">Запис до сім. лікаря</a>
             </th:block>
-
+            
+            <!-- Doctor-specific navigation -->
+            <th:block th:if="${userRole == 'DOCTOR'}">
+                <a th:href="@{/ui/profile/calendar}" class="nav-link">Календар</a>
+                <a th:href="@{/ui/profile/appointments}" class="nav-link">Записи</a>
+            </th:block>
+            
+            <!-- Common for all authenticated users -->
             <a th:href="@{/ui/profile}" class="nav-link">Профіль</a>
             <a th:href="@{/ui/public/logout}" class="nav-link logout">Вийти</a>
         </nav>
     </div>
+    
+    <script th:if="${userRole == 'PATIENT'}">
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Family doctor script loaded');
+            const familyDoctorLink = document.getElementById('familyDoctorLink');
+            console.log('Family doctor link:', familyDoctorLink);
+            
+            if (familyDoctorLink) {
+                familyDoctorLink.addEventListener('click', async function(e) {
+                    e.preventDefault();
+                    console.log('Family doctor link clicked');
+                    
+                    try {
+                        const response = await fetch('/api/patient/contacts', {
+                            credentials: 'include'
+                        });
+                        
+                        console.log('API response status:', response.status);
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            console.log('Patient data:', data);
+                            
+                            if (data.familyDoctorName && data.familyDoctorId) {
+                                console.log('Redirecting to doctor page');
+                                window.location.href = `/ui/doctors/${data.familyDoctorId}`;
+                            } else {
+                                console.log('No family doctor, showing modal');
+                                showNoFamilyDoctorModal();
+                            }
+                        } else {
+                            console.log('API error, redirecting to profile');
+                            showNoFamilyDoctorModal();
+                        }
+                    } catch (error) {
+                        console.error('Error checking family doctor:', error);
+                        showNoFamilyDoctorModal();
+                    }
+                });
+            }
+            
+            function showNoFamilyDoctorModal() {
+                console.log('showNoFamilyDoctorModal called');
+                
+                // Create modal overlay
+                const overlay = document.createElement('div');
+                overlay.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; z-index: 10000;';
+                
+                // Create modal content
+                const modal = document.createElement('div');
+                modal.style.cssText = 'background: white; padding: 24px; border-radius: 12px; max-width: 400px; text-align: center; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);';
+                modal.innerHTML = `
+                    <div style="font-size: 18px; font-weight: 600; margin-bottom: 12px; color: #333;">У вас немає сімейного лікаря</div>
+                    <div style="font-size: 14px; color: #666; margin-bottom: 20px;">Для запису до сімейного лікаря спочатку потрібно оформити декларацію</div>
+                    <button id="closeNoFamilyDoctorModal" style="background: #15479D; color: white; border: none; padding: 10px 24px; border-radius: 8px; font-size: 14px; cursor: pointer; font-weight: 500;">
+                        Зрозуміло
+                    </button>
+                `;
+                
+                overlay.appendChild(modal);
+                document.body.appendChild(overlay);
+                
+                console.log('Modal appended to body');
+                
+                // Close modal on button click
+                const closeBtn = document.getElementById('closeNoFamilyDoctorModal');
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', function() {
+                        console.log('Close button clicked');
+                        document.body.removeChild(overlay);
+                    });
+                }
+                
+                // Close modal on overlay click
+                overlay.addEventListener('click', function(e) {
+                    if (e.target === overlay) {
+                        console.log('Overlay clicked');
+                        document.body.removeChild(overlay);
+                    }
+                });
+            }
+        });
+    </script>
 </header>
 
+<!-- Header for profile page (just logo) -->
 <header th:fragment="header-profile">
     <div id="home-header">
         <a th:href="@{/ui/public/}" id="home-title" class="button-link">KMA Health</a>
     </div>
 </header>
 
+<!-- Logo header for login/register pages -->
 <div th:fragment="logo-header" class="logo-header">KMA Health</div>
 
 <style th:fragment="header-styles">
@@ -437,12 +524,6 @@
     </style>
     
     <div class="footer-container">
-        <div class="footer-cta" th:if="${userRole == 'PATIENT'}">
-            <h3>Потрібна консультація сімейного лікаря?</h3>
-            <p>Запишіться на приймання до сімейного лікаря просто зараз</p>
-            <a th:href="@{/ui/public/}" class="footer-button">Записатися до сімейного лікаря</a>
-        </div>
-        
         <div class="footer-links">
             <a th:href="@{/ui/public/}" class="footer-link">Головна</a>
             <a th:href="@{/ui/profile}" class="footer-link">Профіль</a>

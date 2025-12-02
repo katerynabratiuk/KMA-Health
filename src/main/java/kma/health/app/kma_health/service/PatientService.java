@@ -49,8 +49,7 @@ public class PatientService {
     public List<Appointment> getScheduledAppointments(UUID patientId) {
         return appointmentRepository.findByReferralPatientIdAndStatus(
                 patientId,
-                AppointmentStatus.SCHEDULED
-        );
+                AppointmentStatus.SCHEDULED);
     }
 
     public PatientContactsDto getPatientContacts(UUID patientId) {
@@ -66,6 +65,7 @@ public class PatientService {
         dto.setEmail(patient.getEmail());
         dto.setPhone(patient.getPhoneNumber());
         dto.setFamilyDoctorName(doctor != null ? doctor.getFullName() : null);
+        dto.setFamilyDoctorId(doctor != null ? doctor.getId() : null);
         dto.setBirthDate(patient.getBirthDate());
 
         return dto;
@@ -77,14 +77,12 @@ public class PatientService {
             case DOCTOR -> {
                 if (!appointmentService.haveOpenAppointment(doctorId, patientId)) {
                     throw new PatientHistoryAccessException(
-                            "Patient " + patientId + " has no open appointment with doctor " + doctorId
-                    );
+                            "Patient " + patientId + " has no open appointment with doctor " + doctorId);
                 }
                 yield appointmentService.getAppointmentsForPatient(patientId);
             }
             default -> throw new PatientHistoryAccessException(
-                    "Denied medical history access to " + role
-            );
+                    "Denied medical history access to " + role);
         };
     }
 
@@ -94,8 +92,7 @@ public class PatientService {
             case DOCTOR -> {
                 if (!appointmentService.haveOpenAppointment(doctorId, patientId)) {
                     throw new PatientHistoryAccessException(
-                            "Patient " + patientId + " has no open appointment with doctor " + doctorId
-                    );
+                            "Patient " + patientId + " has no open appointment with doctor " + doctorId);
                 }
                 yield referralService.getAllReferrals(patientId);
             }
