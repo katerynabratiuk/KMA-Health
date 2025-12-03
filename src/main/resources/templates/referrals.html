@@ -24,7 +24,7 @@
 
             <div id="referral-form" class="hidden referral-creation-form">
                 <h3>Створення направлення</h3>
-                <form>
+                <form id="create-referral-form" onsubmit="return false;">
                     <input type="hidden" id="targetPatient" name="targetPatient" th:value="${patientId}">
 
                     <div class="form-group">
@@ -40,7 +40,7 @@
                         <input type="text" id="targetDetails" name="targetDetails" required placeholder="Напр. Офтальмолог або Аналіз крові">
                     </div>
 
-                    <button type="submit" class="profile-button primary-button">Видати направлення</button>
+                    <button id="submit-referral-btn" type="submit" class="profile-button primary-button">Видати направлення</button>
                 </form>
             </div>
         </div>
@@ -78,23 +78,6 @@
 
 </section>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const toggleBtn = document.getElementById('toggle-form-btn');
-        const form = document.getElementById('referral-form');
-
-        if (toggleBtn) {
-            toggleBtn.addEventListener('click', function() {
-                form.classList.toggle('hidden');
-                if (form.classList.contains('hidden')) {
-                    toggleBtn.textContent = 'Створити нове направлення';
-                } else {
-                    toggleBtn.textContent = 'Згорнути форму';
-                }
-            });
-        }
-    });
-</script>
-
+<script th:src="@{/js/referrals.js}"></script>
 </body>
 </html>

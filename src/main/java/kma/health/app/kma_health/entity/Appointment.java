@@ -42,7 +42,6 @@ public class Appointment {
     @JoinColumn(name = "hospital_id")
     private Hospital hospital;
 
-    @NotNull
     @ManyToOne
     @JoinColumn(name = "referral_id")
     private Referral referral;

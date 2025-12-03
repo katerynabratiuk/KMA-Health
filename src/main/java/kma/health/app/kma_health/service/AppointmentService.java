@@ -138,12 +138,14 @@ public class AppointmentService {
         if (!userId.equals(dto.getPatientId()))
             throw new AccessDeniedException("One patient cannot create an appointment for another patient");
 
+        boolean nullRef = dto.getReferralId() == null;
+
         validateAppointmentTarget(dto);
 
         if (dto.getDoctorId() != null)
             processDoctorAppointment(dto);
 
-        if (dto.getReferralId() != null)
+        if (!nullRef)
             checkIfAppointmentExists(dto.getReferralId());
 
         Appointment appointment = buildAppointment(dto);
@@ -153,7 +155,7 @@ public class AppointmentService {
     private void processDoctorAppointment(AppointmentCreateUpdateDto dto) {
         checkIfAppointmentExists(dto.getDate(), dto.getTime());
         handleFamilyDoctorReferral(dto);
-        validateDoctorAndPatientAge(dto.getDoctorId(), dto.getPatientId());
+        //validateDoctorAndPatientAge(dto.getDoctorId(), dto.getPatientId());
     }
 
     private void handleFamilyDoctorReferral(AppointmentCreateUpdateDto dto) {
@@ -189,7 +191,7 @@ public class AppointmentService {
                 : null;
 
         if (!doctorId.equals(doctorIdFromAppointment) &&
-                !doctorId.equals(labAssistantIdFromAppointment)) {
+            !doctorId.equals(labAssistantIdFromAppointment)) {
             throw new AccessDeniedException(
                     "Appointment " + appointmentId + " doesn't belong to doctor/lab assistant " + doctorId);
         }
@@ -203,17 +205,22 @@ public class AppointmentService {
         if (medicalFilesDto != null && !medicalFilesDto.isEmpty()) {
             Set<MedicalFile> medicalFiles = new HashSet<>();
             for (MedicalFileUploadDto dto : medicalFilesDto) {
-                String timestamp = java.time.LocalDateTime.now()
-                        .format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS"));
+                String uniqueId = UUID.randomUUID().toString();
+                String storageFileName = uniqueId + "." + dto.getExtension();
+
                 MedicalFile file = new MedicalFile();
                 file.setFileType(dto.getFileType());
                 file.setName(dto.getName());
                 file.setExtension(dto.getExtension());
-                file.setLink("/med_files/" + timestamp + "." + dto.getExtension());
+                file.setLink("/med_files/" + storageFileName);
                 file.setAppointment(appointment);
+
+                if (appointment.getReferral() == null || appointment.getReferral().getPatient() == null)
+                    throw new IllegalStateException("Cannot process medical file: Patient context is missing.");
+
                 file.setPatient(appointment.getReferral().getPatient());
 
-                Path storagePath = Paths.get(filePath + "/med_files").resolve(timestamp + "." + dto.getExtension());
+                Path storagePath = Paths.get(filePath + "/med_files").resolve(storageFileName);
                 Files.copy(dto.getFile().getInputStream(), storagePath, StandardCopyOption.REPLACE_EXISTING);
 
                 medicalFileRepository.save(file);
@@ -222,7 +229,6 @@ public class AppointmentService {
             appointment.setMedicalFiles(medicalFiles);
         }
         appointmentRepository.save(appointment);
-        referralRepository.delete(appointment.getReferral());
     }
 
     public void cancelAppointment(UUID doctorId, UUID patientId, UUID appointmentId) throws AccessDeniedException {
@@ -322,7 +328,7 @@ public class AppointmentService {
 
     private Referral buildFamilyDoctorReferral(AppointmentCreateUpdateDto dto) {
         Referral referral = new Referral();
-        referral.setDoctorType(doctorTypeRepository.findByTypeName(doctorTypeService.getFamilyDoctorTypeName())
+        referral.setDoctorType(doctorTypeRepository.findByTypeName("Family Doctor")
                 .orElseThrow(() -> new EntityNotFoundException("Doctor type not found")));
 
         referral.setPatient(patientRepository.findById(dto.getPatientId())
@@ -345,8 +351,8 @@ public class AppointmentService {
 
     private void checkIfAppointmentExists(LocalDate date, LocalTime time) {
         if (appointmentRepository.existsByDateAndTime(date, time))
-            throw new AppointmentTargetConflictException(
-                    "Appointment for date " + date + "and time " + time + " already exists");
+            throw new AppointmentTargetConflictException
+                    ("Appointment for date " + date + "and time " + time + " already exists");
     }
 
     private void checkIfAppointmentExists(UUID referralId) {
@@ -355,8 +361,7 @@ public class AppointmentService {
     }
 
     public void validateDoctorAndPatientAge(UUID doctorID, UUID patientID) {
-        if (doctorID == null)
-            return;
+        if (doctorID == null) return;
 
         var patient = patientRepository.findById(patientID)
                 .orElseThrow(() -> new EntityNotFoundException("Patient not found"));
@@ -369,11 +374,13 @@ public class AppointmentService {
 
         if (patientAge < 18 && !"child".equals(doctorType)) {
             throw new DoctorSpecializationAgeRestrictionException(
-                    "Incompatible patient age and doctor specialization: underage patient cannot be assigned to an adult doctor.");
+                    "Incompatible patient age and doctor specialization: underage patient cannot be assigned to an adult doctor."
+            );
         }
         if (patientAge >= 18 && !"adult".equals(doctorType)) {
             throw new DoctorSpecializationAgeRestrictionException(
-                    "Incompatible patient age and doctor specialization: adult patient cannot be assigned to a pediatric doctor.");
+                    "Incompatible patient age and doctor specialization: adult patient cannot be assigned to a pediatric doctor."
+            );
         }
     }
 
@@ -383,12 +390,14 @@ public class AppointmentService {
 
         if (doctorAppointment && hospitalAppointment) {
             throw new AppointmentTargetConflictException(
-                    "Cannot assign appointment to both doctor and hospital.");
+                    "Cannot assign appointment to both doctor and hospital."
+            );
         }
 
         if (!doctorAppointment && !hospitalAppointment) {
             throw new AppointmentTargetConflictException(
-                    "Appointment must be assigned either to a doctor or to a hospital.");
+                    "Appointment must be assigned either to a doctor or to a hospital."
+            );
         }
     }
 

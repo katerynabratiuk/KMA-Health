@@ -140,7 +140,7 @@ public class DoctorSearchService {
     }
 
     private void sortByDistance(List<Doctor> doctors, String direction,
-            double userLat, double userLon) {
+                                double userLat, double userLon) {
         if (userLat == 0 && userLon == 0)
             throw new IllegalArgumentException("Invalid user lat/lon");
         doctors.sort((d1, d2) -> {
@@ -173,14 +173,14 @@ public class DoctorSearchService {
         System.out.println("  doctorId: " + id);
         System.out.println("  patientId: " + patientId);
         System.out.println("  patientId.isPresent(): " + patientId.isPresent());
-        
+
         DoctorDetailDto doctor = new DoctorDetailDto(
                 Objects.requireNonNull(doctorRepository.findById(id).orElse(null)));
         doctor.setFeedback(feedbackService.getDoctorFeedbacks(doctor.getId()));
 
         doctor.setRating(this.aggregatedRating(doctor.getFeedback()));
         doctor.setYearsOfExperience(countExperience(doctor.getStartedWorking()));
-        
+
         if (patientId.isPresent()) {
             System.out.println("  Setting canGetAppointment...");
             Boolean canGet = patientCanGetAppointment(doctor, patientId.get());
@@ -189,43 +189,34 @@ public class DoctorSearchService {
         } else {
             System.out.println("  PatientId not present, not setting canGetAppointment");
         }
-        
+
         patientId.ifPresent(uuid -> doctor.setCanRate(feedbackService.patientCanRateDoctor(id, patientId.get())));
         patientId.ifPresent(uuid -> doctor
                 .setIsFamilyDoctor(patientService.getPatientContacts(patientId.get()).getFamilyDoctorId() == id));
-        
+
         System.out.println("  Final doctor.canGetAppointment: " + doctor.getCanGetAppointment());
         return doctor;
     }
 
     private Boolean patientCanGetAppointment(DoctorDetailDto doctor, UUID patientId) {
         String doctorType = doctor.getDoctorType();
-        String familyDoctorTypeName = doctorTypeService.getFamilyDoctorTypeName();
-        
-        System.out.println("DEBUG patientCanGetAppointment:");
-        System.out.println("  doctorType: '" + doctorType + "'");
-        System.out.println("  familyDoctorTypeName: '" + familyDoctorTypeName + "'");
-        System.out.println("  equals: " + (doctorType != null && doctorType.equals(familyDoctorTypeName)));
-        
-        if (doctorType != null && doctorType.equals(familyDoctorTypeName)) {
-            System.out.println("  -> Returning true (family doctor)");
+        if (doctorType != null && doctorType.equals("Family Doctor")) {
             return true;
         }
 
         List<ReferralDto> activeReferrals = referralService.getActiveReferrals(patientId);
 
         return activeReferrals.stream().anyMatch(referral ->
-        // Referral directly to this doctor
-        (referral.getDoctorId() != null &&
-                referral.getDoctorId().equals(doctor.getId())) ||
+                (referral.getDoctorId() != null &&
+                 referral.getDoctorId().equals(doctor.getId())) ||
 
-        // Referral to doctor type
                 (referral.getDoctorType() != null &&
-                        referral.getDoctorType().equalsIgnoreCase(
-                                doctor.getDoctorType()))
-
+                 referral.getDoctorType().equalsIgnoreCase(
+                         doctor.getDoctorType()
+                 ))
         );
     }
+
 
     private Double aggregatedRating(List<Feedback> feedback) {
         double avgRating = 0;

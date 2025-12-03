@@ -21,6 +21,11 @@ public class ExaminationService {
                 .orElseThrow(() -> new EntityNotFoundException("Examination " + examinationId + " not found"));
     }
 
+    public Examination findExaminationByName(String examinationName) {
+        return examinationRepository.findByExamName(examinationName)
+                .orElseThrow(() -> new EntityNotFoundException("Examination " + examinationName + " not found"));
+    }
+
     public void createExamination(ExaminationDto dto) {
         Optional<Examination> examOpt = examinationRepository.findByExamNameAndUnit(dto.getName(), dto.getUnit());
         if (examOpt.isPresent())

@@ -18,6 +18,7 @@ import java.util.UUID;
 @Table(name = "referral")
 public class Referral {
     @Id
+    @GeneratedValue
     private UUID id;
 
     @Column(name = "valid_until")

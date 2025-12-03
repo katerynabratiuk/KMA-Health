@@ -224,6 +224,49 @@ body {
     color: white;
 }
 
+.dropzone.highlight {
+    border-color: #4facfe;
+    background-color: #f7fbff;
+}
+
+.files-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.file-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+    background-color: #ffffff;
+}
+
+.file-item > div {
+    font-weight: 400;
+    word-break: break-all;
+    margin-right: 10px;
+}
+
+.remove-file-btn {
+    background: none;
+    border: none;
+    color: var(--accent);
+    cursor: pointer;
+    font-size: 14px;
+    padding: 0;
+    text-decoration: underline;
+    white-space: nowrap;
+}
+
+.remove-file-btn:hover {
+    color: #cc0000;
+}
+
 @media (max-width: 900px) {
     .grid {
         grid-template-columns: 1fr;

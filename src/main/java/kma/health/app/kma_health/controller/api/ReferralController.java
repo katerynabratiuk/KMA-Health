@@ -43,9 +43,9 @@ public class ReferralController {
         Doctor d = new Doctor();
         d.setId(doctor.getId());
         if (request.getDoctorTypeName() == null || request.getDoctorTypeName().isEmpty())
-            referralService.createReferral(d, patient, request.getExaminationId());
+            referralService.createReferralForExamination(d, patient, request.getExaminationName());
         else
-            referralService.createReferral(d, patient, request.getDoctorTypeName());
+            referralService.createReferralForDoctor(d, patient, request.getDoctorTypeName());
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }

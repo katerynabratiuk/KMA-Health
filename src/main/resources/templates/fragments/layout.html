@@ -48,7 +48,6 @@
         }
         
         .header-container {
-            max-width: 1400px;
             margin: 0 auto;
             padding: 10px 20px;
             display: flex;
@@ -162,7 +161,6 @@
             <!-- Doctor-specific navigation -->
             <th:block th:if="${userRole == 'DOCTOR'}">
                 <a th:href="@{/ui/profile/calendar}" class="nav-link">Календар</a>
-                <a th:href="@{/ui/profile/appointments}" class="nav-link">Записи</a>
             </th:block>
             
             <!-- Common for all authenticated users -->
@@ -170,29 +168,29 @@
             <a th:href="@{/ui/public/logout}" class="nav-link logout">Вийти</a>
         </nav>
     </div>
-    
+
     <script th:if="${userRole == 'PATIENT'}">
         document.addEventListener('DOMContentLoaded', function() {
             console.log('Family doctor script loaded');
             const familyDoctorLink = document.getElementById('familyDoctorLink');
             console.log('Family doctor link:', familyDoctorLink);
-            
+
             if (familyDoctorLink) {
                 familyDoctorLink.addEventListener('click', async function(e) {
                     e.preventDefault();
                     console.log('Family doctor link clicked');
-                    
+
                     try {
                         const response = await fetch('/api/patient/my-contacts', {
                             credentials: 'include'
                         });
-                        
+
                         console.log('API response status:', response.status);
-                        
+
                         if (response.ok) {
                             const data = await response.json();
                             console.log('Patient data:', data);
-                            
+
                             if (data.familyDoctorName && data.familyDoctorId) {
                                 console.log('Redirecting to doctor page');
                                 window.location.href = `/ui/public/doctors/${data.familyDoctorId}#appointment-section`;
@@ -210,14 +208,14 @@
                     }
                 });
             }
-            
+
             function showNoFamilyDoctorModal() {
                 console.log('showNoFamilyDoctorModal called');
-                
+
                 // Create modal overlay
                 const overlay = document.createElement('div');
                 overlay.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; z-index: 10000;';
-                
+
                 // Create modal content
                 const modal = document.createElement('div');
                 modal.style.cssText = 'background: white; padding: 24px; border-radius: 12px; max-width: 400px; text-align: center; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);';
@@ -228,12 +226,12 @@
                         Зрозуміло
                     </button>
                 `;
-                
+
                 overlay.appendChild(modal);
                 document.body.appendChild(overlay);
-                
+
                 console.log('Modal appended to body');
-                
+
                 // Close modal on button click
                 const closeBtn = document.getElementById('closeNoFamilyDoctorModal');
                 if (closeBtn) {
@@ -242,7 +240,7 @@
                         document.body.removeChild(overlay);
                     });
                 }
-                
+
                 // Close modal on overlay click
                 overlay.addEventListener('click', function(e) {
                     if (e.target === overlay) {
@@ -527,11 +525,7 @@
         <div class="footer-links">
             <a th:href="@{/ui/public/}" class="footer-link">Головна</a>
             <a th:href="@{/ui/profile}" class="footer-link">Профіль</a>
-            <a th:if="${userRole == 'PATIENT'}" th:href="@{/ui/profile/appointments}" class="footer-link">Мої записи</a>
-            <a th:if="${userRole == 'PATIENT'}" th:href="@{/ui/profile/medical-history}" class="footer-link">Медична історія</a>
-            <a th:if="${userRole == 'DOCTOR'}" th:href="@{/ui/profile/calendar}" class="footer-link">Календар</a>
         </div>
-        
         <div class="footer-bottom">
             <p>&copy; 2025 KMA Health. Всі права захищені.</p>
         </div>

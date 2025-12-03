@@ -13,10 +13,12 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import kma.health.app.kma_health.exception.ErrorResponse;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
@@ -24,6 +26,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
+import static kma.health.app.kma_health.dto.MedicalFileUploadDto.convertMultipartFilesToDto;
 
 @RestController
 @RequestMapping("/api/appointments")
@@ -78,13 +82,21 @@ public class AppointmentController {
     }
 
     @PostMapping("/finish")
-    @PreAuthorize("hasAnyRole('DOCTOR', 'LAB_ASSISTANT')")
+    @PreAuthorize("hasAnyRole('DOCTOR','LAB_ASSISTANT')")
     public ResponseEntity<?> finishAppointment(
-            @AuthenticationPrincipal UUID userId,
-            @RequestPart("files") List<MedicalFileUploadDto> filesDto,
-            @RequestParam UUID appointmentId,
-            @RequestParam String diagnosis) {
+            @RequestPart(value = "medicalFiles", required = false) List<MultipartFile> files,
+            @RequestParam("appointmentId") UUID appointmentId,
+            @RequestParam("diagnosis") String diagnosis) {
         try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            UUID userId;
+            if (authentication != null && authentication.getPrincipal() instanceof UUID)
+                userId = (UUID) authentication.getPrincipal();
+             else
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("message", "User not authenticated or principal type is incorrect"));
+
+            List<MedicalFileUploadDto> filesDto = convertMultipartFilesToDto(files);
             appointmentService.finishAppointment(userId, appointmentId, diagnosis, filesDto);
             return ResponseEntity.ok().build();
         } catch (IOException ex) {
@@ -92,7 +104,7 @@ public class AppointmentController {
                     .body(Map.of("message", "Failed to store files"));
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("message", "Unexpected error occurred"));
+                    .body(Map.of("message", "Unexpected server error."));
         }
     }
 
