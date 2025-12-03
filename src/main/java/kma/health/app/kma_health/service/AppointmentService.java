@@ -184,7 +184,7 @@ public class AppointmentService {
         UUID labAssistantIdFromAppointment = appointment.getLabAssistant() != null ? appointment.getLabAssistant().getId() : null;
 
         if (!doctorId.equals(doctorIdFromAppointment) &&
-                !doctorId.equals(labAssistantIdFromAppointment)) {
+            !doctorId.equals(labAssistantIdFromAppointment)) {
             throw new AccessDeniedException(
                     "Appointment " + appointmentId + " doesn't belong to doctor/lab assistant " + doctorId
             );
@@ -199,17 +199,22 @@ public class AppointmentService {
         if (medicalFilesDto != null && !medicalFilesDto.isEmpty()) {
             Set<MedicalFile> medicalFiles = new HashSet<>();
             for (MedicalFileUploadDto dto : medicalFilesDto) {
-                String timestamp = java.time.LocalDateTime.now()
-                        .format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS"));
+                String uniqueId = UUID.randomUUID().toString();
+                String storageFileName = uniqueId + "." + dto.getExtension();
+
                 MedicalFile file = new MedicalFile();
                 file.setFileType(dto.getFileType());
                 file.setName(dto.getName());
                 file.setExtension(dto.getExtension());
-                file.setLink("/med_files/" + timestamp + "." + dto.getExtension());
+                file.setLink("/med_files/" + storageFileName);
                 file.setAppointment(appointment);
+
+                if (appointment.getReferral() == null || appointment.getReferral().getPatient() == null)
+                    throw new IllegalStateException("Cannot process medical file: Patient context is missing.");
+
                 file.setPatient(appointment.getReferral().getPatient());
 
-                Path storagePath = Paths.get(filePath + "/med_files").resolve(timestamp + "." + dto.getExtension());
+                Path storagePath = Paths.get(filePath + "/med_files").resolve(storageFileName);
                 Files.copy(dto.getFile().getInputStream(), storagePath, StandardCopyOption.REPLACE_EXISTING);
 
                 medicalFileRepository.save(file);
@@ -217,8 +222,15 @@ public class AppointmentService {
             }
             appointment.setMedicalFiles(medicalFiles);
         }
+
         appointmentRepository.save(appointment);
-        referralRepository.delete(appointment.getReferral());
+
+        Referral referral = appointment.getReferral();
+        appointment.setReferral(null);
+        appointmentRepository.save(appointment);
+
+        if (referral != null)
+            referralRepository.delete(referral);
     }
 
     public void cancelAppointment(UUID doctorId, UUID patientId, UUID appointmentId) throws AccessDeniedException {
