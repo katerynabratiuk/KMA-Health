@@ -165,39 +165,201 @@ document.addEventListener('DOMContentLoaded', () => {
         cancelBtn.addEventListener('click', (e) => {
             e.preventDefault();
 
-            if (!confirm('Ви впевнені, що хочете скасувати цей запис?')) {
-                return;
-            }
+            // Create custom confirmation modal
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 10000;
+                backdrop-filter: blur(4px);
+            `;
 
-            let cancelUrl = `/api/appointments/cancel?appointmentId=${appointmentId}`;
-            if (userRole === 'PATIENT') {
-                cancelUrl += `&patientId=${patientId}`;
-            } else if (userRole === 'DOCTOR' || userRole === 'LAB_ASSISTANT') {
-                cancelUrl += `&doctorId=${doctorId}`;
-            }
-            
-            fetch(cancelUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    credentials: "include"
-                },
-                credentials: "include"
-            })
-                .then(response => {
-                    if (response.ok) {
-                        alert('✅ Запис успішно скасовано!');
-                        window.location.reload();
-                    } else {
-                        response.json().then(data => {
-                            alert(`Помилка при скасуванні запису: ${data.message || 'Невідома помилка'}`);
-                        });
+            const modalContent = document.createElement('div');
+            modalContent.style.cssText = `
+                background: white;
+                padding: 30px;
+                border-radius: 12px;
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+                max-width: 400px;
+                width: 90%;
+                text-align: center;
+                animation: slideIn 0.3s ease-out;
+            `;
+
+            modalContent.innerHTML = `
+                <style>
+                    @keyframes slideIn {
+                        from {
+                            transform: translateY(-50px);
+                            opacity: 0;
+                        }
+                        to {
+                            transform: translateY(0);
+                            opacity: 1;
+                        }
                     }
+                    .cancel-modal-icon {
+                        font-size: 48px;
+                        margin-bottom: 20px;
+                    }
+                    .cancel-modal-title {
+                        font-size: 24px;
+                        font-weight: 600;
+                        margin-bottom: 10px;
+                        color: #333;
+                    }
+                    .cancel-modal-text {
+                        font-size: 16px;
+                        color: #666;
+                        margin-bottom: 25px;
+                        line-height: 1.5;
+                    }
+                    .cancel-modal-buttons {
+                        display: flex;
+                        gap: 12px;
+                        justify-content: center;
+                    }
+                    .cancel-modal-btn {
+                        padding: 12px 30px;
+                        border: none;
+                        border-radius: 8px;
+                        font-size: 16px;
+                        font-weight: 500;
+                        cursor: pointer;
+                        transition: all 0.2s;
+                    }
+                    .cancel-modal-btn-confirm {
+                        background: #dc3545;
+                        color: white;
+                    }
+                    .cancel-modal-btn-confirm:hover {
+                        background: #c82333;
+                        transform: translateY(-2px);
+                        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+                    }
+                    .cancel-modal-btn-cancel {
+                        background: #6c757d;
+                        color: white;
+                    }
+                    .cancel-modal-btn-cancel:hover {
+                        background: #5a6268;
+                        transform: translateY(-2px);
+                        box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+                    }
+                </style>
+                <div class="cancel-modal-title">Скасувати запис?</div>
+                <div class="cancel-modal-text">Ви впевнені, що хочете скасувати цей запис? Цю дію не можна буде відмінити.</div>
+                <div class="cancel-modal-buttons">
+                    <button class="cancel-modal-btn cancel-modal-btn-cancel" id="modalCancelBtn">Ні, залишити</button>
+                    <button class="cancel-modal-btn cancel-modal-btn-confirm" id="modalConfirmBtn">Так, скасувати</button>
+                </div>
+            `;
+
+            modal.appendChild(modalContent);
+            document.body.appendChild(modal);
+
+            // Handle modal buttons
+            document.getElementById('modalCancelBtn').addEventListener('click', () => {
+                modal.remove();
+            });
+
+            document.getElementById('modalConfirmBtn').addEventListener('click', () => {
+                modal.remove();
+                
+                // Show loading state
+                const loadingModal = document.createElement('div');
+                loadingModal.style.cssText = modal.style.cssText;
+                loadingModal.innerHTML = `
+                    <div style="${modalContent.style.cssText}">
+                        <div style="font-size: 48px; margin-bottom: 20px;">⏳</div>
+                        <div style="font-size: 20px; font-weight: 600; color: #333;">Скасування запису...</div>
+                    </div>
+                `;
+                document.body.appendChild(loadingModal);
+
+                let cancelUrl = `/api/appointments/cancel?appointmentId=${appointmentId}`;
+                if (userRole === 'PATIENT') {
+                    cancelUrl += `&patientId=${patientId}`;
+                } else if (userRole === 'DOCTOR' || userRole === 'LAB_ASSISTANT') {
+                    cancelUrl += `&doctorId=${doctorId}`;
+                }
+                
+                fetch(cancelUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        credentials: "include"
+                    },
+                    credentials: "include"
                 })
-                .catch(error => {
-                    console.error('Fetch error:', error);
-                    alert('Помилка мережі або сервера.');
-                });
+                    .then(response => {
+                        loadingModal.remove();
+                        
+                        if (response.ok) {
+                            // Show success modal
+                            const successModal = document.createElement('div');
+                            successModal.style.cssText = modal.style.cssText;
+                            successModal.innerHTML = `
+                                <div style="${modalContent.style.cssText}">
+                                    <div style="font-size: 24px; font-weight: 600; margin-bottom: 10px; color: #28a745;">Успішно!</div>
+                                    <div style="font-size: 16px; color: #666; margin-bottom: 20px;">Запис успішно скасовано</div>
+                                </div>
+                            `;
+                            document.body.appendChild(successModal);
+                            
+                            setTimeout(() => {
+                                window.location.href = '/ui/profile';
+                            }, 1500);
+                        } else {
+                            response.json().then(data => {
+                                // Show error modal
+                                const errorModal = document.createElement('div');
+                                errorModal.style.cssText = modal.style.cssText;
+                                errorModal.innerHTML = `
+                                    <div style="${modalContent.style.cssText}">
+                                        <div style="font-size: 24px; font-weight: 600; margin-bottom: 10px; color: #dc3545;">Помилка</div>
+                                        <div style="font-size: 16px; color: #666; margin-bottom: 25px;">${data.message || 'Невідома помилка'}</div>
+                                        <button class="cancel-modal-btn cancel-modal-btn-cancel" onclick="this.closest('div').parentElement.remove()">Закрити</button>
+                                    </div>
+                                `;
+                                document.body.appendChild(errorModal);
+                            }).catch(() => {
+                                alert('Помилка сервера');
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        loadingModal.remove();
+                        console.error('Fetch error:', error);
+                        
+                        // Show error modal
+                        const errorModal = document.createElement('div');
+                        errorModal.style.cssText = modal.style.cssText;
+                        errorModal.innerHTML = `
+                            <div style="${modalContent.style.cssText}">
+                                <div style="font-size: 48px; margin-bottom: 20px;">❌</div>
+                                <div style="font-size: 24px; font-weight: 600; margin-bottom: 10px; color: #dc3545;">Помилка мережі</div>
+                                <div style="font-size: 16px; color: #666; margin-bottom: 25px;">Не вдалося підключитися до сервера</div>
+                                <button class="cancel-modal-btn cancel-modal-btn-cancel" onclick="this.closest('div').parentElement.remove()">Закрити</button>
+                            </div>
+                        `;
+                        document.body.appendChild(errorModal);
+                    });
+            });
+
+            // Close modal on outside click
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            });
         });
     }
 
