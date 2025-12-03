@@ -153,8 +153,6 @@
             
             <!-- Patient-specific navigation -->
             <th:block th:if="${userRole == 'PATIENT'}">
-                <a th:href="@{/ui/appointments}" class="nav-link">Мої записи</a>
-                <a th:href="@{/ui/history/{patientId}(patientId=${#authentication.principal})}" class="nav-link">Медична історія</a>
                 <a href="#" id="familyDoctorLink" class="nav-link">Запис до сім. лікаря</a>
             </th:block>
             
