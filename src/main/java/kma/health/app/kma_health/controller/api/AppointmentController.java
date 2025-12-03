@@ -112,8 +112,8 @@ public class AppointmentController {
     @PreAuthorize("hasAnyRole('PATIENT','DOCTOR')")
     public ResponseEntity<?> cancelAppointment(
             @AuthenticationPrincipal UUID userId,
-            @RequestParam UUID doctorId,
-            @RequestParam UUID patientId,
+            @RequestParam(required = false) UUID doctorId,
+            @RequestParam(required = false) UUID patientId,
             @RequestParam UUID appointmentId) throws AccessDeniedException {
         var auth = SecurityContextHolder.getContext().getAuthentication();
         UserRole role = UserRole

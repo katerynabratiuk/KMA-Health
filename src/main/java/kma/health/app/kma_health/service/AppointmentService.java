@@ -179,7 +179,7 @@ public class AppointmentService {
 
     @Transactional
     public void finishAppointment(UUID doctorId, UUID appointmentId, String diagnosis,
-            List<MedicalFileUploadDto> medicalFilesDto)
+                                  List<MedicalFileUploadDto> medicalFilesDto)
             throws IOException {
 
         Appointment appointment = appointmentRepository.findById(appointmentId)
@@ -191,7 +191,7 @@ public class AppointmentService {
                 : null;
 
         if (!doctorId.equals(doctorIdFromAppointment) &&
-                !doctorId.equals(labAssistantIdFromAppointment)) {
+            !doctorId.equals(labAssistantIdFromAppointment)) {
             throw new AccessDeniedException(
                     "Appointment " + appointmentId + " doesn't belong to doctor/lab assistant " + doctorId);
         }
@@ -240,11 +240,15 @@ public class AppointmentService {
                 ? appointment.getLabAssistant().getId()
                 : null;
 
-        if (doctorIdFromAppointment != null || labAssistantIdFromAppointment != null) {
+        if (doctorId == null && appointment.getStatus() != AppointmentStatus.SCHEDULED) {
+            throw new AccessDeniedException("Appointment " + appointmentId + " is not scheduled.");
+        } else if (doctorId != null && (doctorIdFromAppointment != null || labAssistantIdFromAppointment != null)) {
             if (!doctorId.equals(doctorIdFromAppointment) &&
-                    !doctorId.equals(labAssistantIdFromAppointment)) {
+                !doctorId.equals(labAssistantIdFromAppointment)) {
+
                 throw new AccessDeniedException(
                         "Appointment " + appointmentId + " doesn't belong to doctor/lab assistant " + doctorId);
+
             }
             if (appointment.getStatus() != AppointmentStatus.OPEN)
                 throw new AccessDeniedException("Appointment " + appointmentId + "is not open.");
@@ -295,7 +299,7 @@ public class AppointmentService {
         if (!doctor.getDoctorType().equals(referral.getDoctorType())) {
             throw new AppointmentTargetConflictException(
                     "Cannot assign to doctor of type " + doctor.getDoctorType() +
-                            " using referral for " + referral.getDoctorType());
+                    " using referral for " + referral.getDoctorType());
         }
 
         appointment.setDoctor(doctor);
@@ -403,7 +407,7 @@ public class AppointmentService {
                 .findByDoctor_IdAndReferral_Patient_Id(doctorId, patientId);
         return appointments.stream()
                 .anyMatch(app -> app.getStatus() != null &&
-                        app.getStatus().equals(AppointmentStatus.OPEN));
+                                 app.getStatus().equals(AppointmentStatus.OPEN));
     }
 
     @Scheduled(fixedRate = 60_000)

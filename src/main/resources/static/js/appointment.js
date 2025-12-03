@@ -131,7 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 formData.append('medicalFiles', file, file.name);
             });
 
-            fetch('/api/appointments/cancel', {
+            fetch('/api/appointments/finish', {
                 method: 'POST',
                 credentials: "include",
                 body: formData
