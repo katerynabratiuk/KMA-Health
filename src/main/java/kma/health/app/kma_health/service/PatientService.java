@@ -37,7 +37,7 @@ public class PatientService {
     }
 
     public Declaration getDeclaration(UUID patientId) {
-        return declarationRepository.findById(patientId)
+        return declarationRepository.findByPatientId(patientId)
                 .orElseThrow(() -> new EntityNotFoundException("Declaration not found"));
     }
 

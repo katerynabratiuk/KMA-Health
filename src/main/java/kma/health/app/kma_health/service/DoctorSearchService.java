@@ -26,6 +26,8 @@ public class DoctorSearchService {
     private final DoctorRepository doctorRepository;
     private final ReferralService referralService;
     private final FeedbackService feedbackService;
+    private final PatientService patientService;
+    private final DoctorTypeService doctorTypeService;
 
     public List<Doctor> searchDoctors(DoctorSearchDto dto, double userLat, double userLon)
             throws InterruptedException {
@@ -157,7 +159,8 @@ public class DoctorSearchService {
     }
 
     public DoctorDetailDto getDoctorById(UUID id) {
-        DoctorDetailDto doctor = new DoctorDetailDto(Objects.requireNonNull(doctorRepository.findById(id).orElse(null)));
+        DoctorDetailDto doctor = new DoctorDetailDto(
+                Objects.requireNonNull(doctorRepository.findById(id).orElse(null)));
 
         doctor.setRating(this.aggregatedRating(doctor.getFeedback()));
         doctor.setYearsOfExperience(countExperience(doctor.getStartedWorking()));
@@ -166,36 +169,65 @@ public class DoctorSearchService {
     }
 
     public DoctorDetailDto getDoctorDetailById(UUID id, Optional<UUID> patientId) {
-        DoctorDetailDto doctor = new DoctorDetailDto(Objects.requireNonNull(doctorRepository.findById(id).orElse(null)));
+        System.out.println("DEBUG getDoctorDetailById:");
+        System.out.println("  doctorId: " + id);
+        System.out.println("  patientId: " + patientId);
+        System.out.println("  patientId.isPresent(): " + patientId.isPresent());
+        
+        DoctorDetailDto doctor = new DoctorDetailDto(
+                Objects.requireNonNull(doctorRepository.findById(id).orElse(null)));
         doctor.setFeedback(feedbackService.getDoctorFeedbacks(doctor.getId()));
 
         doctor.setRating(this.aggregatedRating(doctor.getFeedback()));
         doctor.setYearsOfExperience(countExperience(doctor.getStartedWorking()));
-        patientId.ifPresent(uuid -> doctor.setCanGetAppointment(patientCanGetAppointment(doctor, uuid)));
+        
+        if (patientId.isPresent()) {
+            System.out.println("  Setting canGetAppointment...");
+            Boolean canGet = patientCanGetAppointment(doctor, patientId.get());
+            System.out.println("  canGetAppointment result: " + canGet);
+            doctor.setCanGetAppointment(canGet);
+        } else {
+            System.out.println("  PatientId not present, not setting canGetAppointment");
+        }
+        
         patientId.ifPresent(uuid -> doctor.setCanRate(feedbackService.patientCanRateDoctor(id, patientId.get())));
-
+        patientId.ifPresent(uuid -> doctor
+                .setIsFamilyDoctor(patientService.getPatientContacts(patientId.get()).getFamilyDoctorId() == id));
+        
+        System.out.println("  Final doctor.canGetAppointment: " + doctor.getCanGetAppointment());
         return doctor;
     }
 
     private Boolean patientCanGetAppointment(DoctorDetailDto doctor, UUID patientId) {
+        String doctorType = doctor.getDoctorType();
+        String familyDoctorTypeName = doctorTypeService.getFamilyDoctorTypeName();
+        
+        System.out.println("DEBUG patientCanGetAppointment:");
+        System.out.println("  doctorType: '" + doctorType + "'");
+        System.out.println("  familyDoctorTypeName: '" + familyDoctorTypeName + "'");
+        System.out.println("  equals: " + (doctorType != null && doctorType.equals(familyDoctorTypeName)));
+        
+        if (doctorType != null && doctorType.equals(familyDoctorTypeName)) {
+            System.out.println("  -> Returning true (family doctor)");
+            return true;
+        }
+
         List<ReferralDto> activeReferrals = referralService.getActiveReferrals(patientId);
 
         return activeReferrals.stream().anyMatch(referral ->
-                // Referral directly to this doctor
-                (referral.getDoctorId() != null &&
-                        referral.getDoctorId().equals(doctor.getId())) ||
+        // Referral directly to this doctor
+        (referral.getDoctorId() != null &&
+                referral.getDoctorId().equals(doctor.getId())) ||
 
-                        // Referral to doctor type
-                        (referral.getDoctorType() != null &&
-                                referral.getDoctorType().equalsIgnoreCase(
-                                        doctor.getDoctorType()
-                                ))
+        // Referral to doctor type
+                (referral.getDoctorType() != null &&
+                        referral.getDoctorType().equalsIgnoreCase(
+                                doctor.getDoctorType()))
+
         );
     }
 
-
-
-    private Double aggregatedRating(List<Feedback> feedback){
+    private Double aggregatedRating(List<Feedback> feedback) {
         double avgRating = 0;
         if (feedback != null && !feedback.isEmpty()) {
             avgRating = feedback.stream()
@@ -207,8 +239,8 @@ public class DoctorSearchService {
         return avgRating;
     }
 
-    private Integer countExperience(LocalDate startedWorking){
-        return  java.time.Period.between(
+    private Integer countExperience(LocalDate startedWorking) {
+        return java.time.Period.between(
                 startedWorking,
                 java.time.LocalDate.now()).getYears();
     }

@@ -149,6 +149,19 @@ header {
     flex-grow: 1;
 }
 
+.value a {
+    color: var(--kma-health-blue);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid transparent;
+}
+
+.value a:hover {
+    color: var(--kma-health-dark-blue);
+    border-bottom: 1px solid var(--kma-health-blue);
+}
+
 .unspecified {
     color: #cc0000;
     font-style: italic;

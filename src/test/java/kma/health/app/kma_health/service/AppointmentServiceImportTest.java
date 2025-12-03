@@ -120,7 +120,8 @@ public class AppointmentServiceImportTest {
                 LabAssistantRepository labAssistantRepository,
                 DoctorTypeRepository doctorTypeRepository,
                 HospitalService hospitalService,
-                ReferralService referralService) {
+                ReferralService referralService,
+                DoctorTypeService doctorTypeService) {
             return new AppointmentService(
                     appointmentRepository,
                     patientRepository,
@@ -131,7 +132,8 @@ public class AppointmentServiceImportTest {
                     labAssistantRepository,
                     doctorTypeRepository,
                     hospitalService,
-                    referralService);
+                    referralService,
+                    doctorTypeService);
         }
     }
 }

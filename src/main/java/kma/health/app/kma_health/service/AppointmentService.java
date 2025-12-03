@@ -40,6 +40,7 @@ public class AppointmentService {
     private final DoctorTypeRepository doctorTypeRepository;
     private final HospitalService hospitalService;
     private final ReferralService referralService;
+    private final DoctorTypeService doctorTypeService;
 
     @Value("${root.file.path}")
     private String filePath;
@@ -50,8 +51,7 @@ public class AppointmentService {
                 .map(AppointmentFullViewDto::new)
                 .sorted(Comparator
                         .comparing((AppointmentFullViewDto a) -> mapStatusOrder(a.getStatus()))
-                        .thenComparing(AppointmentFullViewDto::getDate)
-                )
+                        .thenComparing(AppointmentFullViewDto::getDate))
                 .toList();
     }
 
@@ -63,7 +63,6 @@ public class AppointmentService {
             case FINISHED -> 3;
         };
     }
-
 
     public List<AppointmentShortViewDto> getAppointmentsForPatient(UUID patientId, LocalDate start, LocalDate end) {
         return appointmentRepository.findByReferral_Patient_idAndDateBetween(patientId, start, end)
@@ -130,7 +129,8 @@ public class AppointmentService {
     public void deleteAppointment(UUID id) {
         if (appointmentRepository.existsById(id))
             appointmentRepository.deleteById(id);
-        else throw new AppointmentNotFoundException("Appointment is not found.");
+        else
+            throw new AppointmentNotFoundException("Appointment is not found.");
     }
 
     @Transactional
@@ -143,7 +143,8 @@ public class AppointmentService {
         if (dto.getDoctorId() != null)
             processDoctorAppointment(dto);
 
-        checkIfAppointmentExists(dto.getReferralId());
+        if (dto.getReferralId() != null)
+            checkIfAppointmentExists(dto.getReferralId());
 
         Appointment appointment = buildAppointment(dto);
         appointmentRepository.save(appointment);
@@ -162,7 +163,8 @@ public class AppointmentService {
                     throw new EntityNotFoundException("Patient not found");
 
                 UUID referralId = referralService
-                        .createReferralForFamilyDoctor(patientRepository.findById(dto.getPatientId()).get(), dto.getDate())
+                        .createReferralForFamilyDoctor(patientRepository.findById(dto.getPatientId()).get(),
+                                dto.getDate())
                         .getId();
                 dto.setReferralId(referralId);
             }
@@ -170,24 +172,26 @@ public class AppointmentService {
     }
 
     private boolean isFamilyDoctor(Doctor doctor) {
-        return DoctorTypeService.familyDoctorTypeName.equals(doctor.getDoctorType().getTypeName());
+        return doctorTypeService.getFamilyDoctorTypeName().equals(doctor.getDoctorType().getTypeName());
     }
 
     @Transactional
-    public void finishAppointment(UUID doctorId, UUID appointmentId, String diagnosis, List<MedicalFileUploadDto> medicalFilesDto)
+    public void finishAppointment(UUID doctorId, UUID appointmentId, String diagnosis,
+            List<MedicalFileUploadDto> medicalFilesDto)
             throws IOException {
 
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new AppointmentNotFoundException("Appointment " + appointmentId + " not found."));
 
         UUID doctorIdFromAppointment = appointment.getDoctor() != null ? appointment.getDoctor().getId() : null;
-        UUID labAssistantIdFromAppointment = appointment.getLabAssistant() != null ? appointment.getLabAssistant().getId() : null;
+        UUID labAssistantIdFromAppointment = appointment.getLabAssistant() != null
+                ? appointment.getLabAssistant().getId()
+                : null;
 
         if (!doctorId.equals(doctorIdFromAppointment) &&
                 !doctorId.equals(labAssistantIdFromAppointment)) {
             throw new AccessDeniedException(
-                    "Appointment " + appointmentId + " doesn't belong to doctor/lab assistant " + doctorId
-            );
+                    "Appointment " + appointmentId + " doesn't belong to doctor/lab assistant " + doctorId);
         }
 
         if (appointment.getStatus() != AppointmentStatus.OPEN)
@@ -226,14 +230,15 @@ public class AppointmentService {
                 .orElseThrow(() -> new AppointmentNotFoundException("Appointment" + appointmentId + " not found."));
 
         UUID doctorIdFromAppointment = appointment.getDoctor() != null ? appointment.getDoctor().getId() : null;
-        UUID labAssistantIdFromAppointment = appointment.getLabAssistant() != null ? appointment.getLabAssistant().getId() : null;
+        UUID labAssistantIdFromAppointment = appointment.getLabAssistant() != null
+                ? appointment.getLabAssistant().getId()
+                : null;
 
         if (doctorIdFromAppointment != null || labAssistantIdFromAppointment != null) {
             if (!doctorId.equals(doctorIdFromAppointment) &&
                     !doctorId.equals(labAssistantIdFromAppointment)) {
                 throw new AccessDeniedException(
-                        "Appointment " + appointmentId + " doesn't belong to doctor/lab assistant " + doctorId
-                );
+                        "Appointment " + appointmentId + " doesn't belong to doctor/lab assistant " + doctorId);
             }
             if (appointment.getStatus() != AppointmentStatus.OPEN)
                 throw new AccessDeniedException("Appointment " + appointmentId + "is not open.");
@@ -284,8 +289,7 @@ public class AppointmentService {
         if (!doctor.getDoctorType().equals(referral.getDoctorType())) {
             throw new AppointmentTargetConflictException(
                     "Cannot assign to doctor of type " + doctor.getDoctorType() +
-                    " using referral for " + referral.getDoctorType()
-            );
+                            " using referral for " + referral.getDoctorType());
         }
 
         appointment.setDoctor(doctor);
@@ -305,8 +309,7 @@ public class AppointmentService {
 
         if (!hospitalService.providesExamination(hospital, referral.getExamination())) {
             throw new AppointmentTargetConflictException(
-                    "Hospital doesn't provide examination " + referral.getExamination().getExamName()
-            );
+                    "Hospital doesn't provide examination " + referral.getExamination().getExamName());
         }
 
         appointment.setHospital(hospital);
@@ -319,7 +322,7 @@ public class AppointmentService {
 
     private Referral buildFamilyDoctorReferral(AppointmentCreateUpdateDto dto) {
         Referral referral = new Referral();
-        referral.setDoctorType(doctorTypeRepository.findByTypeName(DoctorTypeService.familyDoctorTypeName)
+        referral.setDoctorType(doctorTypeRepository.findByTypeName(doctorTypeService.getFamilyDoctorTypeName())
                 .orElseThrow(() -> new EntityNotFoundException("Doctor type not found")));
 
         referral.setPatient(patientRepository.findById(dto.getPatientId())
@@ -342,8 +345,8 @@ public class AppointmentService {
 
     private void checkIfAppointmentExists(LocalDate date, LocalTime time) {
         if (appointmentRepository.existsByDateAndTime(date, time))
-            throw new AppointmentTargetConflictException
-                    ("Appointment for date " + date + "and time " + time + " already exists");
+            throw new AppointmentTargetConflictException(
+                    "Appointment for date " + date + "and time " + time + " already exists");
     }
 
     private void checkIfAppointmentExists(UUID referralId) {
@@ -352,7 +355,8 @@ public class AppointmentService {
     }
 
     public void validateDoctorAndPatientAge(UUID doctorID, UUID patientID) {
-        if (doctorID == null) return;
+        if (doctorID == null)
+            return;
 
         var patient = patientRepository.findById(patientID)
                 .orElseThrow(() -> new EntityNotFoundException("Patient not found"));
@@ -365,13 +369,11 @@ public class AppointmentService {
 
         if (patientAge < 18 && !"child".equals(doctorType)) {
             throw new DoctorSpecializationAgeRestrictionException(
-                    "Incompatible patient age and doctor specialization: underage patient cannot be assigned to an adult doctor."
-            );
+                    "Incompatible patient age and doctor specialization: underage patient cannot be assigned to an adult doctor.");
         }
         if (patientAge >= 18 && !"adult".equals(doctorType)) {
             throw new DoctorSpecializationAgeRestrictionException(
-                    "Incompatible patient age and doctor specialization: adult patient cannot be assigned to a pediatric doctor."
-            );
+                    "Incompatible patient age and doctor specialization: adult patient cannot be assigned to a pediatric doctor.");
         }
     }
 
@@ -381,14 +383,12 @@ public class AppointmentService {
 
         if (doctorAppointment && hospitalAppointment) {
             throw new AppointmentTargetConflictException(
-                    "Cannot assign appointment to both doctor and hospital."
-            );
+                    "Cannot assign appointment to both doctor and hospital.");
         }
 
         if (!doctorAppointment && !hospitalAppointment) {
             throw new AppointmentTargetConflictException(
-                    "Appointment must be assigned either to a doctor or to a hospital."
-            );
+                    "Appointment must be assigned either to a doctor or to a hospital.");
         }
     }
 

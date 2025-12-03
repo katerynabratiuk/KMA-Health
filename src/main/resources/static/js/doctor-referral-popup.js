@@ -1,12 +1,12 @@
 // Doctor referral popup functionality
-export function initializeReferralPopup(canGetAppointment) {
+export function initializeReferralPopup(canGetAppointment, isFamilyDoctor) {
     console.log('Initializing referral popup with canGetAppointment:', canGetAppointment);
     
     window.scrollToAppointment = function() {
         console.log('scrollToAppointment called');
         console.log('canGetAppointment:', canGetAppointment);
         
-        if (!canGetAppointment) {
+        if (canGetAppointment === false) {
             console.log('Showing referral required popup');
             showReferralRequiredPopup();
             return;

@@ -36,15 +36,9 @@ public class Hospital {
     private Double rating;
 
     @ManyToMany
-    @JoinTable(
-            name = "hospital_examination",
-            joinColumns = @JoinColumn(name = "hospital_id"),
-            inverseJoinColumns = @JoinColumn(name = "examination_id")
-    )
+    @JoinTable(name = "hospital_examination", joinColumns = @JoinColumn(name = "hospital_id"), inverseJoinColumns = @JoinColumn(name = "examination_id"))
     private Set<Examination> examinations;
 
     @OneToMany(mappedBy = "hospital", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Feedback> feedback = new ArrayList<>();
 }
-
-

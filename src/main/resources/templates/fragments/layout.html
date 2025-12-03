@@ -183,7 +183,7 @@
                     console.log('Family doctor link clicked');
                     
                     try {
-                        const response = await fetch('/api/patient/contacts', {
+                        const response = await fetch('/api/patient/my-contacts', {
                             credentials: 'include'
                         });
                         
@@ -195,7 +195,7 @@
                             
                             if (data.familyDoctorName && data.familyDoctorId) {
                                 console.log('Redirecting to doctor page');
-                                window.location.href = `/ui/doctors/${data.familyDoctorId}`;
+                                window.location.href = `/ui/public/doctors/${data.familyDoctorId}#appointment-section`;
                             } else {
                                 console.log('No family doctor, showing modal');
                                 showNoFamilyDoctorModal();

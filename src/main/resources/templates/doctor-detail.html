@@ -48,21 +48,21 @@
                 </div>
 
                 <div class="doctor-main-info">
-                    <div class="doctor-specialty-badge" th:text="${doctor.doctorType}">Кардіолог</div>
+                    <div class="doctor-specialty-badge" th:text="${doctor.doctorType}">Невідомо</div>
                     <h1 class="doctor-name" th:text="|${doctor.fullName}|"></h1>
                     
                     <div class="doctor-meta">
                         <div class="meta-item">
                             <strong>Лікарня:</strong>
-                            <span th:text="${doctor.hospital.name}">Київська міська лікарня №5</span>
+                            <span th:text="${doctor.hospital.name}">-</span>
                         </div>
                         <div class="meta-item">
                             <strong>Адреса:</strong>
-                            <span th:text="${doctor.hospital.address}">вул. Хрещатик, 25, Київ</span>
+                            <span th:text="${doctor.hospital.address}">Невідомо</span>
                         </div>
                         <div class="meta-item">
                             <strong>Досвід:</strong>
-                            <span th:text="${doctor.yearsOfExperience + ' років'}">15 років</span>
+                            <span th:text="${doctor.yearsOfExperience + ' років'}">Невідомо</span>
                         </div>
                         <div class="meta-item" th:if="${doctor.type == 'child'}">
                             <strong>Дитячий лікар</strong>
@@ -103,7 +103,7 @@
         </section>
 
         <!-- Appointment Form Section -->
-        <section class="info-section" id="appointment-section" th:if="${doctor.canGetAppointment == true}">
+        <section class="info-section" id="appointment-section" th:if="${doctor.canGetAppointment == true || doctor.isFamilyDoctor == true}">
             <h2 class="section-title">Записатися на приймання</h2>
             <div class="appointment-form-container">
                 <form id="appointmentForm" class="appointment-form">
@@ -128,14 +128,6 @@
                                class="form-input"
                                required>
                         <span class="error-message" id="dateError"></span>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="referralSelect">Направлення <span class="required">*</span></label>
-                        <select id="referralSelect" name="referralId" class="form-input" required>
-                            <option value="">Завантаження...</option>
-                        </select>
-                        <span class="error-message" id="referralError"></span>
                     </div>
                     
                     <div class="form-group">
@@ -292,10 +284,11 @@
         import { initializeReferralPopup } from '/js/doctor-referral-popup.js';
         import { initializeFeedbackForm } from '/js/doctor-feedback.js';
         
-        const canGetAppointment = /*[[${doctor.canGetAppointment}]]*/ false;
+        const canGetAppointment = /*[[${doctor.isCanGetAppointment()}]]*/ false;
+        const isFamilyDoctor = /*[[${doctor.isIsFamilyDoctor()}]]*/ false;
         const doctorId = /*[[${doctor.id}]]*/ null;
         
-        initializeReferralPopup(canGetAppointment);
+        initializeReferralPopup(canGetAppointment, isFamilyDoctor);
         initializeFeedbackForm(doctorId);
     </script>
     <script type="module" th:src="@{/js/doctor-detail.js}"></script>

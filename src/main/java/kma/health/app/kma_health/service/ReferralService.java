@@ -25,13 +25,14 @@ public class ReferralService {
     private final DoctorTypeRepository doctorTypeRepository;
     private final ExaminationService examinationService;
     private final AppointmentRepository appointmentRepository;
+    private final DoctorTypeService doctorTypeService;
 
     public void createReferral(Doctor doctor, Patient patient, String doctorTypeName) {
         if (!haveOpenAppointment(doctor.getId(), patient.getId()))
             throw new MissingOpenAppointmentException("Cannot create a referral with no open appointments");
 
         Referral referral = createReferralBoilerplate(doctor, patient);
-        if (doctorTypeName.equals(DoctorTypeService.familyDoctorTypeName))
+        if (doctorTypeName.equals(doctorTypeService.getFamilyDoctorTypeName()))
             throw new InvalidFamilyDoctorReferralMethodException("Wrong method used for referral creation");
 
         referral.setDoctorType(doctorTypeRepository.findByTypeName(doctorTypeName)
@@ -56,7 +57,8 @@ public class ReferralService {
 
     public Referral createReferralForFamilyDoctor(Patient patient, LocalDate appointmentDate) {
         Referral referral = new Referral();
-        referral.setDoctorType(doctorTypeRepository.findByTypeName(DoctorTypeService.familyDoctorTypeName)
+        referral.setId(UUID.randomUUID());
+        referral.setDoctorType(doctorTypeRepository.findByTypeName(doctorTypeService.getFamilyDoctorTypeName())
                 .orElseThrow(() -> new RuntimeException("Doctor type Family doctor not found")));
         referral.setPatient(patient);
         referral.setValidUntil(appointmentDate.plusDays(1));
@@ -84,16 +86,15 @@ public class ReferralService {
         List<Referral> activeReferrals = referralRepository
                 .findByPatientIdAndValidUntilGreaterThanEqual(
                         patientId,
-                        LocalDate.now()
-                );
+                        LocalDate.now());
 
         return activeReferrals.stream()
                 // take only referrals that are not used in any appointment
-                .filter(referral -> (!appointmentRepository.existsByReferral_IdAndStatusNot(referral.getId(), AppointmentStatus.MISSED)))
+                .filter(referral -> (!appointmentRepository.existsByReferral_IdAndStatusNot(referral.getId(),
+                        AppointmentStatus.MISSED)))
                 .map(ReferralDto::fromEntity)
                 .collect(Collectors.toList());
     }
-
 
     private boolean haveOpenAppointment(UUID doctorId, UUID patientId) {
         List<Appointment> appointments = appointmentRepository
@@ -103,4 +104,3 @@ public class ReferralService {
                         app.getStatus().equals(AppointmentStatus.OPEN));
     }
 }
-

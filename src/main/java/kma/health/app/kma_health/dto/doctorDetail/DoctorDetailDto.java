@@ -35,6 +35,20 @@ public class DoctorDetailDto {
 
     private Boolean canGetAppointment;
     private Boolean canRate;
+    private Boolean isFamilyDoctor; // for user
+
+    // Explicit is-prefix getters for Thymeleaf
+    public Boolean isCanGetAppointment() {
+        return canGetAppointment;
+    }
+
+    public Boolean isCanRate() {
+        return canRate;
+    }
+
+    public Boolean isIsFamilyDoctor() {
+        return isFamilyDoctor;
+    }
 
     public DoctorDetailDto(Doctor doctor) {
         this.id = doctor.getId();

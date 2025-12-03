@@ -44,6 +44,12 @@ public class DoctorSearchServiceTest {
     private FeedbackService feedbackService;
 
     @Mock
+    private PatientService patientService;
+
+    @Mock
+    private DoctorTypeService doctorTypeService;
+
+    @Mock
     private CriteriaBuilder criteriaBuilder;
 
     @Mock
@@ -68,7 +74,7 @@ public class DoctorSearchServiceTest {
 
     @BeforeEach
     void setUp() {
-        doctorSearchService = new DoctorSearchService(entityManager, doctorRepository, referralService, feedbackService);
+        doctorSearchService = new DoctorSearchService(entityManager, doctorRepository, referralService, feedbackService, patientService, doctorTypeService);
     }
 
     @Test

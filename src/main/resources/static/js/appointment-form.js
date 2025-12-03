@@ -7,7 +7,6 @@ export class AppointmentForm {
         this.initializeElements();
         this.setupEventListeners();
         this.setDefaultDate();
-        this.loadReferrals();
     }
     
     initializeElements() {
@@ -15,7 +14,6 @@ export class AppointmentForm {
         this.dateInput = document.getElementById('appointmentDate');
         this.timeSlotsContainer = document.getElementById('timeSlotsContainer');
         this.selectedTimeSlotInput = document.getElementById('selectedTimeSlot');
-        this.referralSelect = document.getElementById('referralSelect');
         this.messageDiv = document.getElementById('appointmentMessage');
     }
     
@@ -33,46 +31,6 @@ export class AppointmentForm {
         this.dateInput.value = today;
         this.currentDate = today;
         this.loadTimeSlots(today);
-    }
-    
-    async loadReferrals() {
-        try {
-            const response = await fetch('/api/referral/active', {
-                method: 'GET',
-                credentials: 'include'
-            });
-            
-            if (response.ok) {
-                const referrals = await response.json();
-                this.populateReferralDropdown(referrals);
-            }
-        } catch (error) {
-            console.error('Error loading referrals:', error);
-        }
-    }
-    
-    populateReferralDropdown(referrals) {
-        // Clear and add default prompt option
-        this.referralSelect.innerHTML = '<option value="">Оберіть направлення</option>';
-        
-        referrals.forEach(referral => {
-            const option = document.createElement('option');
-            option.value = referral.id;
-            
-            let text = '';
-            if (referral.doctorType) {
-                text = `${referral.doctorType}`;
-            } else if (referral.examination) {
-                text = `${referral.examination.examName}`;
-            }
-            
-            if (referral.validUntil) {
-                text += ` (до ${referral.validUntil})`;
-            }
-            
-            option.textContent = text;
-            this.referralSelect.appendChild(option);
-        });
     }
     
     async handleDateChange() {
@@ -99,16 +57,10 @@ export class AppointmentForm {
                 this.allSlots = slots;
                 this.renderTimeSlots(slots);
             } else {
-                // Fallback to mock slots if API returns non-OK
-                const mockSlots = this.generateMockTimeSlots(date);
-                this.allSlots = mockSlots;
-                this.renderTimeSlots(mockSlots);
+                console.error(response);
             }
         } catch (error) {
             console.error('Error loading time slots:', error);
-            const mockSlots = this.generateMockTimeSlots(date);
-            this.allSlots = mockSlots;
-            this.renderTimeSlots(mockSlots);
         }
     }
     
@@ -272,8 +224,7 @@ export class AppointmentForm {
         const appointmentData = {
             doctorId: this.doctorId,
             date: this.dateInput.value,
-            time: this.selectedTimeSlotInput.value,
-            referralId: this.referralSelect.value
+            time: this.selectedTimeSlotInput.value
         };
         
         console.log('Sending appointment data:', appointmentData);
@@ -317,10 +268,6 @@ export class AppointmentForm {
         }
         if (!this.selectedTimeSlotInput.value) {
             this.showError('timeError', 'Оберіть часовий слот');
-            isValid = false;
-        }
-        if (!this.referralSelect.value) {
-            this.showError('referralError', 'Оберіть направлення');
             isValid = false;
         }
         

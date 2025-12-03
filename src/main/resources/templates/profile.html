@@ -81,9 +81,13 @@
                     <div class="info-item">
                         <span class="label">Сімейний лікар:</span>
                         <span class="value">
-                <span th:if="${user.familyDoctorName}" th:text="${user.familyDoctorName}"></span>
-                <span th:unless="${user.familyDoctorName}" class="unspecified">— Декларація відсутня</span>
-            </span>
+                            <a th:if="${user.familyDoctorName}" 
+                            th:href="@{/ui/public/doctors/{id}(id=${user.familyDoctorId})}"
+                            th:text="${user.familyDoctorName}">
+                            </a>
+
+                            <span th:unless="${user.familyDoctorName}" class="unspecified">— Декларація відсутня</span>
+                        </span>
                     </div>
                 </th:block>
 

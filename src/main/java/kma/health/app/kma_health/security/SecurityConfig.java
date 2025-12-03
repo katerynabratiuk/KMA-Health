@@ -42,7 +42,6 @@ public class SecurityConfig {
                                 "/swagger-ui/**")
                         .permitAll()
 
-                        // API role-based access - Feedback endpoints MUST come before /api/doctor/**
                         .requestMatchers(HttpMethod.GET, "/api/doctor/*/feedback/my").hasRole("PATIENT")
                         .requestMatchers(HttpMethod.POST, "/api/doctor/*/feedback").hasRole("PATIENT")
                         .requestMatchers(HttpMethod.DELETE, "/api/doctor/*/feedback/*")

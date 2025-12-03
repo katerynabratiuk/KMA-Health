@@ -32,6 +32,17 @@ public class PatientController {
         return new PatientDto(patientService.getPatientById(userId));
     }
 
+    @PreAuthorize("hasRole('PATIENT')")
+    @GetMapping("/my-contacts")
+    public ResponseEntity<PatientContactsDto> getMyContacts(@AuthenticationPrincipal UUID userId) {
+        try {
+            PatientContactsDto patientContacts = patientService.getPatientContacts(userId);
+            return ResponseEntity.ok(patientContacts);
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     @PreAuthorize("hasRole('DOCTOR')")
     @GetMapping("/contacts")
     public ResponseEntity<PatientContactsDto> getPatientContacts(UUID patientId) {
@@ -47,8 +58,7 @@ public class PatientController {
     @GetMapping("/history")
     public ResponseEntity<List<AppointmentFullViewDto>> getPatientHistory(
             @AuthenticationPrincipal UUID userId,
-            @RequestParam UUID patientId
-    ) {
+            @RequestParam UUID patientId) {
         var auth = SecurityContextHolder.getContext().getAuthentication();
         boolean isPatient = auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_PATIENT"));
@@ -70,8 +80,7 @@ public class PatientController {
     @GetMapping("/referrals")
     public ResponseEntity<List<ReferralDto>> getReferrals(
             @AuthenticationPrincipal UUID userId,
-            @RequestParam UUID patientId
-    ) {
+            @RequestParam UUID patientId) {
         var auth = SecurityContextHolder.getContext().getAuthentication();
         boolean isPatient = auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_PATIENT"));
