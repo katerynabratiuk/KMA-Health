@@ -140,7 +140,7 @@ import static org.mockito.Mockito.*;
         LocalDate start = LocalDate.now();
         LocalDate end = LocalDate.now().plusDays(7);
 
-        when(appointmentRepository.findByDoctor_IdAndDateBetween(doctorId, start, end))
+        when(appointmentRepository.findByDoctor_IdAndDateBetweenOrderByDateAscTimeAsc(doctorId, start, end))
                 .thenReturn(Collections.emptyList());
 
         List<AppointmentShortViewDto> result = appointmentService.getAppointmentsForDoctor(doctorId, start, end);
@@ -332,7 +332,7 @@ import static org.mockito.Mockito.*;
         UUID doctorId = UUID.randomUUID();
         LocalDate date = LocalDate.now();
 
-        when(appointmentRepository.findByDoctor_IdAndDateBetween(doctorId, date, date))
+        when(appointmentRepository.findByDoctor_IdAndDateBetweenOrderByDateAscTimeAsc(doctorId, date, date))
                 .thenReturn(Collections.emptyList());
 
         List<AppointmentShortViewDto> result = appointmentService.getAppointmentsForDoctor(doctorId, date);
@@ -891,7 +891,7 @@ import static org.mockito.Mockito.*;
         appointment.setDate(date);
         appointment.setTime(LocalTime.of(10, 0));
 
-        when(appointmentRepository.findByDoctor_IdAndDateBetween(doctorId, date, date))
+        when(appointmentRepository.findByDoctor_IdAndDateBetweenOrderByDateAscTimeAsc(doctorId, date, date))
                 .thenReturn(Collections.singletonList(appointment));
 
         var result = appointmentService.getAppointmentsForDoctor(doctorId, date);

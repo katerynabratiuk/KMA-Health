@@ -1,6 +1,7 @@
 package kma.health.app.kma_health.dto;
 
 import kma.health.app.kma_health.entity.Appointment;
+import kma.health.app.kma_health.enums.AppointmentStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,6 +23,9 @@ public class AppointmentShortViewDto {
     private UUID doctorId;
     private Long hospitalId;
     private String examinationName;
+    private String patientName;
+    private AppointmentStatus status;
+    private String diagnosis;
 
     public AppointmentShortViewDto(Appointment appointment) {
         this.id = appointment.getId();
@@ -30,8 +34,13 @@ public class AppointmentShortViewDto {
         this.doctorId = (appointment.getDoctor() != null) ? appointment.getDoctor().getId() : null;
         this.hospitalId = (appointment.getHospital() != null) ? appointment.getHospital().getId() : null;
         this.doctorName = (appointment.getDoctor() != null) ? appointment.getDoctor().getFullName() : null;
-        this.examinationName = (appointment.getReferral().getExamination() != null)
+        this.examinationName = (appointment.getReferral() != null && appointment.getReferral().getExamination() != null)
                 ? appointment.getReferral().getExamination().getExamName()
                 : null;
+        this.patientName = (appointment.getReferral() != null && appointment.getReferral().getPatient() != null)
+                ? appointment.getReferral().getPatient().getFullName()
+                : null;
+        this.status = appointment.getStatus();
+        this.diagnosis = appointment.getDiagnosis();
     }
 }

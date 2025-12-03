@@ -86,14 +86,14 @@ public class AppointmentService {
     }
 
     public List<AppointmentShortViewDto> getAppointmentsForDoctor(UUID doctorId, LocalDate start, LocalDate end) {
-        return appointmentRepository.findByDoctor_IdAndDateBetween(doctorId, start, end)
+        return appointmentRepository.findByDoctor_IdAndDateBetweenOrderByDateAscTimeAsc(doctorId, start, end)
                 .stream()
                 .map(AppointmentShortViewDto::new)
                 .toList();
     }
 
     public List<AppointmentDto> getPublicAppointmentsForDoctor(UUID doctorId, LocalDate date) {
-        return appointmentRepository.findByDoctor_IdAndDateBetween(doctorId, date, date)
+        return appointmentRepository.findByDoctor_IdAndDateBetweenOrderByDateAscTimeAsc(doctorId, date, date)
                 .stream()
                 .map(AppointmentDto::new)
                 .toList();
@@ -155,7 +155,7 @@ public class AppointmentService {
     private void processDoctorAppointment(AppointmentCreateUpdateDto dto) {
         checkIfAppointmentExists(dto.getDate(), dto.getTime());
         handleFamilyDoctorReferral(dto);
-        //validateDoctorAndPatientAge(dto.getDoctorId(), dto.getPatientId());
+        // validateDoctorAndPatientAge(dto.getDoctorId(), dto.getPatientId());
     }
 
     private void handleFamilyDoctorReferral(AppointmentCreateUpdateDto dto) {
@@ -191,7 +191,7 @@ public class AppointmentService {
                 : null;
 
         if (!doctorId.equals(doctorIdFromAppointment) &&
-            !doctorId.equals(labAssistantIdFromAppointment)) {
+                !doctorId.equals(labAssistantIdFromAppointment)) {
             throw new AccessDeniedException(
                     "Appointment " + appointmentId + " doesn't belong to doctor/lab assistant " + doctorId);
         }
@@ -351,8 +351,8 @@ public class AppointmentService {
 
     private void checkIfAppointmentExists(LocalDate date, LocalTime time) {
         if (appointmentRepository.existsByDateAndTime(date, time))
-            throw new AppointmentTargetConflictException
-                    ("Appointment for date " + date + "and time " + time + " already exists");
+            throw new AppointmentTargetConflictException(
+                    "Appointment for date " + date + "and time " + time + " already exists");
     }
 
     private void checkIfAppointmentExists(UUID referralId) {
@@ -361,7 +361,8 @@ public class AppointmentService {
     }
 
     public void validateDoctorAndPatientAge(UUID doctorID, UUID patientID) {
-        if (doctorID == null) return;
+        if (doctorID == null)
+            return;
 
         var patient = patientRepository.findById(patientID)
                 .orElseThrow(() -> new EntityNotFoundException("Patient not found"));
@@ -374,13 +375,11 @@ public class AppointmentService {
 
         if (patientAge < 18 && !"child".equals(doctorType)) {
             throw new DoctorSpecializationAgeRestrictionException(
-                    "Incompatible patient age and doctor specialization: underage patient cannot be assigned to an adult doctor."
-            );
+                    "Incompatible patient age and doctor specialization: underage patient cannot be assigned to an adult doctor.");
         }
         if (patientAge >= 18 && !"adult".equals(doctorType)) {
             throw new DoctorSpecializationAgeRestrictionException(
-                    "Incompatible patient age and doctor specialization: adult patient cannot be assigned to a pediatric doctor."
-            );
+                    "Incompatible patient age and doctor specialization: adult patient cannot be assigned to a pediatric doctor.");
         }
     }
 
@@ -390,14 +389,12 @@ public class AppointmentService {
 
         if (doctorAppointment && hospitalAppointment) {
             throw new AppointmentTargetConflictException(
-                    "Cannot assign appointment to both doctor and hospital."
-            );
+                    "Cannot assign appointment to both doctor and hospital.");
         }
 
         if (!doctorAppointment && !hospitalAppointment) {
             throw new AppointmentTargetConflictException(
-                    "Appointment must be assigned either to a doctor or to a hospital."
-            );
+                    "Appointment must be assigned either to a doctor or to a hospital.");
         }
     }
 

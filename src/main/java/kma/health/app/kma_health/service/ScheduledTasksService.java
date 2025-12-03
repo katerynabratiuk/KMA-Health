@@ -27,7 +27,7 @@ public class ScheduledTasksService {
     private final AppointmentRepository appointmentRepository;
     private final ReminderRepository reminderRepository;
 
-    @Scheduled(cron = "0 * * * * *")
+    // @Scheduled(cron = "0 * * * * *")
     @Transactional
     public void generateAppointmentReminders() {
         log.info("Starting daily appointment reminder generation");

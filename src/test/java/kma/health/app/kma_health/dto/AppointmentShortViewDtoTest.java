@@ -128,14 +128,16 @@ public class AppointmentShortViewDtoTest {
         LocalTime time = LocalTime.of(10, 0);
 
         AppointmentShortViewDto dto = new AppointmentShortViewDto(
-                id, date, time, "Dr. Test", doctorId, 1L, "Blood Test"
-        );
+                id, date, time, "Dr. Test", doctorId, 1L, "Blood Test", "Patient Name",
+                kma.health.app.kma_health.enums.AppointmentStatus.SCHEDULED, "Test diagnosis");
 
         assertEquals(id, dto.getId());
         assertEquals("Dr. Test", dto.getDoctorName());
         assertEquals(doctorId, dto.getDoctorId());
         assertEquals(1L, dto.getHospitalId());
         assertEquals("Blood Test", dto.getExaminationName());
+        assertEquals("Patient Name", dto.getPatientName());
+        assertEquals(kma.health.app.kma_health.enums.AppointmentStatus.SCHEDULED, dto.getStatus());
+        assertEquals("Test diagnosis", dto.getDiagnosis());
     }
 }
-

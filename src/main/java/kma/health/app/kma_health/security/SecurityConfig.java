@@ -39,7 +39,8 @@ public class SecurityConfig {
                                 "/js/**",
                                 "/images/**",
                                 "/api-docs/**",
-                                "/swagger-ui/**")
+                                "/swagger-ui/**",
+                                "/ui/**")
                         .permitAll()
 
                         .requestMatchers(HttpMethod.GET, "/api/doctor/*/feedback/my").hasRole("PATIENT")
@@ -55,9 +56,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/hospital").permitAll()
 
                         // UI routes - specific before general
-                        .requestMatchers("/ui/appointments", "/ui/appointments/**").hasAnyRole("PATIENT")
+                        .requestMatchers("/ui/appointments", "/ui/appointments/**").hasAnyRole("PATIENT", "DOCTOR")
                         .requestMatchers("/ui/profile/**").authenticated()
-
 
                         .anyRequest().authenticated())
 

@@ -25,7 +25,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, UUID> 
 
     List<Appointment> findByReferral_Patient_idAndDateBetween(UUID patientId, LocalDate start, LocalDate end);
 
-    List<Appointment> findByDoctor_IdAndDateBetween(UUID doctorId, LocalDate start, LocalDate end);
+    List<Appointment> findByDoctor_IdAndDateBetweenOrderByDateAscTimeAsc(UUID doctorId, LocalDate start, LocalDate end);
 
     List<Appointment> findByStatus(AppointmentStatus status);
 
@@ -34,6 +34,6 @@ public interface AppointmentRepository extends JpaRepository<Appointment, UUID> 
     boolean existsByDateAndTime(LocalDate date, LocalTime time);
 
     boolean existsByReferral_Id(UUID referralId);
+
     boolean existsByReferral_IdAndStatusNot(UUID referralId, AppointmentStatus status);
 }
-
