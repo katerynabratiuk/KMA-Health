@@ -49,10 +49,7 @@
                     <strong>Прикріплені документи:</strong>
                     <ul class="file-list">
                         <li th:each="file : ${appt.medicalFiles}">
-                            <a th:href="${file.downloadLink}" th:text="${file.name}" target="_blank"
-                               rel="noopener noreferrer">
-                                Назва файлу
-                            </a>
+                            <a th:href="@{/api/files(downloadLink=${file.link})}" th:text="${file.name}"></a>
                         </li>
                     </ul>
                 </div>

@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.nio.file.AccessDeniedException;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
@@ -38,7 +39,7 @@ public class ProfileController {
             @AuthenticationPrincipal UUID userId,
             @RequestParam UUID profileId,
             @RequestParam String profileRole,
-            Model model) {
+            Model model) throws AccessDeniedException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userRole = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
@@ -47,17 +48,18 @@ public class ProfileController {
                 .findFirst()
                 .orElse("ANONYMOUS");
 
-        ProfileDto profileDto = null;
+        boolean allowed =
+                (userRole.equals("PATIENT") && userId.equals(profileId)) ||
+                (userRole.equals("DOCTOR")
+                 && profileRole.equals("PATIENT")
+                 && appointmentService.haveOpenAppointment(userId, profileId));
 
-        if (userRole.equals("PATIENT") && userId.equals(profileId) ||
-                userRole.equals("DOCTOR")
-                        && profileRole.equals("PATIENT")
-                        && appointmentService.haveOpenAppointment(userId, profileId)) {
-            profileDto = profileService.getProfileData(profileId, profileRole);
-        }
+        System.out.println("Allowed: " + allowed);
 
-        if (profileDto == null)
-            return null;
+        if (!allowed)
+            throw new AccessDeniedException("Forbidden");
+
+        ProfileDto profileDto = profileService.getProfileData(profileId, profileRole);
 
         model.addAttribute("user", profileDto);
         model.addAttribute("userRole", profileRole);
