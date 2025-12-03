@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 @Service
 @AllArgsConstructor
@@ -72,15 +73,19 @@ public class PatientService {
     }
 
     public List<AppointmentFullViewDto> getPatientMedicalHistory(UUID patientId, UUID doctorId, UserRole role) {
+        Supplier<List<AppointmentFullViewDto>> finishedAppointmentsSupplier = () ->
+                appointmentService.getAppointmentsForPatient(patientId).stream()
+                        .filter(appt -> appt.getStatus() == AppointmentStatus.FINISHED)
+                        .toList();
         return switch (role) {
-            case PATIENT -> appointmentService.getAppointmentsForPatient(patientId);
+            case PATIENT -> finishedAppointmentsSupplier.get();
             case DOCTOR -> {
-                if (!appointmentService.haveOpenAppointment(doctorId, patientId)) {
+                if (!appointmentService.haveOpenAppointment(doctorId, patientId))
                     throw new PatientHistoryAccessException(
                             "Patient " + patientId + " has no open appointment with doctor " + doctorId);
-                }
-                yield appointmentService.getAppointmentsForPatient(patientId);
+                yield finishedAppointmentsSupplier.get();
             }
+
             default -> throw new PatientHistoryAccessException(
                     "Denied medical history access to " + role);
         };

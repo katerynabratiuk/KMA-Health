@@ -213,12 +213,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (patientCard) {
-        patientCard.addEventListener('click', function() {
+        patientCard.addEventListener('click', async function() {
             const patientId = patientCard.getAttribute('data-patient-id');
             const patientRole = patientCard.getAttribute('data-patient-role');
             const userRole = /*[[${userRole}]]*/ 'DOCTOR';
+
             if (userRole === 'DOCTOR') {
-                const url = `/ui/profile/view/?profileId=${patientId}&profileRole=${patientRole}`;
+                console.log(userRole)
+                const url = `/ui/profile/view?profileId=${patientId}&profileRole=${patientRole}`;
                 window.location.href = url;
             }
         });

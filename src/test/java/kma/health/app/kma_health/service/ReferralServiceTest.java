@@ -83,8 +83,9 @@ public class ReferralServiceTest {
         when(appointmentRepository.findByDoctor_IdAndReferral_Patient_Id(doctorId, patientId))
                 .thenReturn(Collections.emptyList());
 
-        assertThrows(MissingOpenAppointmentException.class,
-                () -> referralService.createReferralForDoctor(doctor, patient, "Cardiologist"));
+        assertThrows(MissingOpenAppointmentException.class, () -> {
+            referralService.createReferralForDoctor(doctor, patient, "Cardiologist");
+        });
 
         verify(referralRepository, never()).save(any(Referral.class));
     }
@@ -125,16 +126,15 @@ public class ReferralServiceTest {
 
         Examination examination = new Examination();
         examination.setId(examinationId);
-        examination.setExamName("Blood Test");
 
         Appointment openAppointment = new Appointment();
         openAppointment.setStatus(AppointmentStatus.OPEN);
 
         when(appointmentRepository.findByDoctor_IdAndReferral_Patient_Id(doctorId, patientId))
                 .thenReturn(Collections.singletonList(openAppointment));
-        when(examinationService.findExaminationByName("Blood Test")).thenReturn(examination);
+        when(examinationService.findExaminationById(examinationId)).thenReturn(examination);
 
-        referralService.createReferralForExamination(doctor, patient, "Blood Test");
+        referralService.createReferralForExamination(doctor, patient, "Загальний аналіз крові");
 
         verify(referralRepository, times(1)).save(any(Referral.class));
     }
@@ -204,17 +204,17 @@ public class ReferralServiceTest {
     @Test
     public void testGetActiveReferrals_ShouldReturnOnlyActiveReferrals() {
         UUID patientId = UUID.randomUUID();
-
+        
         DoctorType doctorType = new DoctorType();
         doctorType.setTypeName("Cardiologist");
-
+        
         Doctor doctor = new Doctor();
         doctor.setId(UUID.randomUUID());
         doctor.setFullName("Dr. Test");
-
+        
         Patient patient = new Patient();
         patient.setId(patientId);
-
+        
         Referral activeReferral = new Referral();
         activeReferral.setId(UUID.randomUUID());
         activeReferral.setValidUntil(LocalDate.now().plusDays(30));
@@ -259,11 +259,11 @@ public class ReferralServiceTest {
 
         when(appointmentRepository.findByDoctor_IdAndReferral_Patient_Id(doctorId, patientId))
                 .thenReturn(Collections.singletonList(openAppointment));
-        when(examinationService.findExaminationByName("NonExistent"))
+        when(examinationService.findExaminationById(examinationId))
                 .thenThrow(new RuntimeException("Not found"));
 
         assertThrows(jakarta.persistence.EntityNotFoundException.class, () -> {
-            referralService.createReferralForExamination(doctor, patient, "NonExistent");
+            referralService.createReferralForExamination(doctor, patient, "Загальний аналіз крові");
         });
     }
 
@@ -282,7 +282,7 @@ public class ReferralServiceTest {
                 .thenReturn(Collections.emptyList());
 
         assertThrows(MissingOpenAppointmentException.class, () -> {
-            referralService.createReferralForExamination(doctor, patient, "X-Ray");
+            referralService.createReferralForExamination(doctor, patient, "Загальний аналіз крові");
         });
     }
 
@@ -408,3 +408,4 @@ public class ReferralServiceTest {
         });
     }
 }
+
