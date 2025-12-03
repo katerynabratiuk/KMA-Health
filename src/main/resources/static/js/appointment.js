@@ -17,6 +17,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let uploadedFiles = [];
 
+    const patientCard = document.querySelector('.patient-card');
+
     function handleFiles(files) {
         const newFiles = Array.from(files);
 
@@ -195,5 +197,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (dropzone) {
         updateFilesListDisplay();
+    }
+
+    if (patientCard) {
+        patientCard.addEventListener('click', function() {
+            const patientId = patientCard.getAttribute('data-patient-id');
+            const patientRole = patientCard.getAttribute('data-patient-role');
+            const userRole = /*[[${userRole}]]*/ 'DOCTOR';
+            if (userRole === 'DOCTOR') {
+                const url = `/ui/profile/view/?profileId=${patientId}&profileRole=${patientRole}`;
+                window.location.href = url;
+            }
+        });
     }
 });

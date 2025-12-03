@@ -26,7 +26,7 @@ public class ReferralService {
     private final ExaminationService examinationService;
     private final AppointmentRepository appointmentRepository;
 
-    public void createReferral(Doctor doctor, Patient patient, String doctorTypeName) {
+    public void createReferralForDoctor(Doctor doctor, Patient patient, String doctorTypeName) {
         if (!haveOpenAppointment(doctor.getId(), patient.getId()))
             throw new MissingOpenAppointmentException("Cannot create a referral with no open appointments");
 
@@ -40,15 +40,15 @@ public class ReferralService {
         referralRepository.save(referral);
     }
 
-    public void createReferral(Doctor doctor, Patient patient, Long examinationId) {
+    public void createReferralForExamination(Doctor doctor, Patient patient, String examinationName) {
         if (!haveOpenAppointment(doctor.getId(), patient.getId()))
             throw new MissingOpenAppointmentException("Cannot create a referral with no open appointments");
 
         Referral referral = createReferralBoilerplate(doctor, patient);
         try {
-            referral.setExamination(examinationService.findExaminationById(examinationId));
+            referral.setExamination(examinationService.findExaminationByName(examinationName));
         } catch (Exception e) {
-            throw new EntityNotFoundException("Cannot create a referral with examination " + examinationId);
+            throw new EntityNotFoundException("Cannot create a referral with examination " + examinationName);
         }
 
         referralRepository.save(referral);
@@ -88,7 +88,6 @@ public class ReferralService {
                 );
 
         return activeReferrals.stream()
-                // take only referrals that are not used in any appointment
                 .filter(referral -> (!appointmentRepository.existsByReferral_IdAndStatusNot(referral.getId(), AppointmentStatus.MISSED)))
                 .map(ReferralDto::fromEntity)
                 .collect(Collectors.toList());

@@ -7,4 +7,5 @@ import java.util.Optional;
 
 public interface ExaminationRepository extends JpaRepository<Examination, Long> {
     Optional<Examination> findByExamNameAndUnit(String name, String unit);
+    Optional<Examination> findByExamName(String examinationName);
 }

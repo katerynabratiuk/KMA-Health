@@ -222,15 +222,7 @@ public class AppointmentService {
             }
             appointment.setMedicalFiles(medicalFiles);
         }
-
         appointmentRepository.save(appointment);
-
-        Referral referral = appointment.getReferral();
-        appointment.setReferral(null);
-        appointmentRepository.save(appointment);
-
-        if (referral != null)
-            referralRepository.delete(referral);
     }
 
     public void cancelAppointment(UUID doctorId, UUID patientId, UUID appointmentId) throws AccessDeniedException {

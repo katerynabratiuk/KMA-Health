@@ -33,6 +33,39 @@ public class ProfileController {
         this.appointmentService = appointmentService;
     }
 
+    @GetMapping("/view")
+    public String getProfilePage(
+            @AuthenticationPrincipal UUID userId,
+            @RequestParam UUID profileId,
+            @RequestParam String profileRole,
+            Model model) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userRole = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .filter(a -> a.startsWith("ROLE_"))
+                .map(a -> a.substring(5))
+                .findFirst()
+                .orElse("ANONYMOUS");
+
+        ProfileDto profileDto = null;
+
+        if (userRole.equals("PATIENT") && userId.equals(profileId) ||
+            userRole.equals("DOCTOR")
+            && profileRole.equals("PATIENT")
+            && appointmentService.haveOpenAppointment(userId, profileId)) {
+            profileDto = profileService.getProfileData(profileId, profileRole);
+        }
+
+        if (profileDto == null)
+            return null;
+
+        model.addAttribute("user", profileDto);
+        model.addAttribute("userRole", profileRole);
+        model.addAttribute("plannedAppointments", profileDto.getPlannedAppointments());
+
+        return "profile";
+    }
+
     @GetMapping
     public String getProfilePage(
             @AuthenticationPrincipal UUID userId,
@@ -54,7 +87,7 @@ public class ProfileController {
         return "profile";
     }
 
-    @PreAuthorize("hasRole('PATIENT'")
+    @PreAuthorize("hasRole('PATIENT')")
     @GetMapping("/calendar")
     public String getCalendar(
             @AuthenticationPrincipal UUID userId,

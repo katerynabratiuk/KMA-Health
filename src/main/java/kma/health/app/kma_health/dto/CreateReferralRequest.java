@@ -8,5 +8,5 @@ import java.util.UUID;
 public class CreateReferralRequest {
     private UUID patientId;
     private String doctorTypeName;
-    private Long examinationId;
+    private String examinationName;
 }
