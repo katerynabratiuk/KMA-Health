@@ -110,7 +110,7 @@ public class FeedbackService {
 
         return appointments.stream()
                 .anyMatch(a -> a.getStatus() == AppointmentStatus.FINISHED &&
-                        a.getTime().isBefore(LocalTime.from(now)));
+                        LocalDateTime.of(a.getDate(), a.getTime()).isBefore(now));
     }
 
     public List<Feedback> getDoctorFeedbacks(UUID doctorId) {

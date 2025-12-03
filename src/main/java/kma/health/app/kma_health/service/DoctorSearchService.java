@@ -159,8 +159,7 @@ public class DoctorSearchService {
     }
 
     public DoctorDetailDto getDoctorById(UUID id) {
-        DoctorDetailDto doctor = new DoctorDetailDto(
-                Objects.requireNonNull(doctorRepository.findById(id).orElse(null)));
+        DoctorDetailDto doctor = new DoctorDetailDto(Objects.requireNonNull(doctorRepository.findById(id).orElse(null)));
 
         doctor.setRating(this.aggregatedRating(doctor.getFeedback()));
         doctor.setYearsOfExperience(countExperience(doctor.getStartedWorking()));
@@ -169,32 +168,14 @@ public class DoctorSearchService {
     }
 
     public DoctorDetailDto getDoctorDetailById(UUID id, Optional<UUID> patientId) {
-        System.out.println("DEBUG getDoctorDetailById:");
-        System.out.println("  doctorId: " + id);
-        System.out.println("  patientId: " + patientId);
-        System.out.println("  patientId.isPresent(): " + patientId.isPresent());
-
-        DoctorDetailDto doctor = new DoctorDetailDto(
-                Objects.requireNonNull(doctorRepository.findById(id).orElse(null)));
+        DoctorDetailDto doctor = new DoctorDetailDto(Objects.requireNonNull(doctorRepository.findById(id).orElse(null)));
         doctor.setFeedback(feedbackService.getDoctorFeedbacks(doctor.getId()));
 
         doctor.setRating(this.aggregatedRating(doctor.getFeedback()));
         doctor.setYearsOfExperience(countExperience(doctor.getStartedWorking()));
-
-        if (patientId.isPresent()) {
-            System.out.println("  Setting canGetAppointment...");
-            Boolean canGet = patientCanGetAppointment(doctor, patientId.get());
-            System.out.println("  canGetAppointment result: " + canGet);
-            doctor.setCanGetAppointment(canGet);
-        } else {
-            System.out.println("  PatientId not present, not setting canGetAppointment");
-        }
-
+        patientId.ifPresent(uuid -> doctor.setCanGetAppointment(patientCanGetAppointment(doctor, uuid)));
         patientId.ifPresent(uuid -> doctor.setCanRate(feedbackService.patientCanRateDoctor(id, patientId.get())));
-        patientId.ifPresent(uuid -> doctor
-                .setIsFamilyDoctor(patientService.getPatientContacts(patientId.get()).getFamilyDoctorId() == id));
 
-        System.out.println("  Final doctor.canGetAppointment: " + doctor.getCanGetAppointment());
         return doctor;
     }
 
@@ -230,8 +211,8 @@ public class DoctorSearchService {
         return avgRating;
     }
 
-    private Integer countExperience(LocalDate startedWorking) {
-        return java.time.Period.between(
+    private Integer countExperience(LocalDate startedWorking){
+        return  java.time.Period.between(
                 startedWorking,
                 java.time.LocalDate.now()).getYears();
     }
