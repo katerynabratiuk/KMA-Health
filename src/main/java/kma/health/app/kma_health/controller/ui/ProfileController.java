@@ -50,9 +50,9 @@ public class ProfileController {
         ProfileDto profileDto = null;
 
         if (userRole.equals("PATIENT") && userId.equals(profileId) ||
-            userRole.equals("DOCTOR")
-            && profileRole.equals("PATIENT")
-            && appointmentService.haveOpenAppointment(userId, profileId)) {
+                userRole.equals("DOCTOR")
+                        && profileRole.equals("PATIENT")
+                        && appointmentService.haveOpenAppointment(userId, profileId)) {
             profileDto = profileService.getProfileData(profileId, profileRole);
         }
 
@@ -87,7 +87,7 @@ public class ProfileController {
         return "profile";
     }
 
-    @PreAuthorize("hasRole('PATIENT')")
+    @PreAuthorize("hasRole('DOCTOR')")
     @GetMapping("/calendar")
     public String getCalendar(
             @AuthenticationPrincipal UUID userId,

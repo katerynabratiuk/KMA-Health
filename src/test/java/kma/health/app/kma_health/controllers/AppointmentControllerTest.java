@@ -137,7 +137,7 @@ class AppointmentControllerTest {
         doNothing().when(appointmentService).finishAppointment(any(), any(), any(), any());
 
         ResponseEntity<?> response = controller.finishAppointment(
-                userId, Collections.emptyList(), appointmentId, "diagnosis");
+                Collections.emptyList(), appointmentId, "diagnosis");
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
@@ -148,7 +148,7 @@ class AppointmentControllerTest {
                 .when(appointmentService).finishAppointment(any(), any(), any(), any());
 
         ResponseEntity<?> response = controller.finishAppointment(
-                userId, Collections.emptyList(), appointmentId, "diagnosis");
+                Collections.emptyList(), appointmentId, "diagnosis");
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
@@ -159,7 +159,7 @@ class AppointmentControllerTest {
                 .when(appointmentService).finishAppointment(any(), any(), any(), any());
 
         ResponseEntity<?> response = controller.finishAppointment(
-                userId, Collections.emptyList(), appointmentId, "diagnosis");
+                Collections.emptyList(), appointmentId, "diagnosis");
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }

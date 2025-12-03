@@ -64,7 +64,7 @@ public class ReferralServiceTest {
                 .thenReturn(Collections.singletonList(openAppointment));
         when(doctorTypeRepository.findByTypeName("Cardiologist")).thenReturn(Optional.of(doctorType));
 
-        referralService.createReferral(doctor, patient, "Cardiologist");
+        referralService.createReferralForDoctor(doctor, patient, "Cardiologist");
 
         verify(referralRepository, times(1)).save(any(Referral.class));
     }
@@ -83,9 +83,8 @@ public class ReferralServiceTest {
         when(appointmentRepository.findByDoctor_IdAndReferral_Patient_Id(doctorId, patientId))
                 .thenReturn(Collections.emptyList());
 
-        assertThrows(MissingOpenAppointmentException.class, () -> {
-            referralService.createReferral(doctor, patient, "Cardiologist");
-        });
+        assertThrows(MissingOpenAppointmentException.class,
+                () -> referralService.createReferralForDoctor(doctor, patient, "Cardiologist"));
 
         verify(referralRepository, never()).save(any(Referral.class));
     }
@@ -108,7 +107,7 @@ public class ReferralServiceTest {
                 .thenReturn(Collections.singletonList(openAppointment));
 
         assertThrows(InvalidFamilyDoctorReferralMethodException.class, () -> {
-            referralService.createReferral(doctor, patient, "Family doctor");
+            referralService.createReferralForDoctor(doctor, patient, "Family doctor");
         });
     }
 
@@ -126,15 +125,16 @@ public class ReferralServiceTest {
 
         Examination examination = new Examination();
         examination.setId(examinationId);
+        examination.setExamName("Blood Test");
 
         Appointment openAppointment = new Appointment();
         openAppointment.setStatus(AppointmentStatus.OPEN);
 
         when(appointmentRepository.findByDoctor_IdAndReferral_Patient_Id(doctorId, patientId))
                 .thenReturn(Collections.singletonList(openAppointment));
-        when(examinationService.findExaminationById(examinationId)).thenReturn(examination);
+        when(examinationService.findExaminationByName("Blood Test")).thenReturn(examination);
 
-        referralService.createReferral(doctor, patient, examinationId);
+        referralService.createReferralForExamination(doctor, patient, "Blood Test");
 
         verify(referralRepository, times(1)).save(any(Referral.class));
     }
@@ -204,17 +204,17 @@ public class ReferralServiceTest {
     @Test
     public void testGetActiveReferrals_ShouldReturnOnlyActiveReferrals() {
         UUID patientId = UUID.randomUUID();
-        
+
         DoctorType doctorType = new DoctorType();
         doctorType.setTypeName("Cardiologist");
-        
+
         Doctor doctor = new Doctor();
         doctor.setId(UUID.randomUUID());
         doctor.setFullName("Dr. Test");
-        
+
         Patient patient = new Patient();
         patient.setId(patientId);
-        
+
         Referral activeReferral = new Referral();
         activeReferral.setId(UUID.randomUUID());
         activeReferral.setValidUntil(LocalDate.now().plusDays(30));
@@ -259,11 +259,11 @@ public class ReferralServiceTest {
 
         when(appointmentRepository.findByDoctor_IdAndReferral_Patient_Id(doctorId, patientId))
                 .thenReturn(Collections.singletonList(openAppointment));
-        when(examinationService.findExaminationById(examinationId))
+        when(examinationService.findExaminationByName("NonExistent"))
                 .thenThrow(new RuntimeException("Not found"));
 
         assertThrows(jakarta.persistence.EntityNotFoundException.class, () -> {
-            referralService.createReferral(doctor, patient, examinationId);
+            referralService.createReferralForExamination(doctor, patient, "NonExistent");
         });
     }
 
@@ -282,7 +282,7 @@ public class ReferralServiceTest {
                 .thenReturn(Collections.emptyList());
 
         assertThrows(MissingOpenAppointmentException.class, () -> {
-            referralService.createReferral(doctor, patient, 1L);
+            referralService.createReferralForExamination(doctor, patient, "X-Ray");
         });
     }
 
@@ -347,7 +347,7 @@ public class ReferralServiceTest {
                 .thenReturn(Optional.empty());
 
         assertThrows(RuntimeException.class, () -> {
-            referralService.createReferral(doctor, patient, "NonExistent");
+            referralService.createReferralForDoctor(doctor, patient, "NonExistent");
         });
     }
 
@@ -382,7 +382,7 @@ public class ReferralServiceTest {
                 .thenReturn(Collections.singletonList(scheduledAppointment));
 
         assertThrows(MissingOpenAppointmentException.class, () -> {
-            referralService.createReferral(doctor, patient, "Cardiologist");
+            referralService.createReferralForDoctor(doctor, patient, "Cardiologist");
         });
     }
 
@@ -404,8 +404,7 @@ public class ReferralServiceTest {
                 .thenReturn(Collections.singletonList(appointmentWithNullStatus));
 
         assertThrows(MissingOpenAppointmentException.class, () -> {
-            referralService.createReferral(doctor, patient, "Cardiologist");
+            referralService.createReferralForDoctor(doctor, patient, "Cardiologist");
         });
     }
 }
-

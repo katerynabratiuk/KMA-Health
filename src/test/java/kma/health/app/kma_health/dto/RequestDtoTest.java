@@ -235,7 +235,6 @@ class RequestDtoTest {
 
         assertNull(request.getPatientId());
         assertNull(request.getDoctorTypeName());
-        assertNull(request.getExaminationId());
     }
 
     @Test
