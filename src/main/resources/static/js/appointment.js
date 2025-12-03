@@ -7,6 +7,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const appointmentIdElement = document.querySelector('.meta span');
     const appointmentId = appointmentIdElement ? appointmentIdElement.textContent : null;
+    const doctorId = appointmentPageContent.dataset.doctorId || null;
+    const patientId = appointmentPageContent.dataset.patientId || null;
+    const userRole = appointmentPageContent.dataset.userRole || null;
+    
+    console.log('Appointment Data:', { appointmentId, doctorId, patientId, userRole });
 
     const dropzone = document.getElementById('dropzone');
     const fileInput = document.getElementById('fileInput');
@@ -126,14 +131,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 formData.append('medicalFiles', file, file.name);
             });
 
-            fetch('/api/appointments/finish', {
+            fetch('/api/appointments/cancel', {
                 method: 'POST',
                 credentials: "include",
                 body: formData
             })
                 .then(response => {
                     if (response.ok) {
-                        alert('✅ Запис успішно завершено!');
+                        alert('Запис успішно завершено!');
                         window.location.reload();
                     } else {
                         const contentType = response.headers.get("content-type");
@@ -164,12 +169,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            fetch(`/api/appointments/cancel?appointmentId=${appointmentId}`, {
+            let cancelUrl = `/api/appointments/cancel?appointmentId=${appointmentId}`;
+            if (userRole === 'PATIENT') {
+                cancelUrl += `&patientId=${patientId}`;
+            } else if (userRole === 'DOCTOR' || userRole === 'LAB_ASSISTANT') {
+                cancelUrl += `&doctorId=${doctorId}`;
+            }
+            
+            fetch(cancelUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     credentials: "include"
-                }
+                },
+                credentials: "include"
             })
                 .then(response => {
                     if (response.ok) {

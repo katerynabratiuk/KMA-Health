@@ -11,7 +11,10 @@
 </head>
 <body>
 <header th:replace="~{fragments/layout :: header-auth(${userRole})}"></header>
-<div class="appointment-page-content">
+<div class="appointment-page-content" 
+     th:data-doctor-id="${appointment.doctorId}"
+     th:data-patient-id="${appointment.patientId}"
+     th:data-user-role="${userRole}">
     <div class="container">
     <div class="card">
         <div class="header">
@@ -145,7 +148,7 @@
             </div>
         </div>
         <div class="actions"
-             th:if="${(userRole == 'DOCTOR' or userRole == 'LAB_ASSISTANT') and (appointment.status.name() == 'OPEN') or (userRole == 'PATIENT' and appointment.status.name() == 'SCHEDULED')}">
+             th:if="${((userRole == 'DOCTOR' or userRole == 'LAB_ASSISTANT') and appointment.status.name() == 'OPEN') or (userRole == 'PATIENT' and appointment.status.name() == 'SCHEDULED')}">
             <button id="cancelBtn" class="btn ghost">Скасувати запис</button>
             <button id="finishBtn" class="btn primary"
                     th:if="${userRole == 'DOCTOR' or userRole == 'LAB_ASSISTANT'}">
