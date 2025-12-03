@@ -138,12 +138,15 @@ public class AppointmentService {
         if (!userId.equals(dto.getPatientId()))
             throw new AccessDeniedException("One patient cannot create an appointment for another patient");
 
+        boolean nullRef = dto.getReferralId() == null;
+
         validateAppointmentTarget(dto);
 
         if (dto.getDoctorId() != null)
             processDoctorAppointment(dto);
 
-        checkIfAppointmentExists(dto.getReferralId());
+        if (!nullRef)
+            checkIfAppointmentExists(dto.getReferralId());
 
         Appointment appointment = buildAppointment(dto);
         appointmentRepository.save(appointment);
@@ -152,7 +155,7 @@ public class AppointmentService {
     private void processDoctorAppointment(AppointmentCreateUpdateDto dto) {
         checkIfAppointmentExists(dto.getDate(), dto.getTime());
         handleFamilyDoctorReferral(dto);
-        validateDoctorAndPatientAge(dto.getDoctorId(), dto.getPatientId());
+        //validateDoctorAndPatientAge(dto.getDoctorId(), dto.getPatientId());
     }
 
     private void handleFamilyDoctorReferral(AppointmentCreateUpdateDto dto) {
@@ -234,7 +237,7 @@ public class AppointmentService {
 
         if (doctorIdFromAppointment != null || labAssistantIdFromAppointment != null) {
             if (!doctorId.equals(doctorIdFromAppointment) &&
-                    !doctorId.equals(labAssistantIdFromAppointment)) {
+                !doctorId.equals(labAssistantIdFromAppointment)) {
                 throw new AccessDeniedException(
                         "Appointment " + appointmentId + " doesn't belong to doctor/lab assistant " + doctorId
                 );
@@ -323,7 +326,7 @@ public class AppointmentService {
 
     private Referral buildFamilyDoctorReferral(AppointmentCreateUpdateDto dto) {
         Referral referral = new Referral();
-        referral.setDoctorType(doctorTypeRepository.findByTypeName("Family doctor")
+        referral.setDoctorType(doctorTypeRepository.findByTypeName("Family Doctor")
                 .orElseThrow(() -> new EntityNotFoundException("Doctor type not found")));
 
         referral.setPatient(patientRepository.findById(dto.getPatientId())
@@ -401,7 +404,7 @@ public class AppointmentService {
                 .findByDoctor_IdAndReferral_Patient_Id(doctorId, patientId);
         return appointments.stream()
                 .anyMatch(app -> app.getStatus() != null &&
-                        app.getStatus().equals(AppointmentStatus.OPEN));
+                                 app.getStatus().equals(AppointmentStatus.OPEN));
     }
 
     @Scheduled(fixedRate = 60_000)

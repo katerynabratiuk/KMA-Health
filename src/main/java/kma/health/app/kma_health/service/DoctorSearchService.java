@@ -138,7 +138,7 @@ public class DoctorSearchService {
     }
 
     private void sortByDistance(List<Doctor> doctors, String direction,
-            double userLat, double userLon) {
+                                double userLat, double userLon) {
         if (userLat == 0 && userLon == 0)
             throw new IllegalArgumentException("Invalid user lat/lon");
         doctors.sort((d1, d2) -> {
@@ -178,24 +178,22 @@ public class DoctorSearchService {
     }
 
     private Boolean patientCanGetAppointment(DoctorDetailDto doctor, UUID patientId) {
+        if (doctor.getDoctorType().equals("Family Doctor")) return true;
         List<ReferralDto> activeReferrals = referralService.getActiveReferrals(patientId);
 
         return activeReferrals.stream().anyMatch(referral ->
-                // Referral directly to this doctor
                 (referral.getDoctorId() != null &&
-                        referral.getDoctorId().equals(doctor.getId())) ||
+                 referral.getDoctorId().equals(doctor.getId())) ||
 
-                        // Referral to doctor type
-                        (referral.getDoctorType() != null &&
-                                referral.getDoctorType().equalsIgnoreCase(
-                                        doctor.getDoctorType()
-                                ))
+                (referral.getDoctorType() != null &&
+                 referral.getDoctorType().equalsIgnoreCase(
+                         doctor.getDoctorType()
+                 ))
         );
     }
 
 
-
-    private Double aggregatedRating(List<Feedback> feedback){
+    private Double aggregatedRating(List<Feedback> feedback) {
         double avgRating = 0;
         if (feedback != null && !feedback.isEmpty()) {
             avgRating = feedback.stream()
@@ -207,8 +205,8 @@ public class DoctorSearchService {
         return avgRating;
     }
 
-    private Integer countExperience(LocalDate startedWorking){
-        return  java.time.Period.between(
+    private Integer countExperience(LocalDate startedWorking) {
+        return java.time.Period.between(
                 startedWorking,
                 java.time.LocalDate.now()).getYears();
     }

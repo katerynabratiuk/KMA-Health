@@ -92,7 +92,7 @@
 
                     <div class="action-buttons">
                         <button class="btn-primary" id="appointmentButton" type="button">
-                            Записатися на приймання
+                            Записатися на прийом
                         </button>
                         <button th:if="${doctor.canRate}" class="btn-secondary" id="scrollToFeedback" type="button">
                             Залишити відгук
@@ -104,7 +104,7 @@
 
         <!-- Appointment Form Section -->
         <section class="info-section" id="appointment-section" th:if="${doctor.canGetAppointment == true}">
-            <h2 class="section-title">Записатися на приймання</h2>
+            <h2 class="section-title">Записатися на прийом</h2>
             <div class="appointment-form-container">
                 <form id="appointmentForm" class="appointment-form">
                     <input type="hidden" id="doctorId" name="doctorId" th:value="${doctor.id}">
@@ -129,15 +129,15 @@
                                required>
                         <span class="error-message" id="dateError"></span>
                     </div>
-                    
-                    <div class="form-group">
+
+                    <div class="form-group" th:if="${doctor.doctorType != 'Family Doctor'}">
                         <label for="referralSelect">Направлення <span class="required">*</span></label>
                         <select id="referralSelect" name="referralId" class="form-input" required>
                             <option value="">Завантаження...</option>
                         </select>
                         <span class="error-message" id="referralError"></span>
                     </div>
-                    
+
                     <div class="form-group">
                         <label>Оберіть зручний час <span class="required">*</span></label>
                         
